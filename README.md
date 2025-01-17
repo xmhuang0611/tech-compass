@@ -1,75 +1,121 @@
 # Tech Solutions (TSL)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 A platform for showcasing and managing technical solutions within organizations. Tech Solutions helps development teams discover, compare, and evaluate various tools, processes, and practices used in software development.
 
-## Components
+## 🌟 Features
 
-The project is organized into the following components:
+- 📊 **Solution Discovery**
+  - Browse and search technical solutions
+  - Advanced filtering and search capabilities
+  - Detailed solution comparisons
+- ⭐ **Evaluation System**
+  - Rate and review solutions
+  - Comment and discuss implementations
+  - Track usage statistics
+- 🏷️ **Organization**
+  - Tag-based categorization
+  - Custom taxonomies
+  - Team-based organization
+- 📈 **Visualization**
+  - Technology radar visualization
+  - Adoption trends
+  - Impact analysis
+- 🔐 **Access Control**
+  - Role-based permissions
+  - Team management
+  - Audit logging
+
+## 🏗️ Architecture
+
+The project follows a microservices architecture with the following components:
 
 - `components/tsl-ui`: Frontend application built with Angular + PrimeNG
 - `components/tsl-api`: Backend API service built with Python FastAPI
 - `components/tsl-admin`: Admin panel built with Python Streamlit
 - `components/tsl-radar`: Technology radar visualization
 
-## Features
+## 🛠️ Tech Stack
 
-- 📊 Browse and search technical solutions
-- ⭐ Rate and review solutions
-- 🏷️ Tag-based categorization
-- 📝 Detailed solution comparisons
-- 📈 Technology radar visualization
-- 🔍 Advanced filtering and search capabilities
+- **Frontend**: 
+  - Angular 15+
+  - PrimeNG
+  - TypeScript
+- **Backend**: 
+  - Python FastAPI
+  - MongoDB
+  - Redis (caching)
+- **Admin Panel**: 
+  - Python Streamlit
+- **DevOps**:
+  - Docker
+  - GitHub Actions
+  - Kubernetes (optional)
 
-## Tech Stack
-
-- **Frontend**: Angular + PrimeNG
-- **Backend**: Python FastAPI
-- **Database**: MongoDB
-- **Admin Panel**: Python Streamlit
-- **Tech Radar**: Custom implementation
-
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
-- Node.js and npm
-- Python 3.x
-- MongoDB
+- Node.js 16+ and npm
+- Python 3.9+
+- MongoDB 5.0+
+- Docker (optional)
 
-### Installation
+### Environment Setup
 
-1. Clone the repository
+1. **Clone the repository**
 
 ```bash
 git clone https://github.com/tobyqin/tech-solutions.git
 cd tech-solutions
 ```
 
-2. Set up and run the backend
+2. **Backend Setup**
 
 ```bash
 cd components/tsl-api
+python -m venv venv
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your configuration
+
 python main.py
 ```
 
-3. Set up and run the frontend
+3. **Frontend Setup**
 
 ```bash
 cd components/tsl-ui
 npm install
+
+# Configure environment
+cp environment.example.ts environment.ts
+# Edit environment.ts with your configuration
+
 ng serve
 ```
 
-4. Set up and run the admin panel (optional)
+4. **Admin Panel Setup**
 
 ```bash
 cd components/tsl-admin
+python -m venv venv
+source venv/bin/activate
 pip install -r requirements.txt
+
+# Configure environment
+cp .streamlit/config.example.toml .streamlit/config.toml
+# Edit config.toml with your configuration
+
 streamlit run app.py
 ```
 
-5. Set up and run the tech radar (optional)
+5. **Tech Radar Setup**
 
 ```bash
 cd components/tsl-radar
@@ -77,10 +123,51 @@ npm install
 npm start
 ```
 
-## Contributing
+### 🐳 Docker Setup (Alternative)
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+```bash
+docker-compose up -d
+```
 
-## License
+## 👩‍💻 Development
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+### Branch Strategy
+
+- `main`: Production-ready code
+- `develop`: Development branch
+- Feature branches: `feature/*`
+- Bug fixes: `fix/*`
+
+### Code Style
+
+- Frontend: ESLint + Prettier
+- Backend: Black + isort
+- Pre-commit hooks are configured
+
+### Testing
+
+```bash
+# Backend tests
+cd components/tsl-api
+pytest
+
+# Frontend tests
+cd components/tsl-ui
+ng test
+```
+
+## 🤝 Contributing
+
+We welcome contributions! Please search existing issues before creating new ones. For code contributions, fork the repo, make your changes with tests, and submit a PR.
+
+## 📫 Contact
+
+- **Project Lead**: Toby Qin
+- **Issue Tracker**: [GitHub Issues](https://github.com/tobyqin/tech-solutions/issues)
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+Last updated: 2025-01-17
