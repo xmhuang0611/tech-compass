@@ -1,15 +1,25 @@
 # Reference Links
 
-Below are some useful resources and tools for development and design:
+This document provides key references for the Tech Solutions (TSL) project.
 
-## Tools and Frameworks
+## Core Technologies
 
-- **[Zalando Tech Radar](https://opensource.zalando.com/tech-radar/):** A tool to visualize technology choices and their adoption levels within an organization.
-  
-- **[PrimeNG](https://primeng.org):** A rich set of open-source UI components for Angular applications.
+### Frontend
 
-- **[Angular](https://angular.dev):** A platform for building mobile and desktop web applications.
+- **[Angular](https://angular.dev)**
 
-- **[Streamlit](https://streamlit.io):** An open-source app framework for Machine Learning and Data Science projects.
+  - A platform for building mobile and desktop web applications
 
- PrimeNG Template Sakai https://github.com/primefaces/sakai-ng
+- **[PrimeNG](https://primeng.org)**
+  - A rich set of open-source UI components for Angular applications
+  - [Sakai Template](https://github.com/primefaces/sakai-ng) - Admin template
+
+### Admin Panel
+
+- **[Streamlit](https://streamlit.io)**
+  - An open-source app framework for Machine Learning and Data Science projects
+
+### Tech Radar
+
+- **[Zalando Tech Radar](https://opensource.zalando.com/tech-radar/)**
+  - A tool to visualize technology choices and their adoption levels within an organization
