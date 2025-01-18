@@ -540,6 +540,103 @@ Response:
 }
 ```
 
+### 2.8 Site Configuration
+
+#### Get Site Configuration
+
+```http
+GET /api/site-config
+```
+
+Response:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "site_name": "Tech Solutions Library",
+    "site_logo": "/assets/images/logo.png",
+    "site_headline": "Discover and Share Tech Solutions",
+    "support_team": "TSL Support Team",
+    "support_email": "support@techsolutions.com",
+    "about_info": "A comprehensive tech solutions library...",
+    "features": {
+      "enable_comments": true,
+      "enable_ratings": true
+    },
+    "meta": {
+      "title": "Tech Solutions Library",
+      "description": "Find the best tech solutions...",
+      "keywords": ["tech", "solutions"]
+    },
+    "created_at": "2025-01-18T03:46:15Z",
+    "updated_at": "2025-01-18T03:46:15Z"
+  }
+}
+```
+
+#### Update Site Configuration
+
+```http
+PUT /api/site-config
+```
+
+Request Body:
+
+```json
+{
+  "site_name": "Tech Solutions Library",
+  "site_logo": "/assets/images/logo.png",
+  "site_headline": "Discover and Share Tech Solutions",
+  "support_team": "TSL Support Team",
+  "support_email": "support@techsolutions.com",
+  "about_info": "A comprehensive tech solutions library...",
+  "features": {
+    "enable_comments": true,
+    "enable_ratings": true
+  },
+  "meta": {
+    "title": "Tech Solutions Library",
+    "description": "Find the best tech solutions...",
+    "keywords": ["tech", "solutions"]
+  }
+}
+```
+
+Response:
+
+```json
+{
+  "status": "success",
+  "data": {
+    "site_name": "Tech Solutions Library",
+    "site_logo": "/assets/images/logo.png",
+    "site_headline": "Discover and Share Tech Solutions",
+    "support_team": "TSL Support Team",
+    "support_email": "support@techsolutions.com",
+    "about_info": "A comprehensive tech solutions library...",
+    "features": {
+      "enable_comments": true,
+      "enable_ratings": true
+    },
+    "meta": {
+      "title": "Tech Solutions Library",
+      "description": "Find the best tech solutions...",
+      "keywords": ["tech", "solutions"]
+    },
+    "created_at": "2025-01-18T03:46:15Z",
+    "updated_at": "2025-01-18T03:46:15Z"
+  }
+}
+```
+
+Notes:
+- The GET endpoint is public and does not require authentication
+- The PUT endpoint requires admin authentication
+- Cache-Control headers are included to optimize UI performance:
+  - GET response includes: `Cache-Control: public, max-age=300`
+  - After PUT, cache is invalidated using cache-busting techniques
+
 ## 3. Security Considerations
 
 ### 3.1 Authentication and Authorization
