@@ -178,6 +178,33 @@ Stores additional information for solutions.
 | updated_at   | DateTime | Last update time        | "2024-03-16T14:20:00Z"                          |
 | updated_by   | ObjectId | User who updated        | "507f1f77bcf86cd799439013"                      |
 
+### 10. Site Configurations Collection
+
+Stores site-wide configuration settings.
+
+| Field         | Type          | Description                                | Example                                    |
+| ------------- | ------------- | ------------------------------------------ | ------------------------------------------ |
+| _id           | ObjectId      | Unique identifier                          | "507f1f77bcf86cd799439011"                |
+| site_name     | String        | Name of the site                          | "Tech Solutions Library"                   |
+| site_logo     | String        | URL or path to site logo                  | "/assets/images/logo.png"                  |
+| site_headline | String        | Main headline or tagline                  | "Discover and Share Tech Solutions"        |
+| support_team  | String        | Name of the support team                  | "TSL Support Team"                         |
+| support_email | String        | Support team email                        | "support@techsolutions.com"                |
+| about_info    | String        | Site description or about information      | "A comprehensive tech solutions library..." |
+| features      | Object        | Feature flags and configurations           | {                                          |
+|               |               |                                            |   "enable_comments": true,                 |
+|               |               |                                            |   "enable_ratings": true                   |
+|               |               |                                            | }                                          |
+| meta          | Object        | SEO and meta information                  | {                                          |
+|               |               |                                            |   "title": "Tech Solutions Library",       |
+|               |               |                                            |   "description": "Find the best tech...",  |
+|               |               |                                            |   "keywords": ["tech", "solutions"]        |
+|               |               |                                            | }                                          |
+| created_at    | DateTime      | Creation timestamp                         | "2025-01-18T03:42:37Z"                    |
+| created_by    | ObjectId      | Reference to users collection              | "507f1f77bcf86cd799439012"                |
+| updated_at    | DateTime      | Last update timestamp                      | "2025-01-18T03:42:37Z"                    |
+| updated_by    | ObjectId      | User who last updated                      | "507f1f77bcf86cd799439013"                |
+
 ## Indexes
 
 ### Required Indexes
@@ -220,6 +247,10 @@ Stores additional information for solutions.
 7. Links Collection:
    - solution_id
    - type
+
+8. Site Configurations Collection:
+   - site_name (unique)
+   - created_at
 
 ## Data Relationships
 
