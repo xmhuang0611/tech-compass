@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from datetime import datetime
 
 from app.models.common import AuditModel, PyObjectId
 
@@ -32,9 +33,14 @@ class UserUpdate(BaseModel):
         from_attributes=True
     )
 
-class UserInDB(UserBase, AuditModel):
+class UserInDB(UserBase):
     """User model as stored in database"""
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     hashed_password: str = Field(..., description="Hashed password")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = Field(None, description="Username who created")
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: Optional[str] = Field(None, description="Username who last updated")
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -42,10 +48,32 @@ class UserInDB(UserBase, AuditModel):
         from_attributes=True
     )
 
-class User(UserInDB):
-    """User model for API responses"""
+class User(BaseModel):
+    """User model for API responses - excludes password fields"""
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    email: EmailStr = Field(..., description="User's email address")
+    username: str = Field(..., description="Username for login")
+    full_name: str = Field(..., description="User's full name")
+    is_active: bool = Field(default=True, description="Whether the user is active")
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = Field(None, description="Username who created")
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: Optional[str] = Field(None, description="Username who last updated")
+
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
-        from_attributes=True
+        from_attributes=True,
+        json_encoders={PyObjectId: str}
+    )
+
+class UserList(BaseModel):
+    """API response model for list of users"""
+    users: list[User]
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={PyObjectId: str}
     )
