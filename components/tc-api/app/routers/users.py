@@ -16,7 +16,6 @@ async def read_user_me(
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
-    current_user: User = Depends(get_current_active_user),
     user_service: UserService = Depends()
 ) -> Any:
     """Create a new user."""
