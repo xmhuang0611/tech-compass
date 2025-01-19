@@ -18,7 +18,7 @@ async def create_solution(
 ) -> Any:
     """Create a new solution."""
     try:
-        return await solution_service.create_solution(solution, str(current_user.id))
+        return await solution_service.create_solution(solution, current_user.username)
     except Exception as e:
         logger.error(f"Error creating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating solution: {str(e)}")
@@ -75,7 +75,7 @@ async def update_solution(
 ) -> Any:
     """Update a solution by slug."""
     try:
-        solution = await solution_service.update_solution_by_slug(slug, solution_update, str(current_user.id))
+        solution = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
         if not solution:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

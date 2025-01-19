@@ -76,9 +76,9 @@ class SolutionInDB(SolutionBase):
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: Optional[PyObjectId] = None
+    created_by: Optional[str] = Field(None, description="Username who created")
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_by: Optional[PyObjectId] = None
+    updated_by: Optional[str] = Field(None, description="Username who last updated")
 
     class Config:
         populate_by_name = True

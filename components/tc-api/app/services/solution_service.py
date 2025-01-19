@@ -24,13 +24,13 @@ class SolutionService:
         self.collection = self.db.solutions
         self.category_service = CategoryService()
 
-    async def create_solution(self, solution: SolutionCreate, user_id: Optional[str] = None) -> SolutionInDB:
+    async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
         solution_dict = solution.dict(exclude_unset=True)
         
         # Handle category creation if provided
         if solution.category:
-            category = await self.category_service.get_or_create_category(solution.category, user_id)
+            category = await self.category_service.get_or_create_category(solution.category, username)
             solution_dict["category_id"] = category.id
             # Keep category name in the response
             solution_dict["category"] = solution.category
@@ -41,9 +41,9 @@ class SolutionService:
             
         solution_dict["created_at"] = datetime.utcnow()
         solution_dict["updated_at"] = datetime.utcnow()
-        if user_id:
-            solution_dict["created_by"] = ObjectId(user_id)
-            solution_dict["updated_by"] = ObjectId(user_id)
+        if username:
+            solution_dict["created_by"] = username
+            solution_dict["updated_by"] = username
 
         result = await self.collection.insert_one(solution_dict)
         return await self.get_solution_by_id(str(result.inserted_id))
@@ -124,14 +124,14 @@ class SolutionService:
         self,
         solution_id: str,
         solution_update: SolutionUpdate,
-        user_id: Optional[str] = None
+        username: Optional[str] = None
     ) -> Optional[SolutionInDB]:
         """Update a solution"""
         update_dict = solution_update.dict(exclude_unset=True)
         
         # Handle category update
         if "category" in update_dict:
-            category = await self.category_service.get_or_create_category(update_dict["category"], user_id)
+            category = await self.category_service.get_or_create_category(update_dict["category"], username)
             update_dict["category_id"] = category.id
             # Keep category name in the response
             update_dict["category"] = update_dict["category"]
@@ -142,8 +142,8 @@ class SolutionService:
             update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
 
         update_dict["updated_at"] = datetime.utcnow()
-        if user_id:
-            update_dict["updated_by"] = ObjectId(user_id)
+        if username:
+            update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
             {"_id": ObjectId(solution_id)},
@@ -157,13 +157,13 @@ class SolutionService:
         self,
         slug: str,
         solution_update: SolutionUpdate,
-        user_id: Optional[str] = None
+        username: Optional[str] = None
     ) -> Optional[SolutionInDB]:
         """Update a solution by slug"""
         solution = await self.get_solution_by_slug(slug)
         if not solution:
             return None
-        return await self.update_solution(str(solution.id), solution_update, user_id)
+        return await self.update_solution(str(solution.id), solution_update, username)
 
     async def delete_solution(self, solution_id: str) -> bool:
         """Delete a solution"""
