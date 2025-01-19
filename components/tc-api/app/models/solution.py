@@ -9,9 +9,8 @@ from app.models.common import PyObjectId
 # Stage values as defined in db-design.md
 StageEnum = Literal[
     "DEVELOPING",   # Solution is under active development
-    "RC",          # Release Candidate
-    "EOVS",        # End of Vendor Support
-    "ACTIVE",      # Actively used in production
+    "UAT",          # Release Candidate
+    "PRODUCTION",      # Actively used in production
     "DEPRECATED",  # No longer recommended for new projects
     "RETIRED"      # Completely phased out
 ]
