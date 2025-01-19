@@ -14,7 +14,10 @@ async def create_tag(
     tag_service: TagService = Depends()
 ) -> Any:
     """Create a new tag."""
-    return await tag_service.create_tag(tag)
+    try:
+        return await tag_service.create_tag(tag, current_user.username)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/", response_model=dict)
 async def get_tags(
@@ -54,13 +57,16 @@ async def update_tag(
     tag_service: TagService = Depends()
 ) -> Any:
     """Update a tag."""
-    tag = await tag_service.update_tag(tag_id, tag_update)
-    if not tag:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found"
-        )
-    return tag
+    try:
+        tag = await tag_service.update_tag(tag_id, tag_update, current_user.username)
+        if not tag:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tag not found"
+            )
+        return tag
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag(

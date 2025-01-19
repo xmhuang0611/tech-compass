@@ -14,7 +14,10 @@ async def create_category(
     category_service: CategoryService = Depends()
 ) -> Any:
     """Create a new category."""
-    return await category_service.create_category(category)
+    try:
+        return await category_service.create_category(category, current_user.username)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/", response_model=dict)
 async def get_categories(
@@ -54,13 +57,16 @@ async def update_category(
     category_service: CategoryService = Depends()
 ) -> Any:
     """Update a category."""
-    category = await category_service.update_category(category_id, category_update)
-    if not category:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
-    return category
+    try:
+        category = await category_service.update_category(category_id, category_update, current_user.username)
+        if not category:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Category not found"
+            )
+        return category
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(

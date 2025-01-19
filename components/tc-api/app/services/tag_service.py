@@ -10,7 +10,7 @@ class TagService:
         self.db = get_database()
         self.collection = self.db.tags
 
-    async def create_tag(self, tag: TagCreate, user_id: Optional[str] = None) -> TagInDB:
+    async def create_tag(self, tag: TagCreate, username: Optional[str] = None) -> TagInDB:
         """Create a new tag"""
         # Check if tag already exists
         existing_tag = await self.get_tag_by_name(tag.name)
@@ -21,9 +21,9 @@ class TagService:
         tag_dict["created_at"] = datetime.utcnow()
         tag_dict["updated_at"] = datetime.utcnow()
         tag_dict["usage_count"] = 0
-        if user_id:
-            tag_dict["created_by"] = ObjectId(user_id)
-            tag_dict["updated_by"] = ObjectId(user_id)
+        if username:
+            tag_dict["created_by"] = username
+            tag_dict["updated_by"] = username
 
         result = await self.collection.insert_one(tag_dict)
         return await self.get_tag_by_id(str(result.inserted_id))
@@ -79,7 +79,7 @@ class TagService:
         self,
         tag_id: str,
         tag_update: TagUpdate,
-        user_id: Optional[str] = None
+        username: Optional[str] = None
     ) -> Optional[TagInDB]:
         """Update a tag"""
         update_dict = tag_update.dict(exclude_unset=True)
@@ -91,8 +91,8 @@ class TagService:
                 raise ValueError("Tag name is already in use")
 
         update_dict["updated_at"] = datetime.utcnow()
-        if user_id:
-            update_dict["updated_by"] = ObjectId(user_id)
+        if username:
+            update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
             {"_id": ObjectId(tag_id)},
@@ -143,3 +143,7 @@ class TagService:
             {"$pull": {"tags": ObjectId(tag_id)}}
         )
         return result.modified_count > 0
+
+    async def count_tags(self) -> int:
+        """Get total number of tags"""
+        return await self.collection.count_documents({})

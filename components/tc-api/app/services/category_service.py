@@ -10,14 +10,19 @@ class CategoryService:
         self.db = get_database()
         self.collection = self.db.categories
 
-    async def create_category(self, category: CategoryCreate, user_id: Optional[str] = None) -> CategoryInDB:
+    async def create_category(self, category: CategoryCreate, username: Optional[str] = None) -> CategoryInDB:
         """Create a new category"""
+        # Check if category already exists
+        existing = await self.get_category_by_name(category.name)
+        if existing:
+            raise ValueError("Category already exists")
+
         category_dict = category.dict()
         category_dict["created_at"] = datetime.utcnow()
         category_dict["updated_at"] = datetime.utcnow()
-        if user_id:
-            category_dict["created_by"] = ObjectId(user_id)
-            category_dict["updated_by"] = ObjectId(user_id)
+        if username:
+            category_dict["created_by"] = username
+            category_dict["updated_by"] = username
 
         result = await self.collection.insert_one(category_dict)
         return await self.get_category_by_id(str(result.inserted_id))
@@ -46,16 +51,28 @@ class CategoryService:
         """Get total number of categories"""
         return await self.collection.count_documents({})
 
-    async def update_category(self, category_id: str, category_update: CategoryUpdate, user_id: Optional[str] = None) -> Optional[CategoryInDB]:
+    async def update_category(
+        self,
+        category_id: str,
+        category_update: CategoryUpdate,
+        username: Optional[str] = None
+    ) -> Optional[CategoryInDB]:
         """Update a category"""
-        category_dict = category_update.dict(exclude_unset=True)
-        category_dict["updated_at"] = datetime.utcnow()
-        if user_id:
-            category_dict["updated_by"] = ObjectId(user_id)
+        update_dict = category_update.dict(exclude_unset=True)
+        
+        # Check name uniqueness if being updated
+        if "name" in update_dict:
+            existing = await self.get_category_by_name(update_dict["name"])
+            if existing and str(existing.id) != category_id:
+                raise ValueError("Category name is already in use")
+
+        update_dict["updated_at"] = datetime.utcnow()
+        if username:
+            update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
             {"_id": ObjectId(category_id)},
-            {"$set": category_dict}
+            {"$set": update_dict}
         )
         if result.modified_count:
             return await self.get_category_by_id(category_id)
@@ -66,15 +83,15 @@ class CategoryService:
         result = await self.collection.delete_one({"_id": ObjectId(category_id)})
         return result.deleted_count > 0
 
-    async def get_or_create_category(self, name: str, user_id: Optional[str] = None) -> CategoryInDB:
+    async def get_or_create_category(self, name: str, username: Optional[str] = None) -> CategoryInDB:
         """Get a category by name or create it if it doesn't exist"""
-        category = await self.get_category_by_name(name)
-        if category:
-            return category
-            
-        # Create new category if it doesn't exist
-        new_category = CategoryCreate(
+        existing = await self.get_category_by_name(name)
+        if existing:
+            return existing
+        
+        # Create new category with minimal info
+        category = CategoryCreate(
             name=name,
-            description=f"Auto-generated category for {name}"
+            description=f"Category for {name}"
         )
-        return await self.create_category(new_category, user_id)
+        return await self.create_category(category, username)
