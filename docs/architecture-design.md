@@ -2,7 +2,7 @@
 
 ## 1. System Overview
 
-Tech Solutions (TSL) is a platform designed to showcase and manage technical solutions for small to medium-sized enterprises. The platform facilitates the comparison, evaluation, and documentation of various technical solutions used in software development.
+Tech Compass (TC) is a platform designed to showcase and manage technical solutions for small to medium-sized enterprises. The platform facilitates the comparison, evaluation, and documentation of various technical solutions used in software development.
 
 ## 2. Architecture Goals and Constraints
 
@@ -25,24 +25,24 @@ Tech Solutions (TSL) is a platform designed to showcase and manage technical sol
 
 The system consists of four main applications:
 
-1. **TSL UI (apps/tsl-ui)**
+1. **TC UI (apps/tc-ui)**
 
    - Frontend application built with Angular + PrimeNG
    - Provides user interface for all main functionalities
    - Implements responsive design for various devices
 
-2. **TSL API (apps/tsl-api)**
+2. **TC API (apps/tc-api)**
 
    - Backend service built with Python FastAPI
    - Handles all data operations and business logic
    - Provides RESTful API endpoints
 
-3. **TSL Streamlit (apps/tsl-streamlit)**
+3. **TC Admin (apps/tc-admin)**
 
    - Simple admin dashboard built with Python Streamlit
    - Provides administrative functions for data management
 
-4. **TSL Radar (apps/tsl-radar)**
+4. **TC Radar (apps/tc-radar)**
    - Technology radar visualization component
    - Based on open-source technology radar implementation
 
