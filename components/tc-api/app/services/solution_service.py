@@ -7,22 +7,16 @@ from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
 from app.services.category_service import CategoryService
 from app.core.database import get_database
 
-def generate_slug(name: str, department: str, team: str) -> str:
-    """Generate a URL-friendly slug from department, team and name
-    Format: {department}-{team}-{name}
-    Example: engineering-cloud-infrastructure-docker
+def generate_slug(name: str) -> str:
+    """Generate a URL-friendly slug from solution name
+    Format: {name}
+    Example: docker
     """
-    # Convert all parts to lowercase and replace spaces/special chars with hyphens
-    department_slug = re.sub(r'[^\w\s-]', '', department.lower())
-    team_slug = re.sub(r'[^\w\s-]', '', team.lower())
+    # Convert to lowercase and replace spaces/special chars with hyphens
     name_slug = re.sub(r'[^\w\s-]', '', name.lower())
-    
     # Replace spaces and multiple hyphens with single hyphen
-    department_slug = re.sub(r'[-\s]+', '-', department_slug).strip('-')
-    team_slug = re.sub(r'[-\s]+', '-', team_slug).strip('-')
     name_slug = re.sub(r'[-\s]+', '-', name_slug).strip('-')
-    
-    return f"{department_slug}-{team_slug}-{name_slug}"
+    return name_slug
 
 class SolutionService:
     def __init__(self):
@@ -42,11 +36,7 @@ class SolutionService:
             solution_dict["category"] = solution.category
         
         # Generate and ensure unique slug
-        base_slug = generate_slug(
-            name=solution_dict["name"],
-            department=solution_dict["department"],
-            team=solution_dict["team"]
-        )
+        base_slug = generate_slug(solution_dict["name"])
         solution_dict["slug"] = await self.ensure_unique_slug(base_slug)
             
         solution_dict["created_at"] = datetime.utcnow()
@@ -146,17 +136,10 @@ class SolutionService:
             # Keep category name in the response
             update_dict["category"] = update_dict["category"]
 
-        # Handle slug update if name, department or team changes
-        needs_new_slug = any(field in update_dict for field in ["name", "department", "team"])
-        if needs_new_slug:
-            # Get current solution to merge with updates
-            current = await self.get_solution_by_id(solution_id)
-            if current:
-                name = update_dict.get("name", current.name)
-                department = update_dict.get("department", current.department)
-                team = update_dict.get("team", current.team)
-                base_slug = generate_slug(name=name, department=department, team=team)
-                update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
+        # Handle slug update if name changes
+        if "name" in update_dict:
+            base_slug = generate_slug(update_dict["name"])
+            update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
 
         update_dict["updated_at"] = datetime.utcnow()
         if user_id:
