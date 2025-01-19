@@ -3,7 +3,7 @@ from typing import List, Optional
 from bson import ObjectId
 from fastapi import HTTPException, status
 from app.core.security import get_password_hash, verify_password
-from app.db.mongodb import get_database
+from app.core.mongodb import get_database
 from app.models.user import User, UserCreate, UserUpdate
 
 class UserService:
