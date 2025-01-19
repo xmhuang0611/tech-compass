@@ -11,7 +11,7 @@ class PyObjectId(ObjectId):
         yield cls.validate
 
     @classmethod
-    def validate(cls, v):
+    def validate(cls, v, info):
         if not ObjectId.is_valid(v):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
@@ -19,9 +19,11 @@ class PyObjectId(ObjectId):
     @classmethod
     def __get_pydantic_json_schema__(cls, core_schema: Any, handler: Any) -> JsonSchemaValue:
         """Customize JSON schema for ObjectId"""
-        json_schema = handler(core_schema)
-        json_schema.update(type="string")
-        return json_schema
+        return {
+            'type': 'string',
+            'description': 'MongoDB ObjectId',
+            'pattern': '^[0-9a-fA-F]{24}$'
+        }
 
 class AuditModel(BaseModel):
     """Base model with audit fields"""

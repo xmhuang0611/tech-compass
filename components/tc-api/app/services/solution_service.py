@@ -6,6 +6,10 @@ from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
 from app.services.category_service import CategoryService
 from app.core.database import get_database
 
+def generate_slug(name: str) -> str:
+    """Generate a URL-friendly slug from a name"""
+    return name.lower().replace(" ", "-")
+
 class SolutionService:
     def __init__(self):
         self.db = get_database()
@@ -20,6 +24,11 @@ class SolutionService:
             solution.category_id = category.id
 
         solution_dict = solution.dict(exclude_unset=True)
+        
+        # Generate slug if not provided
+        if "slug" not in solution_dict:
+            solution_dict["slug"] = generate_slug(solution_dict["name"])
+            
         solution_dict["created_at"] = datetime.utcnow()
         solution_dict["updated_at"] = datetime.utcnow()
         if user_id:

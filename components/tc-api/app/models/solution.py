@@ -8,6 +8,7 @@ from app.models.common import PyObjectId
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., description="Solution name")
+    slug: str = Field(..., description="URL-friendly identifier")
     description: str = Field(..., description="Detailed description")
     category: Optional[str] = Field(None, description="Primary category")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
