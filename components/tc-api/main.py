@@ -5,6 +5,7 @@ from app.core.mongodb import connect_to_mongo, close_mongo_connection
 from app.routers import api_router
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 # Configure logging
 logging.basicConfig(
@@ -13,10 +14,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    await connect_to_mongo()
+    yield
+    # Shutdown
+    await close_mongo_connection()
+
 app = FastAPI(
     title="Tech Solutions API",
     description="API for managing technical solutions and documentation",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -27,15 +37,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Add event handlers for database connection
-@app.on_event("startup")
-async def startup_db_client():
-    await connect_to_mongo()
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    await close_mongo_connection()
 
 # Include routers
 app.include_router(api_router, prefix="/api")

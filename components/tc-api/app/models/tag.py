@@ -23,7 +23,7 @@ class TagInDB(TagBase, AuditModel):
     usage_count: int = Field(default=0, description="Number of solutions using this tag")
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {
             datetime: lambda dt: dt.isoformat(),
@@ -39,7 +39,7 @@ class TagList(BaseModel):
     tags: list[Tag]
 
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {
             datetime: lambda dt: dt.isoformat(),
