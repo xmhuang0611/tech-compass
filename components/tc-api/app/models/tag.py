@@ -40,7 +40,7 @@ class Tag(TagInDB):
 
 class TagList(BaseModel):
     """API response model for list of tags"""
-    tags: list[Tag]
+    tags: list[TagInDB]
 
     class Config:
         populate_by_name = True
