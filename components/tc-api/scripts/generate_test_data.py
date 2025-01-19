@@ -142,7 +142,7 @@ async def create_test_data():
         categories = []
         for category_data in CATEGORIES:
             try:
-                response = await client.post("/api/categories/categories/", json=category_data, headers=headers)
+                response = await client.post("/api/categories/", json=category_data, headers=headers)
                 response.raise_for_status()
                 category = response.json()
                 categories.append(category)

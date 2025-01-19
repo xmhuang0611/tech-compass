@@ -12,7 +12,7 @@ async def test_create_tag(test_client, test_token, test_db):
     }
     
     response = test_client.post(
-        "/api/v1/tags/",
+        "/api/tags/",
         json=tag_data,
         headers={"Authorization": f"Bearer {test_token}"}
     )
@@ -42,7 +42,7 @@ async def test_get_tags(test_client, test_token, test_db):
         await test_db.tags.insert_one(tag)
     
     response = test_client.get(
-        "/api/v1/tags/",
+        "/api/tags/",
         headers={"Authorization": f"Bearer {test_token}"}
     )
     
@@ -65,7 +65,7 @@ async def test_get_tag(test_client, test_token, test_db):
     tag_id = str(result.inserted_id)
     
     response = test_client.get(
-        f"/api/v1/tags/{tag_id}",
+        f"/api/tags/{tag_id}",
         headers={"Authorization": f"Bearer {test_token}"}
     )
     
@@ -93,7 +93,7 @@ async def test_update_tag(test_client, test_token, test_db):
     }
     
     response = test_client.put(
-        f"/api/v1/tags/{tag_id}",
+        f"/api/tags/{tag_id}",
         json=update_data,
         headers={"Authorization": f"Bearer {test_token}"}
     )
@@ -122,7 +122,7 @@ async def test_delete_tag(test_client, test_token, test_db):
     tag_id = str(result.inserted_id)
     
     response = test_client.delete(
-        f"/api/v1/tags/{tag_id}",
+        f"/api/tags/{tag_id}",
         headers={"Authorization": f"Bearer {test_token}"}
     )
     
@@ -157,7 +157,7 @@ async def test_tag_usage_count(test_client, test_token, test_db):
     
     # Get tag and verify usage count
     response = test_client.get(
-        f"/api/v1/tags/{tag_id}",
+        f"/api/tags/{tag_id}",
         headers={"Authorization": f"Bearer {test_token}"}
     )
     

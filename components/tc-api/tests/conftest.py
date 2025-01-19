@@ -2,7 +2,7 @@ import asyncio
 import pytest
 from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi.testclient import TestClient
-from app.main import app
+from main import app
 from app.core.config import settings
 from app.core.security import get_password_hash
 from datetime import datetime
@@ -68,11 +68,16 @@ async def test_user(test_db):
 async def test_token(test_client, test_user):
     """Get a test token."""
     response = test_client.post(
-        "/api/v1/auth/login",
+        "/api/auth/login",
         data={
+            "grant_type": "password",
             "username": test_user["username"],
-            "password": "testpass123"
-        }
+            "password": "testpass123",
+            "scope": "",
+            "client_id": "",
+            "client_secret": ""
+        },
+        headers={"Content-Type": "application/x-www-form-urlencoded"}
     )
     assert response.status_code == 200, f"Login failed: {response.json()}"
     return response.json()["access_token"]

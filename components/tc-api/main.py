@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import logging
 import uvicorn
-from app.api.v1.api import api_router
+from app.routers import api_router
 from app.db.mongodb import connect_to_mongo, close_mongo_connection
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
