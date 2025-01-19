@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
-from app.models.common import PyObjectId, AuditModel
+from app.models.common import PyObjectId
 
 class TagBase(BaseModel):
     """Base tag model"""
@@ -17,9 +17,13 @@ class TagUpdate(TagBase):
     name: Optional[str] = None
     description: Optional[str] = None
 
-class TagInDB(TagBase, AuditModel):
+class TagInDB(TagBase):
     """Model for tag in database"""
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_by: Optional[str] = Field(None, description="Username who created")
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_by: Optional[str] = Field(None, description="Username who last updated")
     usage_count: int = Field(default=0, description="Number of solutions using this tag")
 
     class Config:

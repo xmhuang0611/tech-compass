@@ -25,9 +25,9 @@ class CategoryInDB(CategoryBase):
     """Category model as stored in database"""
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: Optional[PyObjectId] = None
+    created_by: Optional[str] = Field(None, description="Username who created")
     updated_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_by: Optional[PyObjectId] = None
+    updated_by: Optional[str] = Field(None, description="Username who last updated")
 
     class Config:
         populate_by_name = True
