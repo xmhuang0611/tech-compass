@@ -2,14 +2,14 @@
 
 ## Overview
 
-This document details the API design for the Tech Solutions (TSL) platform. The API follows RESTful principles and uses JSON for data exchange.
+This document details the API design for the Tech Compass (TC) platform. The API follows RESTful principles and uses JSON for data exchange.
 
 ## 1. General Specifications
 
 ### 1.1 Base URL
 
 - Development: `http://localhost:8000/api`
-- Production: `https://api.techsolutions.com/api`
+- Production: `https://api.techcompass.com/api`
 
 ### 1.2 Standard Response Format
 
@@ -608,18 +608,18 @@ Response:
 {
   "status": "success",
   "data": {
-    "site_name": "Tech Solutions Library",
+    "site_name": "Tech Compass Library",
     "site_logo": "/assets/images/logo.png",
     "site_headline": "Discover and Share Tech Solutions",
-    "support_team": "TSL Support Team",
-    "support_email": "support@techsolutions.com",
+    "support_team": "TCL Support Team",
+    "support_email": "support@techcompass.com",
     "about_info": "A comprehensive tech solutions library...",
     "features": {
       "enable_comments": true,
       "enable_ratings": true
     },
     "meta": {
-      "title": "Tech Solutions Library",
+      "title": "Tech Compass Library",
       "description": "Find the best tech solutions...",
       "keywords": ["tech", "solutions"]
     },
@@ -639,18 +639,18 @@ Request Body:
 
 ```json
 {
-  "site_name": "Tech Solutions Library",
+  "site_name": "Tech Compass Library",
   "site_logo": "/assets/images/logo.png",
   "site_headline": "Discover and Share Tech Solutions",
-  "support_team": "TSL Support Team",
-  "support_email": "support@techsolutions.com",
+  "support_team": "TCL Support Team",
+  "support_email": "support@techcompass.com",
   "about_info": "A comprehensive tech solutions library...",
   "features": {
     "enable_comments": true,
     "enable_ratings": true
   },
   "meta": {
-    "title": "Tech Solutions Library",
+    "title": "Tech Compass Library",
     "description": "Find the best tech solutions...",
     "keywords": ["tech", "solutions"]
   }
@@ -663,18 +663,18 @@ Response:
 {
   "status": "success",
   "data": {
-    "site_name": "Tech Solutions Library",
+    "site_name": "Tech Compass Library",
     "site_logo": "/assets/images/logo.png",
     "site_headline": "Discover and Share Tech Solutions",
-    "support_team": "TSL Support Team",
-    "support_email": "support@techsolutions.com",
+    "support_team": "TCL Support Team",
+    "support_email": "support@techcompass.com",
     "about_info": "A comprehensive tech solutions library...",
     "features": {
       "enable_comments": true,
       "enable_ratings": true
     },
     "meta": {
-      "title": "Tech Solutions Library",
+      "title": "Tech Compass Library",
       "description": "Find the best tech solutions...",
       "keywords": ["tech", "solutions"]
     },

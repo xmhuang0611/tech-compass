@@ -1,6 +1,6 @@
-# TSL API
+# TC API
 
-Backend service for Tech Solutions (TSL) platform built with FastAPI.
+Backend service for Tech Compass (TC) platform built with FastAPI.
 
 ## Features
 
@@ -32,7 +32,7 @@ cp .env.example .env
 4. Update the `.env` file with your settings:
 ```env
 MONGODB_URL=your_mongodb_connection_string
-DATABASE_NAME=tsl
+DATABASE_NAME=tc
 JWT_SECRET_KEY=your-secret-key
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440

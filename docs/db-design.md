@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document details the MongoDB collections and their schemas for the Tech Solutions (TSL) platform. All collections use MongoDB's default `_id` field as the primary key.
+This document details the MongoDB collections and their schemas for the Tech Compass (TC) platform. All collections use MongoDB's default `_id` field as the primary key.
 
 ## Audit Fields
 
@@ -186,18 +186,18 @@ Stores site-wide configuration settings.
 | Field         | Type          | Description                                | Example                                    |
 | ------------- | ------------- | ------------------------------------------ | ------------------------------------------ |
 | _id           | ObjectId      | Unique identifier                          | "507f1f77bcf86cd799439011"                |
-| site_name     | String        | Name of the site                          | "Tech Solutions Library"                   |
+| site_name     | String        | Name of the site                          | "Tech Compass Library"                   |
 | site_logo     | String        | URL or path to site logo                  | "/assets/images/logo.png"                  |
 | site_headline | String        | Main headline or tagline                  | "Discover and Share Tech Solutions"        |
 | support_team  | String        | Name of the support team                  | "TSL Support Team"                         |
-| support_email | String        | Support team email                        | "support@techsolutions.com"                |
+| support_email | String        | Support team email                        | "support@techcompass.com"                |
 | about_info    | String        | Site description or about information      | "A comprehensive tech solutions library..." |
 | features      | Object        | Feature flags and configurations           | {                                          |
 |               |               |                                            |   "enable_comments": true,                 |
 |               |               |                                            |   "enable_ratings": true                   |
 |               |               |                                            | }                                          |
 | meta          | Object        | SEO and meta information                  | {                                          |
-|               |               |                                            |   "title": "Tech Solutions Library",       |
+|               |               |                                            |   "title": "Tech Compass Library",       |
 |               |               |                                            |   "description": "Find the best tech...",  |
 |               |               |                                            |   "keywords": ["tech", "solutions"]        |
 |               |               |                                            | }                                          |

@@ -1,9 +1,14 @@
-# Tech Solutions (TSL)
+# Tech Compass (TC)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
-A platform for showcasing and managing technical solutions within organizations. Tech Solutions helps development teams discover, compare, and evaluate various tools, processes, and practices used in software development.
+A platform for discovering, evaluating, and sharing technology solutions within your organization. Tech Compass helps teams make informed decisions about technology choices by providing:
+- A centralized catalog of technology solutions
+- Detailed evaluations and recommendations
+- Team and department-specific insights
+- Usage statistics and ratings
+- Technical documentation and best practices
 
 ## 🌟 Features
 
@@ -32,10 +37,10 @@ A platform for showcasing and managing technical solutions within organizations.
 
 The project follows a microservices architecture with the following components:
 
-- `components/tsl-ui`: Frontend application built with Angular + PrimeNG
-- `components/tsl-api`: Backend API service built with Python FastAPI
-- `components/tsl-admin`: Admin panel built with Python Streamlit
-- `components/tsl-radar`: Technology radar visualization
+- `components/tc-api`: Backend API service built with Python FastAPI
+- `components/tc-web`: Frontend web application built with Angular + PrimeNG
+- `components/tc-admin`: Admin panel built with Python Streamlit
+- `components/tc-radar`: Technology radar visualization
 
 ## 🛠️ Tech Stack
 
@@ -68,14 +73,14 @@ The project follows a microservices architecture with the following components:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/tobyqin/tech-solutions.git
-cd tech-solutions
+git clone https://github.com/tobyqin/tech-compass.git
+cd tech-compass
 ```
 
 2. **Backend Setup**
 
 ```bash
-cd components/tsl-api
+cd components/tc-api
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -90,7 +95,7 @@ python main.py
 3. **Frontend Setup**
 
 ```bash
-cd components/tsl-ui
+cd components/tc-web
 npm install
 
 # Configure environment
@@ -103,7 +108,7 @@ ng serve
 4. **Admin Panel Setup**
 
 ```bash
-cd components/tsl-admin
+cd components/tc-admin
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -118,7 +123,7 @@ streamlit run app.py
 5. **Tech Radar Setup**
 
 ```bash
-cd components/tsl-radar
+cd components/tc-radar
 npm install
 npm start
 ```
@@ -148,11 +153,11 @@ docker-compose up -d
 
 ```bash
 # Backend tests
-cd components/tsl-api
+cd components/tc-api
 pytest
 
 # Frontend tests
-cd components/tsl-ui
+cd components/tc-web
 ng test
 ```
 
@@ -163,7 +168,7 @@ We welcome contributions! Please search existing issues before creating new ones
 ## 📫 Contact
 
 - **Project Lead**: Toby Qin
-- **Issue Tracker**: [GitHub Issues](https://github.com/tobyqin/tech-solutions/issues)
+- **Issue Tracker**: [GitHub Issues](https://github.com/tobyqin/tech-compass/issues)
 
 ## 📄 License
 

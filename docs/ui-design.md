@@ -1,6 +1,6 @@
 ## Overview
 
-The Tech Solutions Library (TSL) is a desktop-first web application designed to help teams discover, evaluate, and share technology solutions. The UI design emphasizes professionalism, clarity, and efficiency, targeting technical professionals in enterprise environments.
+The Tech Compass Library (TCL) is a desktop-first web application designed to help teams discover, evaluate, and share technology solutions. The UI design emphasizes professionalism, clarity, and efficiency, targeting technical professionals in enterprise environments.
 
 ## Design Philosophy
 
