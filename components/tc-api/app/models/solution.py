@@ -1,10 +1,27 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Literal
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator
 import re
 
 from app.models.common import PyObjectId
+
+# Stage values as defined in db-design.md
+StageEnum = Literal[
+    "DEVELOPING",   # Solution is under active development
+    "RC",          # Release Candidate
+    "EOVS",        # End of Vendor Support
+    "ACTIVE",      # Actively used in production
+    "DEPRECATED",  # No longer recommended for new projects
+    "RETIRED"      # Completely phased out
+]
+
+# Recommend status values as defined in db-design.md
+RecommendStatusEnum = Literal[
+    "BUY",    # Recommended for new projects and expansion
+    "HOLD",   # Maintain existing usage, but don't expand
+    "SELL"    # Plan for replacement/retirement
+]
 
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
@@ -21,8 +38,8 @@ class SolutionBase(BaseModel):
     version: Optional[str] = Field(None, description="Current version")
     pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
-    development_status: Optional[str] = Field(None, description="Development phase status")
-    recommend_status: Optional[str] = Field(None, description="Strategic recommendation")
+    stage: Optional[StageEnum] = Field(None, description="Development stage status")
+    recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (BUY/HOLD/SELL)")
 
 class SolutionCreate(SolutionBase):
     """Solution creation model"""
@@ -43,8 +60,8 @@ class SolutionUpdate(BaseModel):
     version: Optional[str] = None
     pros: Optional[List[str]] = None
     cons: Optional[List[str]] = None
-    development_status: Optional[str] = None
-    recommend_status: Optional[str] = None
+    stage: Optional[StageEnum] = None
+    recommend_status: Optional[RecommendStatusEnum] = None
 
 class SolutionInDB(SolutionBase):
     """Solution model as stored in database"""
