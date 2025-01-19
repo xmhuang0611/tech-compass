@@ -1,86 +1,104 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.api.deps import get_db, get_current_active_user
-from app.db.models import Tag
-from bson import ObjectId
+from fastapi import APIRouter, Depends, HTTPException, Query
+from app.models.tag import Tag, TagCreate, TagUpdate
+from app.services.tag_service import TagService
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
 @router.get("/", response_model=List[Tag])
 async def list_tags(
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    tag_service: TagService = Depends()
 ):
-    """
-    List all tags.
-    """
-    cursor = db.tags.find()
-    tags = await cursor.to_list(length=100)
-    return tags
+    """List all tags with pagination"""
+    return await tag_service.get_tags(skip=skip, limit=limit)
 
 @router.post("/", response_model=Tag)
 async def create_tag(
-    tag: Tag,
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+    tag: TagCreate,
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends()
 ):
-    """
-    Create a new tag.
-    """
-    tag.created_by = str(current_user["_id"])
-    tag.updated_by = str(current_user["_id"])
-    
-    # Check if tag already exists
-    existing_tag = await db.tags.find_one({"name": tag.name})
-    if existing_tag:
-        raise HTTPException(status_code=400, detail="Tag already exists")
-    
-    result = await db.tags.insert_one(tag.dict())
-    created_tag = await db.tags.find_one({"_id": result.inserted_id})
-    return created_tag
+    """Create a new tag"""
+    try:
+        return await tag_service.create_tag(tag, current_user.get("id"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/{tag_id}", response_model=Tag)
+async def get_tag(
+    tag_id: str,
+    tag_service: TagService = Depends()
+):
+    """Get a specific tag by ID"""
+    tag = await tag_service.get_tag_by_id(tag_id)
+    if not tag:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    return tag
 
 @router.put("/{tag_id}", response_model=Tag)
 async def update_tag(
     tag_id: str,
-    tag_update: Tag,
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+    tag_update: TagUpdate,
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends()
 ):
-    """
-    Update a tag.
-    """
-    tag_update.updated_by = str(current_user["_id"])
-    update_data = tag_update.dict(exclude_unset=True)
-    
-    result = await db.tags.update_one(
-        {"_id": ObjectId(tag_id)},
-        {"$set": update_data}
-    )
-    
-    if result.modified_count == 0:
-        raise HTTPException(status_code=404, detail="Tag not found")
-        
-    updated_tag = await db.tags.find_one({"_id": ObjectId(tag_id)})
-    return updated_tag
+    """Update a tag"""
+    try:
+        tag = await tag_service.update_tag(tag_id, tag_update, current_user.get("id"))
+        if not tag:
+            raise HTTPException(status_code=404, detail="Tag not found")
+        return tag
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/{tag_id}")
 async def delete_tag(
     tag_id: str,
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends()
 ):
-    """
-    Delete a tag.
-    """
-    # Check if tag is being used by any solutions
-    solutions_using_tag = await db.solutions.find_one({"tags": tag_id})
-    if solutions_using_tag:
-        raise HTTPException(
-            status_code=400, 
-            detail="Cannot delete tag as it is being used by solutions"
-        )
-    
-    result = await db.tags.delete_one({"_id": ObjectId(tag_id)})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Tag not found")
-    return {"status": "success", "message": "Tag deleted successfully"}
+    """Delete a tag"""
+    try:
+        success = await tag_service.delete_tag(tag_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Tag not found")
+        return {"message": "Tag deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/solution/{solution_id}", response_model=List[Tag])
+async def get_solution_tags(
+    solution_id: str,
+    tag_service: TagService = Depends()
+):
+    """Get all tags for a specific solution"""
+    return await tag_service.get_solution_tags(solution_id)
+
+@router.post("/solution/{solution_id}/tags/{tag_id}")
+async def add_solution_tag(
+    solution_id: str,
+    tag_id: str,
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends()
+):
+    """Add a tag to a solution"""
+    success = await tag_service.add_solution_tag(solution_id, tag_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Solution or tag not found")
+    return {"message": "Tag added to solution successfully"}
+
+@router.delete("/solution/{solution_id}/tags/{tag_id}")
+async def remove_solution_tag(
+    solution_id: str,
+    tag_id: str,
+    current_user: dict = Depends(get_current_user),
+    tag_service: TagService = Depends()
+):
+    """Remove a tag from a solution"""
+    success = await tag_service.remove_solution_tag(solution_id, tag_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Solution or tag not found")
+    return {"message": "Tag removed from solution successfully"}
