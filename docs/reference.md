@@ -1,6 +1,6 @@
 # Reference Links
 
-This document provides key references for the Tech Solutions (TSL) project.
+This document provides key references for the Tech Compass (TC) project.
 
 ## Core Technologies
 

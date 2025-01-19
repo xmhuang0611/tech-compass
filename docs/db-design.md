@@ -189,7 +189,7 @@ Stores site-wide configuration settings.
 | site_name     | String        | Name of the site                          | "Tech Compass Library"                   |
 | site_logo     | String        | URL or path to site logo                  | "/assets/images/logo.png"                  |
 | site_headline | String        | Main headline or tagline                  | "Discover and Share Tech Solutions"        |
-| support_team  | String        | Name of the support team                  | "TSL Support Team"                         |
+| support_team  | String        | Name of the support team                  | "TC Support Team"                         |
 | support_email | String        | Support team email                        | "support@techcompass.com"                |
 | about_info    | String        | Site description or about information      | "A comprehensive tech solutions library..." |
 | features      | Object        | Feature flags and configurations           | {                                          |

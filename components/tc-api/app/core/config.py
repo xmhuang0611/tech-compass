@@ -4,7 +4,7 @@ from typing import Optional
 class Settings(BaseSettings):
     # MongoDB settings
     MONGODB_URL: str = "mongodb://localhost:27017"
-    DATABASE_NAME: str = "tsl"
+    DATABASE_NAME: str = "tc"
     
     # JWT settings
     JWT_SECRET_KEY: str
