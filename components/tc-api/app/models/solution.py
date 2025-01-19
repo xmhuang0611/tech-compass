@@ -1,14 +1,15 @@
 from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+import re
 
 from app.models.common import PyObjectId
 
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., description="Solution name")
-    slug: str = Field(..., description="URL-friendly identifier")
+    slug: Optional[str] = Field(None, description="URL-friendly identifier (auto-generated)")
     description: str = Field(..., description="Detailed description")
     category: Optional[str] = Field(None, description="Primary category")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
@@ -24,6 +25,24 @@ class SolutionBase(BaseModel):
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
     development_status: Optional[str] = Field(None, description="Development phase status")
     recommend_status: Optional[str] = Field(None, description="Strategic recommendation")
+
+    @field_validator("slug", mode="before")
+    @classmethod
+    def generate_slug(cls, v, values):
+        """Auto-generate slug from name if not provided"""
+        if v is not None:
+            return v
+        
+        if "name" not in values:
+            return None
+            
+        name = values["name"]
+        # Convert to lowercase and replace spaces with hyphens
+        slug = name.lower()
+        # Remove special characters and replace spaces/underscores with hyphens
+        slug = re.sub(r'[^\w\s-]', '', slug)
+        slug = re.sub(r'[-\s]+', '-', slug)
+        return slug.strip('-')
 
 class SolutionCreate(SolutionBase):
     """Solution creation model"""
