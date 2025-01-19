@@ -11,12 +11,12 @@ Backend service for Tech Solutions (TSL) platform built with FastAPI.
 - Input validation and error handling
 - Documentation with OpenAPI/Swagger
 
-## Setup
+## Development Setup
 
-1. Create and activate virtual environment:
+1. Create and activate Python virtual environment:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+python -m venv venv311
+source venv311/bin/activate  # On Windows: venv311\Scripts\activate
 ```
 
 2. Install dependencies:
@@ -24,52 +24,69 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. Create `.env` file with required environment variables:
+3. Create `.env` file in the project root:
+```bash
+cp .env.example .env
 ```
-MONGODB_URL=mongodb://localhost:27017
+
+4. Update the `.env` file with your settings:
+```env
+MONGODB_URL=your_mongodb_connection_string
 DATABASE_NAME=tsl
 JWT_SECRET_KEY=your-secret-key
 JWT_ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=1440
+AUTH_SERVER_URL=http://localhost:8000/auth
+AUTH_SERVER_ENABLED=false
 ```
 
-4. Run the development server:
+5. Start the development server:
 ```bash
-uvicorn app.main:app --reload --port 8000
+# From the project root
+python main.py
 ```
+
+The server will start with hot reload enabled at http://localhost:8000
 
 ## API Documentation
 
-Once the server is running, access the API documentation at:
-- Swagger UI: http://localhost:8000/docs
-- ReDoc: http://localhost:8000/redoc
+Once the server is running, you can access:
+- Interactive API docs (Swagger UI): http://localhost:8000/docs
+- Alternative API docs (ReDoc): http://localhost:8000/redoc
 
-## Project Structure
+## Development Workflow
 
+1. The server will automatically reload when you make changes to any Python files in the `app` directory
+2. Use the Swagger UI to test API endpoints interactively
+3. For development, the authentication is set to accept any username/password combination
+4. MongoDB connection is verified on startup
+
+## Common Operations
+
+### Authentication
+```bash
+# Get access token
+curl -X POST "http://localhost:8000/api/auth/login" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=test_user&password=test_password"
 ```
-tsl-api/
-├── app/
-│   ├── api/
-│   │   ├── v1/
-│   │   │   ├── endpoints/
-│   │   │   │   ├── auth.py
-│   │   │   │   ├── solutions.py
-│   │   │   │   ├── tags.py
-│   │   │   │   └── users.py
-│   │   │   └── api.py
-│   │   └── deps.py
-│   ├── core/
-│   │   ├── config.py
-│   │   └── security.py
-│   ├── db/
-│   │   ├── mongodb.py
-│   │   └── models.py
-│   ├── schemas/
-│   │   ├── auth.py
-│   │   ├── solution.py
-│   │   ├── tag.py
-│   │   └── user.py
-│   └── main.py
-├── requirements.txt
-└── README.md
+
+### Create Solution
+```bash
+# Create a new solution (requires auth token)
+curl -X POST "http://localhost:8000/api/solutions/" \
+  -H "Authorization: Bearer your_access_token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test Solution",
+    "description": "A test technical solution",
+    "category": "Development",
+    "status": "Active"
+  }'
 ```
+
+### List Solutions
+```bash
+# List all solutions (requires auth token)
+curl -X GET "http://localhost:8000/api/solutions/" \
+  -H "Authorization: Bearer your_access_token"
