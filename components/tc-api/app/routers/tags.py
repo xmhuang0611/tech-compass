@@ -85,23 +85,29 @@ async def delete_tag(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/solution/{solution_id}", response_model=TagList)
+@router.get("/solution/{solution_slug}", response_model=TagList)
 async def get_solution_tags(
-    solution_id: str,
+    solution_slug: str,
     tag_service: TagService = Depends()
 ) -> Any:
-    """Get all tags for a specific solution."""
-    return await tag_service.get_solution_tags(solution_id)
+    """Get all tags for a specific solution using solution slug."""
+    tags = await tag_service.get_solution_tags(solution_slug)
+    if not tags.tags:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solution not found or has no tags"
+        )
+    return tags
 
-@router.post("/solution/{solution_id}/tags/{name}", status_code=status.HTTP_201_CREATED)
+@router.post("/solution/{solution_slug}/tags/{name}", status_code=status.HTTP_201_CREATED)
 async def add_solution_tag(
-    solution_id: str,
+    solution_slug: str,
     name: str,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
-    """Add a tag to a solution by tag name."""
-    success = await tag_service.add_solution_tag_by_name(solution_id, name)
+    """Add a tag to a solution by solution slug and tag name."""
+    success = await tag_service.add_solution_tag_by_name(solution_slug, name)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -109,15 +115,15 @@ async def add_solution_tag(
         )
     return {"status": "success", "message": "Tag added to solution successfully"}
 
-@router.delete("/solution/{solution_id}/tags/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/solution/{solution_slug}/tags/{name}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_solution_tag(
-    solution_id: str,
+    solution_slug: str,
     name: str,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> None:
-    """Remove a tag from a solution by tag name."""
-    success = await tag_service.remove_solution_tag_by_name(solution_id, name)
+    """Remove a tag from a solution by solution slug and tag name."""
+    success = await tag_service.remove_solution_tag_by_name(solution_slug, name)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

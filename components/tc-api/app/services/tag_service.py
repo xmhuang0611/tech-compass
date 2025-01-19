@@ -136,9 +136,13 @@ class TagService:
         result = await self.collection.delete_one({"name": formatted_name})
         return result.deleted_count > 0
 
-    async def get_solution_tags(self, solution_id: str) -> TagList:
-        """Get all tags for a specific solution"""
-        solution = await self.db.solutions.find_one({"_id": ObjectId(solution_id)})
+    async def get_solution_by_slug(self, slug: str) -> Optional[dict]:
+        """Get a solution by its slug"""
+        return await self.db.solutions.find_one({"slug": slug})
+
+    async def get_solution_tags(self, solution_slug: str) -> TagList:
+        """Get all tags for a specific solution using slug"""
+        solution = await self.get_solution_by_slug(solution_slug)
         if not solution or not solution.get("tags"):
             return TagList(tags=[])
 
@@ -147,10 +151,15 @@ class TagService:
         tags = await cursor.to_list(length=None)
         return TagList(tags=[TagInDB(**tag) for tag in tags])
 
-    async def add_solution_tag_by_name(self, solution_id: str, name: str) -> bool:
-        """Add a tag to a solution by tag name"""
+    async def add_solution_tag_by_name(self, solution_slug: str, name: str) -> bool:
+        """Add a tag to a solution by solution slug and tag name"""
         # Format the name
         formatted_name = format_tag_name(name)
+        
+        # Get solution by slug
+        solution = await self.get_solution_by_slug(solution_slug)
+        if not solution:
+            return False
         
         # Get tag by name
         tag = await self.get_tag_by_name(formatted_name)
@@ -158,15 +167,20 @@ class TagService:
             return False
 
         result = await self.db.solutions.update_one(
-            {"_id": ObjectId(solution_id)},
+            {"slug": solution_slug},
             {"$addToSet": {"tags": tag.id}}
         )
         return result.modified_count > 0
 
-    async def remove_solution_tag_by_name(self, solution_id: str, name: str) -> bool:
-        """Remove a tag from a solution by tag name"""
+    async def remove_solution_tag_by_name(self, solution_slug: str, name: str) -> bool:
+        """Remove a tag from a solution by solution slug and tag name"""
         # Format the name
         formatted_name = format_tag_name(name)
+        
+        # Get solution by slug
+        solution = await self.get_solution_by_slug(solution_slug)
+        if not solution:
+            return False
         
         # Get tag by name
         tag = await self.get_tag_by_name(formatted_name)
@@ -174,7 +188,7 @@ class TagService:
             return False
 
         result = await self.db.solutions.update_one(
-            {"_id": ObjectId(solution_id)},
+            {"slug": solution_slug},
             {"$pull": {"tags": tag.id}}
         )
         return result.modified_count > 0
