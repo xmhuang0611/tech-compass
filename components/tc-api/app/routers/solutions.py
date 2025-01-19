@@ -30,7 +30,6 @@ async def get_solutions(
     category: Optional[str] = None,
     status: Optional[str] = None,
     department: Optional[str] = None,
-    current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
     """Get all solutions with pagination and filtering."""
@@ -56,7 +55,6 @@ async def get_solutions(
 @router.get("/{slug}", response_model=Solution)
 async def get_solution(
     slug: str,
-    current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
     """Get a specific solution by slug."""

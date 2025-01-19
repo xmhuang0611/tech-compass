@@ -20,7 +20,6 @@ async def create_tag(
 async def get_tags(
     skip: int = 0,
     limit: int = 10,
-    current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
     """Get all tags with pagination."""
@@ -36,7 +35,6 @@ async def get_tags(
 @router.get("/{tag_id}", response_model=Tag)
 async def get_tag(
     tag_id: str,
-    current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
     """Get a specific tag."""
@@ -81,7 +79,6 @@ async def delete_tag(
 @router.get("/solution/{solution_id}", response_model=TagList)
 async def get_solution_tags(
     solution_id: str,
-    current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
     """Get all tags for a specific solution."""

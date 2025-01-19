@@ -20,7 +20,6 @@ async def create_category(
 async def get_categories(
     skip: int = 0,
     limit: int = 10,
-    current_user: User = Depends(get_current_active_user),
     category_service: CategoryService = Depends()
 ) -> Any:
     """Get all categories with pagination."""
@@ -36,7 +35,6 @@ async def get_categories(
 @router.get("/{category_id}", response_model=Category)
 async def get_category(
     category_id: str,
-    current_user: User = Depends(get_current_active_user),
     category_service: CategoryService = Depends()
 ) -> Any:
     """Get a specific category."""

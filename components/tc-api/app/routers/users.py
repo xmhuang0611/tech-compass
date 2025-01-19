@@ -26,7 +26,6 @@ async def create_user(
 async def get_users(
     skip: int = 0,
     limit: int = 10,
-    current_user: User = Depends(get_current_active_user),
     user_service: UserService = Depends()
 ) -> Any:
     """Get all users with pagination."""
