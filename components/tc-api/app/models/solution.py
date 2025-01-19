@@ -22,12 +22,20 @@ RecommendStatusEnum = Literal[
     "SELL"    # Plan for replacement/retirement
 ]
 
+# Tech Radar status values
+RadarStatusEnum = Literal[
+    "ADOPT",   # Proven technology, safe to use
+    "TRIAL",   # Worth pursuing, understand how it fits
+    "ASSESS",  # Worth exploring with the goal of understanding how it will affect your enterprise
+    "HOLD"     # Proceed with caution
+]
+
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., description="Solution name")
     description: str = Field(..., description="Detailed description")
     category: Optional[str] = Field(None, description="Primary category")
-    status: str = Field(..., description="Current status")
+    radar_status: RadarStatusEnum = Field(..., description="Tech Radar status (ADOPT/TRIAL/ASSESS/HOLD)")
     department: str = Field(..., description="Department name")
     team: str = Field(..., description="Team name")
     team_email: Optional[str] = Field(None, description="Team contact email")
@@ -49,7 +57,7 @@ class SolutionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
-    status: Optional[str] = None
+    radar_status: Optional[RadarStatusEnum] = None
     department: Optional[str] = None
     team: Optional[str] = None
     team_email: Optional[str] = None
