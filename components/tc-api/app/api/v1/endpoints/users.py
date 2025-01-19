@@ -1,76 +1,84 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
-from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.api.deps import get_db, get_current_active_user
-from app.core.security import get_password_hash
-from app.db.models import User
-from bson import ObjectId
+from app.models.user import User, UserCreate, UserUpdate
+from app.services.user_service import UserService
+from app.core.auth import get_current_user
 
 router = APIRouter()
 
 @router.get("/me", response_model=User)
 async def read_user_me(
-    current_user: User = Depends(get_current_active_user)
+    current_user: dict = Depends(get_current_user)
 ):
-    """
-    Get current user.
-    """
+    """Get current user"""
     return current_user
 
 @router.post("/", response_model=User)
 async def create_user(
-    user: User,
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+    user: UserCreate,
+    current_user: dict = Depends(get_current_user),
+    user_service: UserService = Depends()
 ):
-    """
-    Create new user. Only superusers can create new users.
-    """
+    """Create new user. Only superusers can create new users."""
     if not current_user.get("is_superuser"):
         raise HTTPException(
             status_code=403,
             detail="Only superusers can create new users"
         )
     
-    # Check if user with same email exists
-    existing_user = await db.users.find_one({"email": user.email})
-    if existing_user:
+    try:
+        return await user_service.create_user(user, current_user.get("id"))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/{user_id}", response_model=User)
+async def get_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    user_service: UserService = Depends()
+):
+    """Get a specific user by ID"""
+    user = await user_service.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.put("/{user_id}", response_model=User)
+async def update_user(
+    user_id: str,
+    user_update: UserUpdate,
+    current_user: dict = Depends(get_current_user),
+    user_service: UserService = Depends()
+):
+    """Update a user"""
+    if not current_user.get("is_superuser") and current_user.get("id") != user_id:
         raise HTTPException(
-            status_code=400,
-            detail="User with this email already exists"
+            status_code=403,
+            detail="Only superusers can update other users"
         )
     
-    user_data = user.dict()
-    user_data["hashed_password"] = get_password_hash(user_data["hashed_password"])
-    user_data["created_by"] = str(current_user["_id"])
-    user_data["updated_by"] = str(current_user["_id"])
-    
-    result = await db.users.insert_one(user_data)
-    created_user = await db.users.find_one({"_id": result.inserted_id})
-    return created_user
+    try:
+        user = await user_service.update_user(user_id, user_update, current_user.get("id"))
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-@router.put("/me", response_model=User)
-async def update_user_me(
-    user_update: User,
-    db: AsyncIOMotorDatabase = Depends(get_db),
-    current_user: dict = Depends(get_current_active_user)
+@router.delete("/{user_id}")
+async def delete_user(
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+    user_service: UserService = Depends()
 ):
-    """
-    Update current user.
-    """
-    user_data = user_update.dict(exclude_unset=True)
-    if "hashed_password" in user_data:
-        user_data["hashed_password"] = get_password_hash(user_data["hashed_password"])
+    """Delete a user"""
+    if not current_user.get("is_superuser"):
+        raise HTTPException(
+            status_code=403,
+            detail="Only superusers can delete users"
+        )
     
-    user_data["updated_by"] = str(current_user["_id"])
-    
-    result = await db.users.update_one(
-        {"_id": ObjectId(current_user["_id"])},
-        {"$set": user_data}
-    )
-    
-    if result.modified_count == 0:
+    success = await user_service.delete_user(user_id)
+    if not success:
         raise HTTPException(status_code=404, detail="User not found")
-        
-    updated_user = await db.users.find_one({"_id": ObjectId(current_user["_id"])})
-    return updated_user
+    return {"message": "User deleted successfully"}
