@@ -4,9 +4,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from fastapi.testclient import TestClient
 from main import app
 from app.core.config import settings
-from app.core.security import get_password_hash
-from datetime import datetime
+from app.core.security import get_password_hash, create_access_token
+from datetime import datetime, timedelta
 from bson import ObjectId
+from app.models.user import User
+
+# Set JWT settings for testing
+settings.JWT_SECRET_KEY = "test_secret_key"
+settings.JWT_ALGORITHM = "HS256"
+settings.ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 @pytest.fixture(scope="session")
 def event_loop():
@@ -62,22 +68,14 @@ async def test_user(test_db):
     }
     
     await test_db.users.insert_one(user_data)
-    return user_data
+    user = User(**user_data)
+    return user
 
 @pytest.fixture(scope="session")
-async def test_token(test_client, test_user):
-    """Get a test token."""
-    response = test_client.post(
-        "/api/auth/login",
-        data={
-            "grant_type": "password",
-            "username": test_user["username"],
-            "password": "testpass123",
-            "scope": "",
-            "client_id": "",
-            "client_secret": ""
-        },
-        headers={"Content-Type": "application/x-www-form-urlencoded"}
+def auth_headers(test_user):
+    """Create authentication headers with JWT token."""
+    access_token = create_access_token(
+        data={"sub": test_user.username},
+        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
-    assert response.status_code == 200, f"Login failed: {response.json()}"
-    return response.json()["access_token"]
+    return {"Authorization": f"Bearer {access_token}"}

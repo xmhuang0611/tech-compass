@@ -40,7 +40,7 @@ async def get_category(
     category_service: CategoryService = Depends()
 ) -> Any:
     """Get a specific category."""
-    category = await category_service.get_category(category_id)
+    category = await category_service.get_category_by_id(category_id)
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -42,6 +42,10 @@ class CategoryService:
         categories = await cursor.to_list(length=limit)
         return [CategoryInDB(**category) for category in categories]
 
+    async def count_categories(self) -> int:
+        """Get total number of categories"""
+        return await self.collection.count_documents({})
+
     async def update_category(self, category_id: str, category_update: CategoryUpdate, user_id: Optional[str] = None) -> Optional[CategoryInDB]:
         """Update a category"""
         category_dict = category_update.dict(exclude_unset=True)
