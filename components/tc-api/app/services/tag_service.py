@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
 
-from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList
+from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList, format_tag_name
 from app.core.database import get_database
 
 class TagService:
@@ -12,10 +12,13 @@ class TagService:
 
     async def create_tag(self, tag: TagCreate, username: Optional[str] = None) -> TagInDB:
         """Create a new tag"""
-        # Check if tag already exists
-        existing_tag = await self.get_tag_by_name(tag.name)
+        # Name is already formatted by the model validator
+        formatted_name = tag.name
+
+        # Check if tag already exists (case-insensitive)
+        existing_tag = await self.get_tag_by_name(formatted_name)
         if existing_tag:
-            raise ValueError("Tag already exists")
+            raise ValueError(f"Tag '{formatted_name}' already exists")
 
         tag_dict = tag.dict()
         tag_dict["created_at"] = datetime.utcnow()
@@ -29,15 +32,17 @@ class TagService:
         return await self.get_tag_by_id(str(result.inserted_id))
 
     async def get_tag_by_id(self, tag_id: str) -> Optional[TagInDB]:
-        """Get a tag by ID"""
+        """Get a tag by ID - internal use only"""
         tag = await self.collection.find_one({"_id": ObjectId(tag_id)})
         if tag:
             return TagInDB(**tag)
         return None
 
     async def get_tag_by_name(self, name: str) -> Optional[TagInDB]:
-        """Get a tag by name"""
-        tag = await self.collection.find_one({"name": name})
+        """Get a tag by name (case-insensitive)"""
+        # Format the name for consistency
+        formatted_name = format_tag_name(name)
+        tag = await self.collection.find_one({"name": formatted_name})
         if tag:
             return TagInDB(**tag)
         return None
@@ -65,6 +70,9 @@ class TagService:
                 }
             },
             {
+                "$sort": {"name": 1}  # Sort tags alphabetically
+            },
+            {
                 "$skip": skip
             },
             {
@@ -75,41 +83,57 @@ class TagService:
         tags = await cursor.to_list(length=limit)
         return TagList(tags=[TagInDB(**tag) for tag in tags])
 
-    async def update_tag(
+    async def update_tag_by_name(
         self,
-        tag_id: str,
+        name: str,
         tag_update: TagUpdate,
         username: Optional[str] = None
     ) -> Optional[TagInDB]:
-        """Update a tag"""
+        """Update a tag by name"""
+        # Format the input name
+        formatted_name = format_tag_name(name)
+        
+        # Get existing tag
+        existing_tag = await self.get_tag_by_name(formatted_name)
+        if not existing_tag:
+            return None
+
         update_dict = tag_update.dict(exclude_unset=True)
         
         # Check name uniqueness if being updated
-        if "name" in update_dict:
-            existing_tag = await self.get_tag_by_name(update_dict["name"])
-            if existing_tag and str(existing_tag.id) != tag_id:
-                raise ValueError("Tag name is already in use")
+        if "name" in update_dict and update_dict["name"] != formatted_name:
+            other_tag = await self.get_tag_by_name(update_dict["name"])  # name is already formatted by validator
+            if other_tag:
+                raise ValueError(f"Tag '{update_dict['name']}' is already in use")
 
         update_dict["updated_at"] = datetime.utcnow()
         if username:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
-            {"_id": ObjectId(tag_id)},
+            {"name": formatted_name},
             {"$set": update_dict}
         )
         if result.modified_count:
-            return await self.get_tag_by_id(tag_id)
-        return None
+            return await self.get_tag_by_name(update_dict.get("name", formatted_name))
+        return existing_tag
 
-    async def delete_tag(self, tag_id: str) -> bool:
-        """Delete a tag"""
+    async def delete_tag_by_name(self, name: str) -> bool:
+        """Delete a tag by name"""
+        # Format the name
+        formatted_name = format_tag_name(name)
+        
+        # Get tag first
+        tag = await self.get_tag_by_name(formatted_name)
+        if not tag:
+            return False
+
         # Check if tag is being used by any solutions
-        solutions_using_tag = await self.db.solutions.find_one({"tags": ObjectId(tag_id)})
+        solutions_using_tag = await self.db.solutions.find_one({"tags": tag.id})
         if solutions_using_tag:
             raise ValueError("Cannot delete tag as it is being used by solutions")
 
-        result = await self.collection.delete_one({"_id": ObjectId(tag_id)})
+        result = await self.collection.delete_one({"name": formatted_name})
         return result.deleted_count > 0
 
     async def get_solution_tags(self, solution_id: str) -> TagList:
@@ -123,24 +147,35 @@ class TagService:
         tags = await cursor.to_list(length=None)
         return TagList(tags=[TagInDB(**tag) for tag in tags])
 
-    async def add_solution_tag(self, solution_id: str, tag_id: str) -> bool:
-        """Add a tag to a solution"""
-        # Verify tag exists
-        tag = await self.get_tag_by_id(tag_id)
+    async def add_solution_tag_by_name(self, solution_id: str, name: str) -> bool:
+        """Add a tag to a solution by tag name"""
+        # Format the name
+        formatted_name = format_tag_name(name)
+        
+        # Get tag by name
+        tag = await self.get_tag_by_name(formatted_name)
         if not tag:
-            raise ValueError("Tag not found")
+            return False
 
         result = await self.db.solutions.update_one(
             {"_id": ObjectId(solution_id)},
-            {"$addToSet": {"tags": ObjectId(tag_id)}}
+            {"$addToSet": {"tags": tag.id}}
         )
         return result.modified_count > 0
 
-    async def remove_solution_tag(self, solution_id: str, tag_id: str) -> bool:
-        """Remove a tag from a solution"""
+    async def remove_solution_tag_by_name(self, solution_id: str, name: str) -> bool:
+        """Remove a tag from a solution by tag name"""
+        # Format the name
+        formatted_name = format_tag_name(name)
+        
+        # Get tag by name
+        tag = await self.get_tag_by_name(formatted_name)
+        if not tag:
+            return False
+
         result = await self.db.solutions.update_one(
             {"_id": ObjectId(solution_id)},
-            {"$pull": {"tags": ObjectId(tag_id)}}
+            {"$pull": {"tags": tag.id}}
         )
         return result.modified_count > 0
 

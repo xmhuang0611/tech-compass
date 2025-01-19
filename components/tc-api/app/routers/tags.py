@@ -35,13 +35,13 @@ async def get_tags(
         "limit": limit
     }
 
-@router.get("/{tag_id}", response_model=Tag)
+@router.get("/{name}", response_model=Tag)
 async def get_tag(
-    tag_id: str,
+    name: str,
     tag_service: TagService = Depends()
 ) -> Any:
-    """Get a specific tag."""
-    tag = await tag_service.get_tag(tag_id)
+    """Get a specific tag by name."""
+    tag = await tag_service.get_tag_by_name(name)
     if not tag:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -49,16 +49,16 @@ async def get_tag(
         )
     return tag
 
-@router.put("/{tag_id}", response_model=Tag)
+@router.put("/{name}", response_model=Tag)
 async def update_tag(
-    tag_id: str,
+    name: str,
     tag_update: TagUpdate,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
-    """Update a tag."""
+    """Update a tag by name."""
     try:
-        tag = await tag_service.update_tag(tag_id, tag_update, current_user.username)
+        tag = await tag_service.update_tag_by_name(name, tag_update, current_user.username)
         if not tag:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -68,19 +68,22 @@ async def update_tag(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_tag(
-    tag_id: str,
+    name: str,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> None:
-    """Delete a tag."""
-    success = await tag_service.delete_tag(tag_id)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Tag not found"
-        )
+    """Delete a tag by name."""
+    try:
+        success = await tag_service.delete_tag_by_name(name)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Tag not found"
+            )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/solution/{solution_id}", response_model=TagList)
 async def get_solution_tags(
@@ -90,15 +93,15 @@ async def get_solution_tags(
     """Get all tags for a specific solution."""
     return await tag_service.get_solution_tags(solution_id)
 
-@router.post("/solution/{solution_id}/tags/{tag_id}", status_code=status.HTTP_201_CREATED)
+@router.post("/solution/{solution_id}/tags/{name}", status_code=status.HTTP_201_CREATED)
 async def add_solution_tag(
     solution_id: str,
-    tag_id: str,
+    name: str,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> Any:
-    """Add a tag to a solution."""
-    success = await tag_service.add_solution_tag(solution_id, tag_id)
+    """Add a tag to a solution by tag name."""
+    success = await tag_service.add_solution_tag_by_name(solution_id, name)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -106,15 +109,15 @@ async def add_solution_tag(
         )
     return {"status": "success", "message": "Tag added to solution successfully"}
 
-@router.delete("/solution/{solution_id}/tags/{tag_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/solution/{solution_id}/tags/{name}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_solution_tag(
     solution_id: str,
-    tag_id: str,
+    name: str,
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> None:
-    """Remove a tag from a solution."""
-    success = await tag_service.remove_solution_tag(solution_id, tag_id)
+    """Remove a tag from a solution by tag name."""
+    success = await tag_service.remove_solution_tag_by_name(solution_id, name)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
