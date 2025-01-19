@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
 
-from app.models.tag import TagCreate, TagUpdate, TagInDB
+from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList
 from app.core.database import get_database
 
 class TagService:
@@ -20,6 +20,7 @@ class TagService:
         tag_dict = tag.dict()
         tag_dict["created_at"] = datetime.utcnow()
         tag_dict["updated_at"] = datetime.utcnow()
+        tag_dict["usage_count"] = 0
         if user_id:
             tag_dict["created_by"] = ObjectId(user_id)
             tag_dict["updated_by"] = ObjectId(user_id)
@@ -41,11 +42,38 @@ class TagService:
             return TagInDB(**tag)
         return None
 
-    async def get_tags(self, skip: int = 0, limit: int = 100) -> List[TagInDB]:
+    async def get_tags(self, skip: int = 0, limit: int = 100) -> TagList:
         """Get all tags with pagination"""
-        cursor = self.collection.find().skip(skip).limit(limit)
+        # Get tags with usage count
+        pipeline = [
+            {
+                "$lookup": {
+                    "from": "solutions",
+                    "localField": "_id",
+                    "foreignField": "tags",
+                    "as": "solutions"
+                }
+            },
+            {
+                "$addFields": {
+                    "usage_count": {"$size": "$solutions"}
+                }
+            },
+            {
+                "$project": {
+                    "solutions": 0
+                }
+            },
+            {
+                "$skip": skip
+            },
+            {
+                "$limit": limit
+            }
+        ]
+        cursor = self.collection.aggregate(pipeline)
         tags = await cursor.to_list(length=limit)
-        return [TagInDB(**tag) for tag in tags]
+        return TagList(tags=[TagInDB(**tag) for tag in tags])
 
     async def update_tag(
         self,
@@ -77,29 +105,34 @@ class TagService:
     async def delete_tag(self, tag_id: str) -> bool:
         """Delete a tag"""
         # Check if tag is being used by any solutions
-        solutions_using_tag = await self.db.solutions.find_one({"tags": tag_id})
+        solutions_using_tag = await self.db.solutions.find_one({"tags": ObjectId(tag_id)})
         if solutions_using_tag:
             raise ValueError("Cannot delete tag as it is being used by solutions")
 
         result = await self.collection.delete_one({"_id": ObjectId(tag_id)})
         return result.deleted_count > 0
 
-    async def get_solution_tags(self, solution_id: str) -> List[TagInDB]:
+    async def get_solution_tags(self, solution_id: str) -> TagList:
         """Get all tags for a specific solution"""
         solution = await self.db.solutions.find_one({"_id": ObjectId(solution_id)})
         if not solution or not solution.get("tags"):
-            return []
+            return TagList(tags=[])
 
         tag_ids = [ObjectId(tag_id) for tag_id in solution["tags"]]
         cursor = self.collection.find({"_id": {"$in": tag_ids}})
         tags = await cursor.to_list(length=None)
-        return [TagInDB(**tag) for tag in tags]
+        return TagList(tags=[TagInDB(**tag) for tag in tags])
 
     async def add_solution_tag(self, solution_id: str, tag_id: str) -> bool:
         """Add a tag to a solution"""
+        # Verify tag exists
+        tag = await self.get_tag_by_id(tag_id)
+        if not tag:
+            raise ValueError("Tag not found")
+
         result = await self.db.solutions.update_one(
             {"_id": ObjectId(solution_id)},
-            {"$addToSet": {"tags": tag_id}}
+            {"$addToSet": {"tags": ObjectId(tag_id)}}
         )
         return result.modified_count > 0
 
@@ -107,6 +140,6 @@ class TagService:
         """Remove a tag from a solution"""
         result = await self.db.solutions.update_one(
             {"_id": ObjectId(solution_id)},
-            {"$pull": {"tags": tag_id}}
+            {"$pull": {"tags": ObjectId(tag_id)}}
         )
         return result.modified_count > 0

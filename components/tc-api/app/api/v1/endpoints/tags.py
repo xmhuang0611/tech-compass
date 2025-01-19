@@ -1,15 +1,15 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.models.tag import Tag, TagCreate, TagUpdate
+from app.models.tag import Tag, TagCreate, TagUpdate, TagList
 from app.services.tag_service import TagService
 from app.core.auth import get_current_user
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Tag])
+@router.get("/", response_model=TagList)
 async def list_tags(
     skip: int = Query(0, ge=0),
-    limit: int = Query(100, ge=1, le=100),
+    limit: int = Query(20, ge=1, le=100),
     tag_service: TagService = Depends()
 ):
     """List all tags with pagination"""
@@ -65,11 +65,11 @@ async def delete_tag(
         success = await tag_service.delete_tag(tag_id)
         if not success:
             raise HTTPException(status_code=404, detail="Tag not found")
-        return {"message": "Tag deleted successfully"}
+        return {"status": "success", "message": "Tag deleted successfully"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/solution/{solution_id}", response_model=List[Tag])
+@router.get("/solution/{solution_id}", response_model=TagList)
 async def get_solution_tags(
     solution_id: str,
     tag_service: TagService = Depends()
@@ -85,10 +85,13 @@ async def add_solution_tag(
     tag_service: TagService = Depends()
 ):
     """Add a tag to a solution"""
-    success = await tag_service.add_solution_tag(solution_id, tag_id)
-    if not success:
-        raise HTTPException(status_code=404, detail="Solution or tag not found")
-    return {"message": "Tag added to solution successfully"}
+    try:
+        success = await tag_service.add_solution_tag(solution_id, tag_id)
+        if not success:
+            raise HTTPException(status_code=404, detail="Solution or tag not found")
+        return {"status": "success", "message": "Tag added to solution successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.delete("/solution/{solution_id}/tags/{tag_id}")
 async def remove_solution_tag(
@@ -101,4 +104,4 @@ async def remove_solution_tag(
     success = await tag_service.remove_solution_tag(solution_id, tag_id)
     if not success:
         raise HTTPException(status_code=404, detail="Solution or tag not found")
-    return {"message": "Tag removed from solution successfully"}
+    return {"status": "success", "message": "Tag removed from solution successfully"}
