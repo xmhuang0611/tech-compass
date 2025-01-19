@@ -32,12 +32,14 @@ class SolutionService:
 
     async def create_solution(self, solution: SolutionCreate, user_id: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
-        # First ensure category exists
+        solution_dict = solution.dict(exclude_unset=True)
+        
+        # Handle category creation if provided
         if solution.category:
             category = await self.category_service.get_or_create_category(solution.category, user_id)
-            solution.category_id = category.id
-
-        solution_dict = solution.dict(exclude_unset=True)
+            solution_dict["category_id"] = category.id
+            # Keep category name in the response
+            solution_dict["category"] = solution.category
         
         # Generate and ensure unique slug
         base_slug = generate_slug(
@@ -141,6 +143,8 @@ class SolutionService:
         if "category" in update_dict:
             category = await self.category_service.get_or_create_category(update_dict["category"], user_id)
             update_dict["category_id"] = category.id
+            # Keep category name in the response
+            update_dict["category"] = update_dict["category"]
 
         # Handle slug update if name, department or team changes
         needs_new_slug = any(field in update_dict for field in ["name", "department", "team"])

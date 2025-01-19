@@ -11,7 +11,6 @@ class SolutionBase(BaseModel):
     name: str = Field(..., description="Solution name")
     description: str = Field(..., description="Detailed description")
     category: Optional[str] = Field(None, description="Primary category")
-    category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
     status: str = Field(..., description="Current status")
     department: str = Field(..., description="Department name")
     team: str = Field(..., description="Team name")
@@ -34,7 +33,6 @@ class SolutionUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
-    category_id: Optional[PyObjectId] = None
     status: Optional[str] = None
     department: Optional[str] = None
     team: Optional[str] = None
@@ -52,6 +50,7 @@ class SolutionInDB(SolutionBase):
     """Solution model as stored in database"""
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
+    category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     created_by: Optional[PyObjectId] = None
     updated_at: datetime = Field(default_factory=datetime.utcnow)
