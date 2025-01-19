@@ -42,7 +42,7 @@ Common HTTP status codes used in the API:
 - 401: Unauthorized - Authentication required
 - 403: Forbidden - Insufficient permissions
 - 404: Not Found - Resource not found
-- 409: Conflict - Resource conflict
+- 409: Conflict - Resource conflict (e.g., duplicate slug)
 - 422: Unprocessable Entity - Validation error
 - 429: Too Many Requests - Rate limit exceeded
 - 500: Internal Server Error - Server error
@@ -114,6 +114,7 @@ Response:
     "solutions": [
       {
         "id": "string",
+        "slug": "string",
         "name": "string",
         "description": "string",
         "category": "string",
@@ -150,7 +151,12 @@ Response:
 #### Get Solution Detail
 
 ```http
-GET /api/solutions/{id}
+GET /api/solutions/{slug}
+```
+
+Example:
+```http
+GET /api/solutions/engineering-cloud-infrastructure-docker
 ```
 
 Response:
@@ -160,12 +166,13 @@ Response:
   "status": "success",
   "data": {
     "id": "string",
-    "name": "string",
+    "slug": "engineering-cloud-infrastructure-docker",
+    "name": "Docker",
     "description": "string",
     "category": "string",
     "status": "string",
-    "department": "string",
-    "team": "string",
+    "department": "Engineering",
+    "team": "Cloud Infrastructure",
     "team_email": "string",
     "author_id": "string",
     "author_name": "string",
@@ -203,44 +210,91 @@ POST /api/solutions
 ```
 
 Request Body:
-
 ```json
 {
-  "name": "string",
-  "description": "string",
-  "category": "string",
-  "status": "string",
-  "department": "string",
-  "team": "string",
-  "team_email": "string",
-  "author_id": "string",
-  "author_name": "string",
-  "author_email": "string",
-  "official_website": "string",
-  "documentation_url": "string",
-  "demo_url": "string",
-  "version": "string",
-  "pros": ["string"],
-  "cons": ["string"],
-  "development_status": "string",
-  "recommend_status": "string"
+  "name": "Docker",
+  "description": "Container platform",
+  "category": "Container Platform",
+  "status": "Active",
+  "department": "Engineering",
+  "team": "Cloud Infrastructure",
+  "team_email": "cloud-infra@company.com",
+  "official_website": "https://www.docker.com",
+  "documentation_url": "https://docs.docker.com",
+  "version": "24.0.7",
+  "development_status": "Stable",
+  "recommend_status": "Recommended"
 }
 ```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "string",
+    "slug": "engineering-cloud-infrastructure-docker",
+    "name": "Docker",
+    // ... other fields
+  }
+}
+```
+
+Note: The `slug` field will be automatically generated from department, team, and name.
 
 #### Update Solution
 
 ```http
-PUT /api/solutions/{id}
+PUT /api/solutions/{slug}
 ```
 
-Request Body: Same as Create Solution (partial updates supported)
+Example:
+```http
+PUT /api/solutions/engineering-cloud-infrastructure-docker
+```
 
-Note: All fields except `id` and audit fields (`created_at`, `created_by`, `updated_at`, `updated_by`) can be updated.
+Request Body:
+```json
+{
+  "name": "Docker",
+  "description": "Updated description",
+  // ... other fields
+}
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "id": "string",
+    "slug": "engineering-cloud-infrastructure-docker",
+    // ... updated fields
+  }
+}
+```
+
+Note: When updating fields that affect the slug (department, team, or name), the slug will be automatically updated, and the old slug will be preserved for redirection.
 
 #### Delete Solution
 
 ```http
-DELETE /api/solutions/{id}
+DELETE /api/solutions/{slug}
+```
+
+Example:
+```http
+DELETE /api/solutions/engineering-cloud-infrastructure-docker
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "message": "Solution deleted successfully"
+  }
+}
 ```
 
 ### 2.2 Ratings and Reviews
@@ -248,7 +302,7 @@ DELETE /api/solutions/{id}
 #### Get Solution Ratings
 
 ```http
-GET /api/solutions/{id}/ratings
+GET /api/solutions/{slug}/ratings
 ```
 
 Query Parameters:
@@ -302,7 +356,7 @@ Response:
 #### Get User Rating
 
 ```http
-GET /api/solutions/{id}/ratings/me
+GET /api/solutions/{slug}/ratings/me
 ```
 
 Response:
@@ -325,7 +379,7 @@ Response:
 #### Add or Update Rating
 
 ```http
-POST /api/solutions/{id}/ratings
+POST /api/solutions/{slug}/ratings
 ```
 
 Request Body:
@@ -365,7 +419,7 @@ Notes:
 #### List Solution Comments
 
 ```http
-GET /api/solutions/{id}/comments
+GET /api/solutions/{slug}/comments
 ```
 
 Query Parameters:
@@ -409,7 +463,7 @@ Response:
 #### Get Comment Detail
 
 ```http
-GET /api/solutions/{solution_id}/comments/{comment_id}
+GET /api/solutions/{slug}/comments/{comment_id}
 ```
 
 Response:
@@ -437,7 +491,7 @@ Response:
 #### Create Comment
 
 ```http
-POST /api/solutions/{id}/comments
+POST /api/solutions/{slug}/comments
 ```
 
 Request Body:
@@ -466,7 +520,7 @@ Response:
 #### Update Comment
 
 ```http
-PUT /api/solutions/{solution_id}/comments/{comment_id}
+PUT /api/solutions/{slug}/comments/{comment_id}
 ```
 
 Request Body:
@@ -482,7 +536,7 @@ Note: Only the comment author can update their own comments.
 #### Delete Comment
 
 ```http
-DELETE /api/solutions/{solution_id}/comments/{comment_id}
+DELETE /api/solutions/{slug}/comments/{comment_id}
 ```
 
 Note: Only the comment author or solution administrators can delete comments.

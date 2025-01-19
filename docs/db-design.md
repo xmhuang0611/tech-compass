@@ -21,31 +21,32 @@ All collections include the following audit fields for tracking purposes:
 
 Stores the main technical solution information.
 
-| Field              | Type          | Description                   | Example                                                                                    |
-| ------------------ | ------------- | ----------------------------- | ------------------------------------------------------------------------------------------ |
-| \_id               | ObjectId      | Unique identifier             | "507f1f77bcf86cd799439011"                                                                 |
-| name               | String        | Solution name                 | "Docker"                                                                                   |
-| description        | String        | Detailed description          | "Docker is a platform for developing, shipping, and running applications in containers..." |
-| category           | String        | Primary category              | "Container Platform"                                                                       |
-| status             | String        | Current status                | "Recommended"                                                                              |
-| department         | String        | Department name               | "Engineering"                                                                              |
-| team               | String        | Team name                     | "Cloud Infrastructure"                                                                     |
-| team_email         | String        | Team contact email            | "cloud-infra@company.com"                                                                  |
-| author_id          | ObjectId      | Original author's user ID     | "507f1f77bcf86cd799439014"                                                                 |
-| author_name        | String        | Original author's name        | "Jane Smith"                                                                               |
-| author_email       | String        | Original author's email       | "jane.smith@company.com"                                                                   |
-| official_website   | String        | Official website URL          | "https://www.docker.com"                                                                   |
-| documentation_url  | String        | Documentation URL             | "https://docs.docker.com"                                                                  |
-| demo_url           | String        | Demo/POC URL                  | "https://demo.docker.company.com"                                                          |
-| version            | String        | Current version               | "24.0.7"                                                                                   |
-| pros               | Array[String] | List of advantages            | ["Easy to deploy", "Good documentation"]                                                   |
-| cons               | Array[String] | List of disadvantages         | ["Resource overhead", "Learning curve"]                                                    |
-| development_status | String        | Development phase status      | "RC"                                                                                       |
-| recommend_status   | String        | Strategic recommendation      | "BUY"                                                                                      |
-| created_at         | DateTime      | Creation timestamp            | "2024-03-15T10:30:00Z"                                                                     |
-| created_by         | ObjectId      | Reference to users collection | "507f1f77bcf86cd799439012"                                                                 |
-| updated_at         | DateTime      | Last update timestamp         | "2024-03-16T14:20:00Z"                                                                     |
-| updated_by         | ObjectId      | User who last updated         | "507f1f77bcf86cd799439013"                                                                 |
+| Field              | Type          | Description                                                | Example                                                                                    |
+| ------------------ | ------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| \_id               | ObjectId      | Unique identifier                                          | "507f1f77bcf86cd799439011"                                                                 |
+| name               | String        | Solution name                                              | "Docker"                                                                                   |
+| slug               | String        | Unique, human-readable identifier (auto-generated)         | "engineering-cloud-infrastructure-docker"                                                   |
+| description        | String        | Detailed description                                       | "Docker is a platform for developing, shipping, and running applications in containers..." |
+| category           | String        | Primary category                                           | "Container Platform"                                                                       |
+| status             | String        | Current status                                             | "Recommended"                                                                              |
+| department         | String        | Department name                                            | "Engineering"                                                                              |
+| team               | String        | Team name                                                  | "Cloud Infrastructure"                                                                     |
+| team_email         | String        | Team contact email                                         | "cloud-infra@company.com"                                                                  |
+| author_id          | ObjectId      | Original author's user ID                                  | "507f1f77bcf86cd799439014"                                                                 |
+| author_name        | String        | Original author's name                                     | "Jane Smith"                                                                               |
+| author_email       | String        | Original author's email                                    | "jane.smith@company.com"                                                                   |
+| official_website   | String        | Official website URL                                       | "https://www.docker.com"                                                                   |
+| documentation_url  | String        | Documentation URL                                          | "https://docs.docker.com"                                                                  |
+| demo_url           | String        | Demo/POC URL                                               | "https://demo.docker.company.com"                                                          |
+| version            | String        | Current version                                            | "24.0.7"                                                                                   |
+| pros               | Array[String] | List of advantages                                         | ["Easy to deploy", "Good documentation"]                                                   |
+| cons               | Array[String] | List of disadvantages                                      | ["Resource overhead", "Learning curve"]                                                    |
+| development_status | String        | Development phase status                                   | "RC"                                                                                       |
+| recommend_status   | String        | Strategic recommendation                                   | "BUY"                                                                                      |
+| created_at         | DateTime      | Creation timestamp                                         | "2024-03-15T10:30:00Z"                                                                     |
+| created_by         | ObjectId      | Reference to users collection                              | "507f1f77bcf86cd799439012"                                                                 |
+| updated_at         | DateTime      | Last update timestamp                                      | "2024-03-16T14:20:00Z"                                                                     |
+| updated_by         | ObjectId      | User who last updated                                      | "507f1f77bcf86cd799439013"                                                                 |
 
 ### 2. Tags Collection
 
@@ -215,6 +216,7 @@ Stores site-wide configuration settings.
    - category
    - status
    - created_at
+   - slug (unique)
 
 2. Tags Collection:
 

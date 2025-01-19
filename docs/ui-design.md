@@ -68,6 +68,57 @@ Based on 4px grid:
 - Input Heights: 40px
 - Card Padding: 24px
 
+## URL Structure
+
+### Solution Pages
+- Solution List: `/solutions`
+- Solution Detail: `/solutions/{slug}`
+  - Example: `/solutions/engineering-cloud-infrastructure-docker`
+- Solution Edit: `/solutions/{slug}/edit`
+- Solution Comments: `/solutions/{slug}/comments`
+- Solution Ratings: `/solutions/{slug}/ratings`
+
+### Category Pages
+- Category List: `/categories`
+- Category Detail: `/categories/{category-slug}`
+  - Example: `/categories/container-platforms`
+
+### Department Pages
+- Department List: `/departments`
+- Department Solutions: `/departments/{department-slug}`
+  - Example: `/departments/engineering`
+
+### Team Pages
+- Team List: `/teams`
+- Team Solutions: `/teams/{department-slug}/{team-slug}`
+  - Example: `/teams/engineering/cloud-infrastructure`
+
+## Navigation
+
+### Breadcrumb Structure
+- Solution Detail: `Home > {Department} > {Team} > {Solution Name}`
+  - Example: `Home > Engineering > Cloud Infrastructure > Docker`
+- Category View: `Home > Categories > {Category Name}`
+- Department View: `Home > Departments > {Department Name}`
+- Team View: `Home > Departments > {Department Name} > {Team Name}`
+
+### URL Handling
+- Slug Generation:
+  - Lowercase all characters
+  - Replace spaces and special characters with hyphens
+  - Remove unnecessary words (a, an, the)
+  - Maximum length: 100 characters
+- Redirect Handling:
+  - Preserve old slugs for redirection
+  - 301 redirect from old slugs to new ones
+  - Case-insensitive matching
+
+### Search Integration
+- Search results link directly to solution slugs
+- Search suggestions show solution slugs
+- Copy URL button on solution pages
+- Share buttons use slug-based URLs
+
 ## Layout Designs
 
 ### Global Layout
