@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 from bson import ObjectId
 
-from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB
+from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, CategoryList
 from app.core.database import get_database
 
 class CategoryService:
@@ -12,10 +12,13 @@ class CategoryService:
 
     async def create_category(self, category: CategoryCreate, username: Optional[str] = None) -> CategoryInDB:
         """Create a new category"""
-        # Check if category already exists
-        existing = await self.get_category_by_name(category.name)
-        if existing:
-            raise ValueError("Category already exists")
+        # Name is already trimmed by the model validator
+        name = category.name
+
+        # Check if category already exists (exact match)
+        existing_category = await self.get_category_by_name(name)
+        if existing_category:
+            raise ValueError(f"Category '{name}' already exists")
 
         category_dict = category.dict()
         category_dict["created_at"] = datetime.utcnow()
@@ -28,70 +31,77 @@ class CategoryService:
         return await self.get_category_by_id(str(result.inserted_id))
 
     async def get_category_by_id(self, category_id: str) -> Optional[CategoryInDB]:
-        """Get a category by ID"""
+        """Get a category by ID - internal use only"""
         category = await self.collection.find_one({"_id": ObjectId(category_id)})
         if category:
             return CategoryInDB(**category)
         return None
 
     async def get_category_by_name(self, name: str) -> Optional[CategoryInDB]:
-        """Get a category by name"""
+        """Get a category by name (exact match)"""
+        # Name is already trimmed by the model validator
         category = await self.collection.find_one({"name": name})
         if category:
             return CategoryInDB(**category)
         return None
 
-    async def get_categories(self, skip: int = 0, limit: int = 100) -> List[CategoryInDB]:
+    async def get_categories(self, skip: int = 0, limit: int = 100) -> CategoryList:
         """Get all categories with pagination"""
-        cursor = self.collection.find().skip(skip).limit(limit)
+        cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
         categories = await cursor.to_list(length=limit)
-        return [CategoryInDB(**category) for category in categories]
+        return CategoryList(categories=[CategoryInDB(**category) for category in categories])
 
-    async def count_categories(self) -> int:
-        """Get total number of categories"""
-        return await self.collection.count_documents({})
-
-    async def update_category(
+    async def update_category_by_name(
         self,
-        category_id: str,
+        name: str,
         category_update: CategoryUpdate,
         username: Optional[str] = None
     ) -> Optional[CategoryInDB]:
-        """Update a category"""
+        """Update a category by name"""
+        # Name is already trimmed by the model validator
+        
+        # Get existing category
+        existing_category = await self.get_category_by_name(name)
+        if not existing_category:
+            return None
+
         update_dict = category_update.dict(exclude_unset=True)
         
         # Check name uniqueness if being updated
-        if "name" in update_dict:
-            existing = await self.get_category_by_name(update_dict["name"])
-            if existing and str(existing.id) != category_id:
-                raise ValueError("Category name is already in use")
+        if "name" in update_dict and update_dict["name"] != name:
+            other_category = await self.get_category_by_name(update_dict["name"])
+            if other_category:
+                raise ValueError(f"Category '{update_dict['name']}' is already in use")
 
         update_dict["updated_at"] = datetime.utcnow()
         if username:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
-            {"_id": ObjectId(category_id)},
+            {"name": name},
             {"$set": update_dict}
         )
         if result.modified_count:
-            return await self.get_category_by_id(category_id)
-        return None
+            return await self.get_category_by_name(update_dict.get("name", name))
+        return existing_category
 
-    async def delete_category(self, category_id: str) -> bool:
-        """Delete a category"""
-        result = await self.collection.delete_one({"_id": ObjectId(category_id)})
+    async def delete_category_by_name(self, name: str) -> bool:
+        """Delete a category by name"""
+        # Name is already trimmed by the model validator
+        
+        # Get category first
+        category = await self.get_category_by_name(name)
+        if not category:
+            return False
+
+        # Check if category is being used by any solutions
+        solutions_using_category = await self.db.solutions.find_one({"category": category.id})
+        if solutions_using_category:
+            raise ValueError("Cannot delete category as it is being used by solutions")
+
+        result = await self.collection.delete_one({"name": name})
         return result.deleted_count > 0
 
-    async def get_or_create_category(self, name: str, username: Optional[str] = None) -> CategoryInDB:
-        """Get a category by name or create it if it doesn't exist"""
-        existing = await self.get_category_by_name(name)
-        if existing:
-            return existing
-        
-        # Create new category with minimal info
-        category = CategoryCreate(
-            name=name,
-            description=f"Category for {name}"
-        )
-        return await self.create_category(category, username)
+    async def count_categories(self) -> int:
+        """Get total number of categories"""
+        return await self.collection.count_documents({})

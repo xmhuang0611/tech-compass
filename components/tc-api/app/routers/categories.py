@@ -1,7 +1,7 @@
-from typing import Any, List
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.core.auth import get_current_active_user
-from app.models.category import Category, CategoryCreate, CategoryUpdate
+from app.models.category import Category, CategoryCreate, CategoryUpdate, CategoryList
 from app.models.user import User
 from app.services.category_service import CategoryService
 
@@ -35,13 +35,13 @@ async def get_categories(
         "limit": limit
     }
 
-@router.get("/{category_id}", response_model=Category)
+@router.get("/{name}", response_model=Category)
 async def get_category(
-    category_id: str,
+    name: str,
     category_service: CategoryService = Depends()
 ) -> Any:
-    """Get a specific category."""
-    category = await category_service.get_category_by_id(category_id)
+    """Get a specific category by name."""
+    category = await category_service.get_category_by_name(name)
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -49,16 +49,16 @@ async def get_category(
         )
     return category
 
-@router.put("/{category_id}", response_model=Category)
+@router.put("/{name}", response_model=Category)
 async def update_category(
-    category_id: str,
+    name: str,
     category_update: CategoryUpdate,
     current_user: User = Depends(get_current_active_user),
     category_service: CategoryService = Depends()
 ) -> Any:
-    """Update a category."""
+    """Update a category by name."""
     try:
-        category = await category_service.update_category(category_id, category_update, current_user.username)
+        category = await category_service.update_category_by_name(name, category_update, current_user.username)
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -68,27 +68,19 @@ async def update_category(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{category_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_category(
-    category_id: str,
+    name: str,
     current_user: User = Depends(get_current_active_user),
     category_service: CategoryService = Depends()
 ) -> None:
-    """Delete a category."""
-    success = await category_service.delete_category(category_id)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Category not found"
-        )
-
-@router.get("/name/{name}", response_model=Category)
-async def get_category_by_name(
-    name: str,
-    category_service: CategoryService = Depends()
-):
-    """Get a category by name"""
-    category = await category_service.get_category_by_name(name)
-    if not category:
-        raise HTTPException(status_code=404, detail="Category not found")
-    return category
+    """Delete a category by name."""
+    try:
+        success = await category_service.delete_category_by_name(name)
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Category not found"
+            )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
