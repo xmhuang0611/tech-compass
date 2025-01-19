@@ -25,9 +25,12 @@ class SolutionService:
 
         solution_dict = solution.dict(exclude_unset=True)
         
-        # Generate slug if not provided
-        if "slug" not in solution_dict:
-            solution_dict["slug"] = generate_slug(solution_dict["name"])
+        # Generate and ensure unique slug
+        if "slug" not in solution_dict or not solution_dict["slug"]:
+            base_slug = generate_slug(solution_dict["name"])
+        else:
+            base_slug = solution_dict["slug"]
+        solution_dict["slug"] = await self.ensure_unique_slug(base_slug)
             
         solution_dict["created_at"] = datetime.utcnow()
         solution_dict["updated_at"] = datetime.utcnow()
@@ -82,6 +85,34 @@ class SolutionService:
 
         return [SolutionInDB(**solution) for solution in solutions]
 
+    async def get_solution_by_slug(self, slug: str) -> Optional[SolutionInDB]:
+        """Get a solution by slug"""
+        solution = await self.collection.find_one({"slug": slug})
+        if solution:
+            # Get category details if category_id exists
+            if solution.get("category_id"):
+                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
+                if category:
+                    solution["category"] = category.name
+            return SolutionInDB(**solution)
+        return None
+
+    async def ensure_unique_slug(self, slug: str, exclude_id: Optional[str] = None) -> str:
+        """Ensure the slug is unique by appending a number if necessary"""
+        base_slug = slug
+        counter = 1
+        while True:
+            # Check if slug exists
+            query = {"slug": slug}
+            if exclude_id:
+                query["_id"] = {"$ne": ObjectId(exclude_id)}
+            existing = await self.collection.find_one(query)
+            if not existing:
+                return slug
+            # If exists, append counter and try again
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
     async def update_solution(
         self,
         solution_id: str,
@@ -96,6 +127,11 @@ class SolutionService:
             category = await self.category_service.get_or_create_category(update_dict["category"], user_id)
             update_dict["category_id"] = category.id
 
+        # Handle slug update
+        if "name" in update_dict:
+            base_slug = generate_slug(update_dict["name"])
+            update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
+
         update_dict["updated_at"] = datetime.utcnow()
         if user_id:
             update_dict["updated_by"] = ObjectId(user_id)
@@ -108,7 +144,28 @@ class SolutionService:
             return await self.get_solution_by_id(solution_id)
         return None
 
+    async def update_solution_by_slug(
+        self,
+        slug: str,
+        solution_update: SolutionUpdate,
+        user_id: Optional[str] = None
+    ) -> Optional[SolutionInDB]:
+        """Update a solution by slug"""
+        solution = await self.get_solution_by_slug(slug)
+        if not solution:
+            return None
+        return await self.update_solution(str(solution.id), solution_update, user_id)
+
     async def delete_solution(self, solution_id: str) -> bool:
         """Delete a solution"""
         result = await self.collection.delete_one({"_id": ObjectId(solution_id)})
         return result.deleted_count > 0
+
+    async def delete_solution_by_slug(self, slug: str) -> bool:
+        """Delete a solution by slug"""
+        result = await self.collection.delete_one({"slug": slug})
+        return result.deleted_count > 0
+
+    async def count_solutions(self) -> int:
+        """Get total number of solutions"""
+        return await self.collection.count_documents({})

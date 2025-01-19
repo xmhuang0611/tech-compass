@@ -18,7 +18,7 @@ async def create_solution(
 ) -> Any:
     """Create a new solution."""
     try:
-        return await solution_service.create_solution(solution, current_user)
+        return await solution_service.create_solution(solution, str(current_user.id))
     except Exception as e:
         logger.error(f"Error creating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating solution: {str(e)}")
@@ -27,12 +27,21 @@ async def create_solution(
 async def get_solutions(
     skip: int = 0,
     limit: int = 10,
+    category: Optional[str] = None,
+    status: Optional[str] = None,
+    department: Optional[str] = None,
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Get all solutions with pagination."""
+    """Get all solutions with pagination and filtering."""
     try:
-        solutions = await solution_service.get_solutions(skip=skip, limit=limit)
+        solutions = await solution_service.get_solutions(
+            skip=skip,
+            limit=limit,
+            category=category,
+            status=status,
+            department=department
+        )
         total = await solution_service.count_solutions()
         return {
             "items": solutions,
@@ -44,14 +53,14 @@ async def get_solutions(
         logger.error(f"Error listing solutions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error listing solutions: {str(e)}")
 
-@router.get("/{solution_id}", response_model=Solution)
+@router.get("/{slug}", response_model=Solution)
 async def get_solution(
-    solution_id: str,
+    slug: str,
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Get a specific solution."""
-    solution = await solution_service.get_solution(solution_id)
+    """Get a specific solution by slug."""
+    solution = await solution_service.get_solution_by_slug(slug)
     if not solution:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -59,16 +68,16 @@ async def get_solution(
         )
     return solution
 
-@router.put("/{solution_id}", response_model=Solution)
+@router.put("/{slug}", response_model=Solution)
 async def update_solution(
-    solution_id: str,
+    slug: str,
     solution_update: SolutionUpdate,
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Update a solution."""
+    """Update a solution by slug."""
     try:
-        solution = await solution_service.update_solution(solution_id, solution_update)
+        solution = await solution_service.update_solution_by_slug(slug, solution_update, str(current_user.id))
         if not solution:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -79,14 +88,14 @@ async def update_solution(
         logger.error(f"Error updating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating solution: {str(e)}")
 
-@router.delete("/{solution_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_solution(
-    solution_id: str,
+    slug: str,
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> None:
-    """Delete a solution."""
-    success = await solution_service.delete_solution(solution_id)
+    """Delete a solution by slug."""
+    success = await solution_service.delete_solution_by_slug(slug)
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
