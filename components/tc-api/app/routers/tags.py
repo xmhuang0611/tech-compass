@@ -96,7 +96,7 @@ async def delete_tag(
     current_user: User = Depends(get_current_active_user),
     tag_service: TagService = Depends()
 ) -> None:
-    """Delete a tag by name."""
+    """Delete a tag by name. Will return 400 error if tag is being used by any solutions."""
     try:
         success = await tag_service.delete_tag_by_name(name)
         if not success:
@@ -105,4 +105,7 @@ async def delete_tag(
                 detail="Tag not found"
             )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

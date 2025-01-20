@@ -22,7 +22,7 @@ class TagService:
         if existing_tag:
             raise ValueError(f"Tag '{formatted_name}' already exists")
 
-        tag_dict = tag.dict()
+        tag_dict = tag.model_dump()
         tag_dict["created_at"] = datetime.utcnow()
         tag_dict["updated_at"] = datetime.utcnow()
         tag_dict["usage_count"] = 0
@@ -140,9 +140,10 @@ class TagService:
             return False
 
         # Check if tag is being used by any solutions
-        solutions_using_tag = await self.db.solutions.find_one({"tags": tag.id})
+        solutions_using_tag = await self.db.solutions.find_one({"tags": formatted_name})
+
         if solutions_using_tag:
-            raise ValueError("Cannot delete tag as it is being used by solutions")
+            raise ValueError(f"Cannot delete tag '{formatted_name}' as it is being used by solutions")
 
         result = await self.collection.delete_one({"name": formatted_name})
         return result.deleted_count > 0
