@@ -39,7 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/")
+@app.get("/", include_in_schema=False)
 async def root():
     """Redirect root path to API documentation"""
     return RedirectResponse(url="/docs")
