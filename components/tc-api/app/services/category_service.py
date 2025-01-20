@@ -89,6 +89,16 @@ class CategoryService:
             if other_category:
                 raise ValueError(f"Category '{update_dict['name']}' is already in use")
 
+            # Update all solutions using this category
+            await self.db.solutions.update_many(
+                {"category_id": existing_category.id},
+                {"$set": {
+                    "category": update_dict["name"],
+                    "updated_at": datetime.utcnow(),
+                    "updated_by": username if username else None
+                }}
+            )
+
         update_dict["updated_at"] = datetime.utcnow()
         if username:
             update_dict["updated_by"] = username
