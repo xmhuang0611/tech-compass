@@ -170,7 +170,7 @@ class SolutionService:
         username: Optional[str] = None
     ) -> Optional[SolutionInDB]:
         """Update a solution"""
-        update_dict = solution_update.dict(exclude_unset=True)
+        update_dict = solution_update.model_dump(exclude_unset=True)
         
         # Handle category update
         if "category" in update_dict:
@@ -186,16 +186,17 @@ class SolutionService:
 
         # Handle tags update
         if "tags" in update_dict:
-            # Ensure all tags exist and get formatted names
             formatted_tags = []
             for tag_name in update_dict["tags"]:
                 # Create tag if it doesn't exist
                 tag = await self.tag_service.get_tag_by_name(tag_name)
                 if not tag:
-                    tag = await self.tag_service.create_tag({
-                        "name": tag_name,
-                        "description": f"Tag for {tag_name}"
-                    }, username)
+                    from app.models.tag import TagCreate
+                    tag_create = TagCreate(
+                        name=tag_name,
+                        description=f"Tag for {tag_name}"
+                    )
+                    tag = await self.tag_service.create_tag(tag_create, username)
                 formatted_tags.append(tag.name)
             update_dict["tags"] = formatted_tags
 
