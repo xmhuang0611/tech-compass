@@ -6,6 +6,7 @@ from app.routers import api_router
 from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from fastapi.responses import RedirectResponse
 
 # Configure logging
 logging.basicConfig(
@@ -37,6 +38,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/")
+async def root():
+    """Redirect root path to API documentation"""
+    return RedirectResponse(url="/docs")
 
 # Include routers
 app.include_router(api_router, prefix="/api")
