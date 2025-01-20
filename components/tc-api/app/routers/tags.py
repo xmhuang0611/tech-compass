@@ -1,7 +1,9 @@
-from typing import Any, List
+from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from app.core.auth import get_current_active_user
-from app.models.tag import Tag, TagCreate, TagUpdate, TagList
+from app.models.tag import Tag, TagCreate, TagUpdate
 from app.models.user import User
 from app.services.tag_service import TagService
 

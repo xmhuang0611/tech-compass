@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+
 from app.routers import auth, solutions, tags, users, categories
 from app.routers.auth import router as auth_router
 

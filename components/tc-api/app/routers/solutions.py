@@ -1,10 +1,12 @@
+import logging
 from typing import Any, List, Optional
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+
 from app.core.auth import get_current_active_user
 from app.models.solution import Solution, SolutionCreate, SolutionUpdate
 from app.models.user import User
 from app.services.solution_service import SolutionService
-import logging
 
 logger = logging.getLogger(__name__)
 

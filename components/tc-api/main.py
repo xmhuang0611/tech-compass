@@ -1,12 +1,13 @@
-from fastapi import FastAPI
 import logging
+from contextlib import asynccontextmanager
+
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
+
 from app.core.mongodb import connect_to_mongo, close_mongo_connection
 from app.routers import api_router
-from app.core.config import settings
-from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-from fastapi.responses import RedirectResponse
 
 # Configure logging
 logging.basicConfig(

@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Optional
+
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator
 
 from app.models.common import PyObjectId
+
 
 class CategoryBase(BaseModel):
     """Base category model with common fields"""

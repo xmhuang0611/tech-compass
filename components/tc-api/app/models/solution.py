@@ -1,8 +1,8 @@
 from datetime import datetime
 from typing import List, Optional, Literal
+
 from bson import ObjectId
-from pydantic import BaseModel, Field, field_validator
-import re
+from pydantic import BaseModel, Field
 
 from app.models.common import PyObjectId
 

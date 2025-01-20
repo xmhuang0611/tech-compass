@@ -1,9 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
+
 from bson import ObjectId
 
-from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, CategoryList
 from app.core.database import get_database
+from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, CategoryList
+
 
 class CategoryService:
     def __init__(self):

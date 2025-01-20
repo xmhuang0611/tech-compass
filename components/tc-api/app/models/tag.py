@@ -1,8 +1,11 @@
-from typing import Optional
-from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
 import re
+from datetime import datetime
+from typing import Optional
+
+from pydantic import BaseModel, Field, field_validator
+
 from app.models.common import PyObjectId
+
 
 def format_tag_name(name: str) -> str:
     """Format tag name to lowercase, replace spaces and symbols with single hyphen"""

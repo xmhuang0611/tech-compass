@@ -1,8 +1,10 @@
-from typing import Optional
-from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from datetime import datetime
+from typing import Optional
 
-from app.models.common import AuditModel, PyObjectId
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
+
+from app.models.common import PyObjectId
+
 
 class UserBase(BaseModel):
     """Base user model with common fields"""

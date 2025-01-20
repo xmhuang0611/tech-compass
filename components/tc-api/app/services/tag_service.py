@@ -1,9 +1,11 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Optional
+
 from bson import ObjectId
 
-from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList, format_tag_name
 from app.core.database import get_database
+from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList, format_tag_name
+
 
 class TagService:
     def __init__(self):

@@ -1,7 +1,9 @@
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from app.core.auth import get_current_active_user
-from app.models.user import User, UserCreate, UserUpdate, UserList
+from app.models.user import User, UserCreate, UserUpdate
 from app.services.user_service import UserService
 
 router = APIRouter()

@@ -1,7 +1,9 @@
 from typing import Any
+
 from fastapi import APIRouter, Depends, HTTPException, status
+
 from app.core.auth import get_current_active_user
-from app.models.category import Category, CategoryCreate, CategoryUpdate, CategoryList
+from app.models.category import Category, CategoryCreate, CategoryUpdate
 from app.models.user import User
 from app.services.category_service import CategoryService
 

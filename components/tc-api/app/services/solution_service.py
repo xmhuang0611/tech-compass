@@ -1,12 +1,14 @@
+import re
 from datetime import datetime
 from typing import List, Optional
-from bson import ObjectId
-import re
 
+from bson import ObjectId
+
+from app.core.database import get_database
 from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
 from app.services.category_service import CategoryService
 from app.services.tag_service import TagService
-from app.core.database import get_database
+
 
 def generate_slug(name: str) -> str:
     """Generate a URL-friendly slug from solution name

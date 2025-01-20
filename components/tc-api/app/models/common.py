@@ -1,8 +1,10 @@
 from datetime import datetime
 from typing import Optional, Any
+
 from bson import ObjectId
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic.json_schema import JsonSchemaValue
+
 
 class PyObjectId(ObjectId):
     """Custom type for handling MongoDB ObjectId"""
