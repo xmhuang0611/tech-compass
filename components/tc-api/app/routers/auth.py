@@ -33,8 +33,3 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     
     return {"access_token": access_token, "token_type": "bearer"}
-
-@router.get("/test-token", response_model=User)
-async def test_token(current_user: User = Depends(get_current_active_user)) -> Any:
-    """Test access token."""
-    return current_user
