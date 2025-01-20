@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
     await close_mongo_connection()
 
 app = FastAPI(
-    title="Tech Solutions API",
-    description="API for managing technical solutions and documentation",
+    title="Tech Compass API",
+    description="API for Tech Compass",
     version="1.0.0",
     lifespan=lifespan
 )
