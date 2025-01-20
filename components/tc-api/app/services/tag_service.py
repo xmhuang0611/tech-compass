@@ -87,36 +87,45 @@ class TagService:
         self,
         name: str,
         tag_update: TagUpdate,
-        username: Optional[str] = None
+        username: Optional[str] = None,
+        update_solutions: bool = False
     ) -> Optional[TagInDB]:
-        """Update a tag by name"""
-        # Format the input name
-        formatted_name = format_tag_name(name)
-        
-        # Get existing tag
-        existing_tag = await self.get_tag_by_name(formatted_name)
-        if not existing_tag:
+        """Update a tag by name. Optionally update all solutions using this tag."""
+        # Get the tag first
+        tag = await self.get_tag_by_name(name)
+        if not tag:
             return None
 
-        update_dict = tag_update.dict(exclude_unset=True)
+        update_dict = tag_update.model_dump(exclude_unset=True)
         
-        # Check name uniqueness if being updated
-        if "name" in update_dict and update_dict["name"] != formatted_name:
-            other_tag = await self.get_tag_by_name(update_dict["name"])  # name is already formatted by validator
-            if other_tag:
-                raise ValueError(f"Tag '{update_dict['name']}' is already in use")
+        # If name is changing and we need to update solutions
+        if update_solutions and "name" in update_dict and update_dict["name"] != name:
+            # Update all solutions that use this tag
+            await self.db.solutions.update_many(
+                {"tags": name},
+                {"$set": {
+                    "tags.$": update_dict["name"],
+                    "updated_at": datetime.utcnow()
+                }}
+            )
+            if username:
+                await self.db.solutions.update_many(
+                    {"tags": name},
+                    {"$set": {"updated_by": username}}
+                )
 
+        # Update the tag itself
         update_dict["updated_at"] = datetime.utcnow()
         if username:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
-            {"name": formatted_name},
+            {"name": name},
             {"$set": update_dict}
         )
         if result.modified_count:
-            return await self.get_tag_by_name(update_dict.get("name", formatted_name))
-        return existing_tag
+            return await self.get_tag_by_name(update_dict.get("name", name))
+        return None
 
     async def delete_tag_by_name(self, name: str) -> bool:
         """Delete a tag by name"""
