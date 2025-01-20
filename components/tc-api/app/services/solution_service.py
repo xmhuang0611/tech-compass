@@ -65,22 +65,33 @@ class SolutionService:
         skip: int = 0,
         limit: int = 100,
         category: Optional[str] = None,
-        status: Optional[str] = None,
-        department: Optional[str] = None
+        department: Optional[str] = None,
+        team: Optional[str] = None,
+        recommend_status: Optional[str] = None,
+        radar_status: Optional[str] = None,
+        stage: Optional[str] = None
     ) -> List[SolutionInDB]:
         """Get all solutions with filtering and pagination"""
         query = {}
+        
+        # Add filters if provided
         if category:
             # Get category by name
             category_obj = await self.category_service.get_category_by_name(category)
             if category_obj:
                 query["category_id"] = category_obj.id
-        if status:
-            query["status"] = status
         if department:
             query["department"] = department
+        if team:
+            query["team"] = team
+        if recommend_status:
+            query["recommend_status"] = recommend_status
+        if radar_status:
+            query["radar_status"] = radar_status
+        if stage:
+            query["stage"] = stage
 
-        cursor = self.collection.find(query).skip(skip).limit(limit)
+        cursor = self.collection.find(query).sort("name", 1).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
         
         # Populate category names

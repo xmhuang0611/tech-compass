@@ -28,18 +28,50 @@ async def get_solutions(
     skip: int = 0,
     limit: int = 10,
     category: Optional[str] = None,
-    status: Optional[str] = None,
     department: Optional[str] = None,
+    team: Optional[str] = None,
+    recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (BUY/HOLD/SELL)"),
+    radar_status: Optional[str] = Query(None, description="Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)"),
+    stage: Optional[str] = Query(None, description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)"),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Get all solutions with pagination and filtering."""
+    """Get all solutions with pagination and filtering.
+    
+    Query Parameters:
+    - category: Filter by category name
+    - department: Filter by department name
+    - team: Filter by team name
+    - recommend_status: Filter by recommendation status (BUY/HOLD/SELL)
+    - radar_status: Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
+    - stage: Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
+    """
     try:
+        # Validate enum values if provided
+        if recommend_status and recommend_status not in ["BUY", "HOLD", "SELL"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid recommend_status. Must be one of: BUY, HOLD, SELL"
+            )
+        if radar_status and radar_status not in ["ADOPT", "TRIAL", "ASSESS", "HOLD"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid radar_status. Must be one of: ADOPT, TRIAL, ASSESS, HOLD"
+            )
+        if stage and stage not in ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid stage. Must be one of: DEVELOPING, UAT, PRODUCTION, DEPRECATED, RETIRED"
+            )
+
         solutions = await solution_service.get_solutions(
             skip=skip,
             limit=limit,
             category=category,
-            status=status,
-            department=department
+            department=department,
+            team=team,
+            recommend_status=recommend_status,
+            radar_status=radar_status,
+            stage=stage
         )
         total = await solution_service.count_solutions()
         return {
