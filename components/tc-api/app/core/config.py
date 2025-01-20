@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # JWT settings
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5256000  # 10 years
     
     # Auth Server settings
     AUTH_SERVER_URL: str = "http://localhost:8000/auth"  # Default value for development
