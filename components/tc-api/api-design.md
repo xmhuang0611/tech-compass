@@ -331,7 +331,7 @@ Response:
         "updated_by": "string"
       }
     ],
-    "summary": { // will not include score=0, it means no rating only comment
+    "summary": {
       "average": 4.5,
       "count": 100,
       "distribution": {
@@ -414,7 +414,8 @@ Notes:
 
 - Each user can only have one active rating per solution
 - If a user submits a new rating, it will update their existing rating
-- Rating scores must be between 1 and 5, if user only provides a comment, rating will be set to 0
+- Rating scores must be between 1 and 5 as integer, do not allow other rating scores
+- Rating comment is optional
 
 ### 2.3 Comments Management
 
