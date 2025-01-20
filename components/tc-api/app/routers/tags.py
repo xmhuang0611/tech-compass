@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
 
@@ -6,6 +6,8 @@ from app.core.auth import get_current_active_user
 from app.models.tag import Tag, TagCreate, TagUpdate
 from app.models.user import User
 from app.services.tag_service import TagService
+from app.services.solution_service import SolutionService
+from app.models.solution import SolutionUpdate
 
 router = APIRouter()
 
@@ -108,4 +110,127 @@ async def delete_tag(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
+        )
+
+@router.get("/solution/{solution_slug}", response_model=List[str], tags=["tags"])
+async def get_solution_tags(
+    solution_slug: str,
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Get all tags for a specific solution."""
+    solution = await solution_service.get_solution_by_slug(solution_slug)
+    if not solution:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solution not found"
+        )
+    return solution.tags if solution.tags else []
+
+@router.post("/solution/{solution_slug}/tag/{tag_name}", status_code=status.HTTP_201_CREATED, tags=["tags"])
+async def add_solution_tag(
+    solution_slug: str,
+    tag_name: str,
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Add a tag to a solution. Creates the tag if it doesn't exist."""
+    try:
+        # Validate tag name is not empty
+        if not tag_name or tag_name.isspace():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tag name cannot be empty"
+            )
+        
+        # Get the solution first
+        solution = await solution_service.get_solution_by_slug(solution_slug)
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Solution not found"
+            )
+        
+        # Check if tag already exists in solution
+        existing_tags = solution.tags or []
+        if tag_name in existing_tags:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Tag '{tag_name}' is already added to this solution"
+            )
+
+        # Create tag if it doesn't exist and add it to solution
+        solution_update = SolutionUpdate(tags=existing_tags + [tag_name])
+        updated_solution = await solution_service.update_solution_by_slug(
+            solution_slug, 
+            solution_update,
+            current_user.username
+        )
+        if not updated_solution:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update solution with new tag"
+            )
+        
+        return {"message": f"Tag '{tag_name}' added successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error adding tag to solution: {str(e)}"
+        )
+
+@router.delete("/solution/{solution_slug}/tag/{tag_name}", status_code=status.HTTP_200_OK, tags=["tags"])
+async def delete_solution_tag(
+    solution_slug: str,
+    tag_name: str,
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Remove a tag from a solution."""
+    try:
+        # Validate tag name is not empty
+        if not tag_name or tag_name.isspace():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tag name cannot be empty"
+            )
+        
+        # Get the solution first
+        solution = await solution_service.get_solution_by_slug(solution_slug)
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Solution not found"
+            )
+        
+        # Check if tag exists in solution
+        existing_tags = solution.tags or []
+        if tag_name not in existing_tags:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Tag '{tag_name}' not found in this solution"
+            )
+
+        # Remove tag from solution
+        updated_tags = [tag for tag in existing_tags if tag != tag_name]
+        solution_update = SolutionUpdate(tags=updated_tags)
+        updated_solution = await solution_service.update_solution_by_slug(
+            solution_slug, 
+            solution_update,
+            current_user.username
+        )
+        if not updated_solution:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update solution after removing tag"
+            )
+        
+        return {"message": f"Tag '{tag_name}' removed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing tag from solution: {str(e)}"
         )
