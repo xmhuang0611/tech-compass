@@ -39,6 +39,20 @@ class SolutionService:
         base_slug = generate_slug(solution_dict["name"])
         solution_dict["slug"] = await self.ensure_unique_slug(base_slug)
             
+        # Set maintainer fields if not provided
+        if not solution_dict.get("maintainer_id") and username:
+            solution_dict["maintainer_id"] = username
+        if not solution_dict.get("maintainer_name") and username:
+            # Try to get user's full name from users collection
+            user = await self.db.users.find_one({"username": username})
+            if user and user.get("full_name"):
+                solution_dict["maintainer_name"] = user["full_name"]
+        if not solution_dict.get("maintainer_email") and username:
+            # Try to get user's email from users collection
+            user = await self.db.users.find_one({"username": username})
+            if user and user.get("email"):
+                solution_dict["maintainer_email"] = user["email"]
+
         solution_dict["created_at"] = datetime.utcnow()
         solution_dict["updated_at"] = datetime.utcnow()
         if username:
@@ -151,6 +165,16 @@ class SolutionService:
         if "name" in update_dict:
             base_slug = generate_slug(update_dict["name"])
             update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
+
+        # Update maintainer fields if provided
+        if "maintainer_id" in update_dict and username:
+            # Try to get user's info from users collection
+            user = await self.db.users.find_one({"username": update_dict["maintainer_id"]})
+            if user:
+                if not update_dict.get("maintainer_name"):
+                    update_dict["maintainer_name"] = user.get("full_name")
+                if not update_dict.get("maintainer_email"):
+                    update_dict["maintainer_email"] = user.get("email")
 
         update_dict["updated_at"] = datetime.utcnow()
         if username:

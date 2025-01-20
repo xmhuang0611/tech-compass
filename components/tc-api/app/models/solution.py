@@ -39,6 +39,9 @@ class SolutionBase(BaseModel):
     department: str = Field(..., description="Department name")
     team: str = Field(..., description="Team name")
     team_email: Optional[str] = Field(None, description="Team contact email")
+    maintainer_id: Optional[str] = Field(None, description="ID of the maintainer")
+    maintainer_name: Optional[str] = Field(None, description="Name of the maintainer")
+    maintainer_email: Optional[str] = Field(None, description="Email of the maintainer")
     official_website: Optional[str] = Field(None, description="Official website URL")
     documentation_url: Optional[str] = Field(None, description="Documentation URL")
     demo_url: Optional[str] = Field(None, description="Demo/POC URL")
@@ -61,6 +64,9 @@ class SolutionUpdate(BaseModel):
     department: Optional[str] = None
     team: Optional[str] = None
     team_email: Optional[str] = None
+    maintainer_id: Optional[str] = None
+    maintainer_name: Optional[str] = None
+    maintainer_email: Optional[str] = None
     official_website: Optional[str] = None
     documentation_url: Optional[str] = None
     demo_url: Optional[str] = None
