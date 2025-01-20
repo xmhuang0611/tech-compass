@@ -321,19 +321,17 @@ Response:
     "ratings": [
       {
         "id": "string",
-        "solution_id": "string",
-        "user_id": "string",
+        "solution_slug": "string",
+        "username": "string",
         "score": 5,
         "comment": "string",
-        "user": {
-          "id": "string",
-          "username": "string"
-        },
         "created_at": "datetime",
-        "updated_at": "datetime"
+        "created_by": "string",
+        "updated_at": "datetime",
+        "updated_by": "string"
       }
     ],
-    "summary": {
+    "summary": { // will not include score=0, it means no rating only comment
       "average": 4.5,
       "count": 100,
       "distribution": {
@@ -366,12 +364,14 @@ Response:
   "status": "success",
   "data": {
     "id": "string",
-    "solution_id": "string",
-    "user_id": "string",
+    "solution_slug": "string",
+    "username": "string",
     "score": 5,
     "comment": "string",
     "created_at": "datetime",
-    "updated_at": "datetime"
+    "created_by": "string",
+    "updated_at": "datetime",
+    "updated_by": "string"
   }
 }
 ```
@@ -398,12 +398,14 @@ Response:
   "status": "success",
   "data": {
     "id": "string",
-    "solution_id": "string",
-    "user_id": "string",
+    "solution_slug": "string",
+    "username": "string",
     "score": 5,
     "comment": "string",
     "created_at": "datetime",
-    "updated_at": "datetime"
+    "created_by": "string",
+    "updated_at": "datetime",
+    "updated_by": "string"
   }
 }
 ```
@@ -412,7 +414,7 @@ Notes:
 
 - Each user can only have one active rating per solution
 - If a user submits a new rating, it will update their existing rating
-- Rating scores must be between 1 and 5
+- Rating scores must be between 1 and 5, if user only provides a comment, rating will be set to 0
 
 ### 2.3 Comments Management
 
