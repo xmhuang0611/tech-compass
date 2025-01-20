@@ -200,3 +200,59 @@ async def add_solution_tag(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error adding tag to solution: {str(e)}"
         )
+
+@router.delete("/{slug}/tags/{tag_name}", status_code=status.HTTP_200_OK)
+async def delete_solution_tag(
+    slug: str,
+    tag_name: str,
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Remove a tag from a solution."""
+    try:
+        # Validate tag name is not empty
+        if not tag_name or tag_name.isspace():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Tag name cannot be empty"
+            )
+        
+        # Get the solution first
+        solution = await solution_service.get_solution_by_slug(slug)
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Solution not found"
+            )
+        
+        # Check if tag exists in solution
+        existing_tags = solution.tags or []
+        if tag_name not in existing_tags:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Tag '{tag_name}' not found in this solution"
+            )
+
+        # Remove tag from solution
+        updated_tags = [tag for tag in existing_tags if tag != tag_name]
+        solution_update = SolutionUpdate(tags=updated_tags)
+        updated_solution = await solution_service.update_solution_by_slug(
+            slug, 
+            solution_update,
+            current_user.username
+        )
+        if not updated_solution:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to update solution after removing tag"
+            )
+        
+        return {"message": f"Tag '{tag_name}' removed successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error removing tag from solution: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error removing tag from solution: {str(e)}"
+        )
