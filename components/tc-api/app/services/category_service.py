@@ -121,9 +121,9 @@ class CategoryService:
             return False
 
         # Check if category is being used by any solutions
-        solutions_using_category = await self.db.solutions.find_one({"category": category.id})
+        solutions_using_category = await self.db.solutions.find_one({"category": name})
         if solutions_using_category:
-            raise ValueError("Cannot delete category as it is being used by solutions")
+            raise ValueError(f"Cannot delete category '{name}' as it is being used by solutions")
 
         result = await self.collection.delete_one({"name": name})
         return result.deleted_count > 0

@@ -76,7 +76,7 @@ async def delete_category(
     current_user: User = Depends(get_current_active_user),
     category_service: CategoryService = Depends()
 ) -> None:
-    """Delete a category by name."""
+    """Delete a category by name. Will return 400 error if category is being used by any solutions."""
     try:
         success = await category_service.delete_category_by_name(name)
         if not success:
@@ -85,4 +85,7 @@ async def delete_category(
                 detail="Category not found"
             )
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
