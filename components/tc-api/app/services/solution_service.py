@@ -5,6 +5,7 @@ import re
 
 from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
 from app.services.category_service import CategoryService
+from app.services.tag_service import TagService
 from app.core.database import get_database
 
 def generate_slug(name: str) -> str:
@@ -23,17 +24,18 @@ class SolutionService:
         self.db = get_database()
         self.collection = self.db.solutions
         self.category_service = CategoryService()
+        self.tag_service = TagService()
 
     async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
-        solution_dict = solution.dict(exclude_unset=True)
+        solution_dict = solution.model_dump(exclude_unset=True)
         
         # Handle category creation if provided
-        if solution.category:
-            category = await self.category_service.get_or_create_category(solution.category, username)
+        if solution_dict.get("category"):
+            category = await self.category_service.get_or_create_category(solution_dict["category"], username)
             solution_dict["category_id"] = category.id
             # Keep category name in the response
-            solution_dict["category"] = solution.category
+            solution_dict["category"] = category.name
         
         # Generate and ensure unique slug
         base_slug = generate_slug(solution_dict["name"])
@@ -52,6 +54,22 @@ class SolutionService:
             user = await self.db.users.find_one({"username": username})
             if user and user.get("email"):
                 solution_dict["maintainer_email"] = user["email"]
+
+        # Handle tags
+        if "tags" in solution_dict:
+            formatted_tags = []
+            for tag_name in solution_dict["tags"]:
+                # Create tag if it doesn't exist
+                tag = await self.tag_service.get_tag_by_name(tag_name)
+                if not tag:
+                    from app.models.tag import TagCreate
+                    tag_create = TagCreate(
+                        name=tag_name,
+                        description=f"Tag for {tag_name}"
+                    )
+                    tag = await self.tag_service.create_tag(tag_create, username)
+                formatted_tags.append(tag.name)
+            solution_dict["tags"] = formatted_tags
 
         solution_dict["created_at"] = datetime.utcnow()
         solution_dict["updated_at"] = datetime.utcnow()
@@ -165,6 +183,21 @@ class SolutionService:
         if "name" in update_dict:
             base_slug = generate_slug(update_dict["name"])
             update_dict["slug"] = await self.ensure_unique_slug(base_slug, solution_id)
+
+        # Handle tags update
+        if "tags" in update_dict:
+            # Ensure all tags exist and get formatted names
+            formatted_tags = []
+            for tag_name in update_dict["tags"]:
+                # Create tag if it doesn't exist
+                tag = await self.tag_service.get_tag_by_name(tag_name)
+                if not tag:
+                    tag = await self.tag_service.create_tag({
+                        "name": tag_name,
+                        "description": f"Tag for {tag_name}"
+                    }, username)
+                formatted_tags.append(tag.name)
+            update_dict["tags"] = formatted_tags
 
         # Update maintainer fields if provided
         if "maintainer_id" in update_dict and username:

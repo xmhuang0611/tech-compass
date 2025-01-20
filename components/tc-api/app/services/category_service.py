@@ -20,7 +20,7 @@ class CategoryService:
         if existing_category:
             raise ValueError(f"Category '{name}' already exists")
 
-        category_dict = category.dict()
+        category_dict = category.model_dump()
         category_dict["created_at"] = datetime.utcnow()
         category_dict["updated_at"] = datetime.utcnow()
         if username:
@@ -45,6 +45,20 @@ class CategoryService:
             return CategoryInDB(**category)
         return None
 
+    async def get_or_create_category(self, name: str, username: Optional[str] = None) -> CategoryInDB:
+        """Get a category by name or create it if it doesn't exist"""
+        # Try to get existing category
+        existing = await self.get_category_by_name(name)
+        if existing:
+            return existing
+        
+        # Create new category with minimal info
+        category = CategoryCreate(
+            name=name,
+            description=f"Category for {name}"
+        )
+        return await self.create_category(category, username)
+
     async def get_categories(self, skip: int = 0, limit: int = 100) -> CategoryList:
         """Get all categories with pagination"""
         cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
@@ -65,7 +79,7 @@ class CategoryService:
         if not existing_category:
             return None
 
-        update_dict = category_update.dict(exclude_unset=True)
+        update_dict = category_update.model_dump(exclude_unset=True)
         
         # Check name uniqueness if being updated
         if "name" in update_dict and update_dict["name"] != name:

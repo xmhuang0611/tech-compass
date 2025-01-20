@@ -46,6 +46,7 @@ class SolutionBase(BaseModel):
     documentation_url: Optional[str] = Field(None, description="Documentation URL")
     demo_url: Optional[str] = Field(None, description="Demo/POC URL")
     version: Optional[str] = Field(None, description="Current version")
+    tags: List[str] = Field(default_factory=list, description="List of tag names")
     pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
     stage: Optional[StageEnum] = Field(None, description="Development stage status")
@@ -71,6 +72,7 @@ class SolutionUpdate(BaseModel):
     documentation_url: Optional[str] = None
     demo_url: Optional[str] = None
     version: Optional[str] = None
+    tags: Optional[List[str]] = None
     pros: Optional[List[str]] = None
     cons: Optional[List[str]] = None
     stage: Optional[StageEnum] = None
