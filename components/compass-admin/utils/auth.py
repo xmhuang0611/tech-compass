@@ -6,24 +6,24 @@ API_BASE_URL = "http://localhost:8000/api"
 
 def login() -> None:
     """Display login form and handle authentication"""
-    st.title("Tech Compass Admin Login")
     
+    st.markdown("<h1 style='text-align: center;'>Tech Compass Admin</h1>", unsafe_allow_html=True)
     # Center the login form
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.form("login_form", clear_on_submit=True):
             st.markdown("### Sign In")
-            email = st.text_input("Email", placeholder="Enter your email")
+            username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
             submitted = st.form_submit_button("Login", use_container_width=True)
             
-            if submitted and email and password:
-                if check_auth(email, password):
+            if submitted and username and password:
+                if check_auth(username, password):
                     st.success("Login successful!")
                     st.session_state.authenticated = True
                     st.rerun()
                     
-def check_auth(email: str, password: str) -> bool:
+def check_auth(username: str, password: str) -> bool:
     """Verify user credentials against the API"""
     try:
         headers = {
@@ -34,7 +34,7 @@ def check_auth(email: str, password: str) -> bool:
         # 完全匹配 curl 请求的参数
         data = {
             "grant_type": "",
-            "username": email,
+            "username": username,
             "password": password,
             "scope": "",
             "client_id": "",
