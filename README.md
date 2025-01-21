@@ -37,10 +37,10 @@ A platform for discovering, evaluating, and sharing technology solutions within 
 
 The project follows a microservices architecture with the following components:
 
-- `components/tc-api`: Backend API service built with Python FastAPI
-- `components/tc-web`: Frontend web application built with Angular + PrimeNG
-- `components/tc-admin`: Admin panel built with Python Streamlit
-- `components/tc-radar`: Technology radar visualization
+- `components/compass-api`: Backend API service built with Python FastAPI
+- `components/compass-web`: Frontend web application built with Angular + PrimeNG
+- `components/compass-admin`: Admin panel built with Python Streamlit
+- `components/compass-radar`: Technology radar visualization
 
 ## 🛠️ Tech Stack
 
@@ -80,7 +80,7 @@ cd tech-compass
 2. **Backend Setup**
 
 ```bash
-cd components/tc-api
+cd components/compass-api
 python -m venv venv
 source venv/bin/activate  # On Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
@@ -95,7 +95,7 @@ python main.py
 3. **Frontend Setup**
 
 ```bash
-cd components/tc-web
+cd components/compass-web
 npm install
 
 # Configure environment
@@ -108,7 +108,7 @@ ng serve
 4. **Admin Panel Setup**
 
 ```bash
-cd components/tc-admin
+cd components/compass-admin
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
@@ -123,7 +123,7 @@ streamlit run app.py
 5. **Tech Radar Setup**
 
 ```bash
-cd components/tc-radar
+cd components/compass-radar
 npm install
 npm start
 ```
@@ -153,11 +153,11 @@ docker-compose up -d
 
 ```bash
 # Backend tests
-cd components/tc-api
+cd components/compass-api
 pytest
 
 # Frontend tests
-cd components/tc-web
+cd components/compass-web
 ng test
 ```
 
