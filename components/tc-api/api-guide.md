@@ -362,3 +362,87 @@ Most endpoints return responses in the following format:
 - `403 Forbidden`: Insufficient permissions
 - `404 Not Found`: Resource not found
 - `500 Internal Server Error`: Server error
+
+## Site Configuration
+
+### Get Site Config
+
+```http
+GET /site-config
+```
+
+Get the current site configuration. This endpoint is public and does not require authentication.
+
+### Create Site Config
+
+```http
+POST /site-config
+```
+
+Create initial site configuration. Requires authentication. Can only be called once when no configuration exists.
+
+**Request Body:**
+
+```json
+{
+  "site_name": "string",
+  "site_description": "string",
+  "welcome_message": "string",
+  "contact_email": "string",
+  "features": {
+    "ratings_enabled": true,
+    "comments_enabled": true,
+    "tags_enabled": true
+  },
+  "custom_links": [
+    {
+      "title": "string",
+      "url": "string",
+      "icon": "string"
+    }
+  ],
+  "theme": {
+    "primary_color": "#1890ff",
+    "secondary_color": "#52c41a",
+    "layout": "default"
+  },
+  "meta": {
+    "keywords": ["string"],
+    "author": "string",
+    "favicon": "string"
+  }
+}
+```
+
+### Update Site Config
+
+```http
+PUT /site-config
+```
+
+Update site configuration. Requires authentication. Only updates the fields that are provided.
+
+**Request Body:**
+
+```json
+{
+  "site_name": "string",
+  "site_description": "string",
+  "welcome_message": "string",
+  "contact_email": "string",
+  "features": {},
+  "custom_links": [],
+  "theme": {},
+  "meta": {}
+}
+```
+
+All fields are optional. Only include the fields you want to update.
+
+### Reset Site Config
+
+```http
+POST /site-config/reset
+```
+
+Reset site configuration to default values. Requires authentication.
