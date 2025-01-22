@@ -1,14 +1,47 @@
 from typing import List, Tuple, Optional
 from datetime import datetime
 from bson import ObjectId
-from pymongo import DESCENDING
+from pymongo import DESCENDING, ASCENDING
 
 from app.core.database import get_database
 from app.models.comment import CommentCreate, CommentInDB
 
+VALID_SORT_FIELDS = {'created_at', 'updated_at'}
+
 class CommentService:
     def __init__(self):
         self.db = get_database()
+
+    async def get_comments(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        sort: str = "-created_at"  # Default sort by created_at desc
+    ) -> Tuple[List[CommentInDB], int]:
+        """Get all comments with pagination and sorting.
+        Default sort is by created_at in descending order (newest first)."""
+        
+        # Parse sort parameter
+        sort_field = "created_at"
+        sort_direction = DESCENDING  # Default to descending
+
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+            sort_direction = ASCENDING
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        # Execute query with sort
+        cursor = self.db.comments.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+        comments = [CommentInDB(**comment) async for comment in cursor]
+        total = await self.db.comments.count_documents({})
+        
+        return comments, total
 
     async def get_solution_comments(
         self,

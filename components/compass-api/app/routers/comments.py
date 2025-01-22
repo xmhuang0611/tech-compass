@@ -123,4 +123,41 @@ async def delete_comment(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Comment not found or you don't have permission to delete it"
-        ) 
+        )
+
+@router.get("/", response_model=dict, tags=["comments"])
+async def get_all_comments(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    comment_service: CommentService = Depends()
+):
+    """
+    Get all comments with pagination and sorting.
+    Default sort is by created_at in descending order (newest first).
+    
+    - **page**: Page number for pagination
+    - **page_size**: Number of comments per page
+    - **sort**: Field to sort by (created_at). Prefix with - for descending order
+    """
+    try:
+        skip = (page - 1) * page_size
+        comments, total = await comment_service.get_comments(
+            skip=skip,
+            limit=page_size,
+            sort=sort
+        )
+        return {
+            "status": "success",
+            "data": comments,
+            "meta": {
+                "page": page,
+                "page_size": page_size,
+                "total": total
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting comments: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting comments: {str(e)}") 
