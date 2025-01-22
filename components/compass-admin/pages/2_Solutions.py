@@ -1,334 +1,405 @@
 import streamlit as st
-import pandas as pd
+from utils.auth import login
 from utils.api import APIClient
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
+import pandas as pd
+from datetime import datetime
 
+# Page configuration
 st.set_page_config(
-    page_title="Solutions Management - Tech Compass Admin",
+    page_title="Solutions - Tech Compass Admin",
     page_icon="💡",
     layout="wide"
 )
 
+# Initialize session state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "solutions_page" not in st.session_state:
+    st.session_state.solutions_page = 0
+if "solutions_per_page" not in st.session_state:
+    st.session_state.solutions_per_page = 10
+if "selected_solution" not in st.session_state:
+    st.session_state.selected_solution = None
+
+# Check authentication
+if not st.session_state.authenticated:
+    login()
+    st.stop()
+
 # Constants
 RADAR_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
 STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
-RECOMMEND_STATUS_OPTIONS = ["BUY", "HOLD", "SELL"]
-
-def load_solutions(skip=0, limit=10, **filters):
-    """Load solutions with pagination and filters"""
-    params = {"skip": skip, "limit": limit, **filters}
-    response = APIClient.get("solutions", params)
-    
-    if isinstance(response, dict):
-        # 从 items 字段获取解决方案列表
-        solutions = response.get("items", [])
-        # 获取分页信息
-        meta = {
-            "total": response.get("total", 0),
-            "skip": response.get("skip", 0),
-            "limit": response.get("limit", 10)
-        }
-        return solutions, meta
-    return [], {"total": 0, "skip": 0, "limit": 10}
 
 def load_categories():
     """Load all categories"""
-    response = APIClient.get("categories")
-    if isinstance(response, dict):
-        return response.get("data", {}).get("categories", [])
+    try:
+        response = APIClient.get("categories/")
+        if response and isinstance(response, dict):
+            return response.get("items", {}).get("categories", [])
+    except Exception as e:
+        st.error(f"Failed to load categories: {str(e)}")
     return []
 
-def delete_solution(slug):
-    """Delete a solution"""
-    response = APIClient.delete(f"solutions/{slug}")
-    return response is not None
+def load_solutions(skip=0, limit=10, **filters):
+    """Load solutions with pagination and filters"""
+    try:
+        params = {"skip": skip, "limit": limit, "sort": "-updated_at", **filters}
+        response = APIClient.get("solutions/", params)
+        if response and isinstance(response, dict):
+            return response.get("items", []), {
+                "total": response.get("total", 0),
+                "skip": response.get("skip", 0),
+                "limit": response.get("limit", 10)
+            }
+    except Exception as e:
+        st.error(f"Failed to load solutions: {str(e)}")
+    return [], {"total": 0, "skip": 0, "limit": 10}
 
-def create_solution(data):
-    """Create a new solution"""
-    response = APIClient.post("solutions", data)
-    if isinstance(response, dict):
-        st.success("Solution created successfully!")
-        return True
+def update_solution(solution_id, data):
+    """Update solution"""
+    try:
+        response = APIClient.put(f"solutions/{solution_id}/", data)
+        if response:
+            st.success("Solution updated successfully!")
+            return True
+    except Exception as e:
+        st.error(f"Failed to update solution: {str(e)}")
     return False
 
-def update_solution(slug, data):
-    """Update an existing solution"""
-    response = APIClient.put(f"solutions/{slug}", data)
-    if isinstance(response, dict):
-        st.success("Solution updated successfully!")
-        return True
-    return False
-
-def solution_form(existing_data=None):
-    """Form for creating/editing a solution"""
-    with st.form("solution_form"):
+def render_solution_form(solution_data):
+    """Render form for editing solution"""
+    with st.form("edit_solution_form"):
+        st.subheader("Edit Solution")
+        
         # Basic Information
-        st.subheader("Basic Information")
+        st.write("**Basic Information**")
         col1, col2 = st.columns(2)
         with col1:
             name = st.text_input(
-                "Name*",
-                value=existing_data.get("name", "") if existing_data else "",
+                "Name",
+                value=solution_data.get("name", ""),
                 help="Solution name"
             )
         with col2:
             category = st.selectbox(
                 "Category",
                 options=[""] + [cat["name"] for cat in load_categories()],
-                index=0 if not existing_data else next(
-                    (i for i, cat in enumerate(load_categories()) 
-                     if cat["name"] == existing_data.get("category")), 
-                    0
-                ) + 1
+                index=0 if not solution_data.get("category") else 
+                      next((i + 1 for i, cat in enumerate(load_categories()) 
+                           if cat["name"] == solution_data.get("category")), 0)
             )
         
         description = st.text_area(
-            "Description*",
-            value=existing_data.get("description", "") if existing_data else "",
-            help="Detailed description"
+            "Description",
+            value=solution_data.get("description", ""),
+            help="Solution description"
         )
         
-        # Team Information
-        st.subheader("Team Information")
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            department = st.text_input(
-                "Department*",
-                value=existing_data.get("department", "") if existing_data else "",
-                help="Department name"
-            )
-        with col2:
-            team = st.text_input(
-                "Team*",
-                value=existing_data.get("team", "") if existing_data else "",
-                help="Team name"
-            )
-        with col3:
-            team_email = st.text_input(
-                "Team Email",
-                value=existing_data.get("team_email", "") if existing_data else "",
-                help="Team contact email"
-            )
-            
         # Status Information
-        st.subheader("Status Information")
+        st.write("**Status Information**")
         col1, col2, col3 = st.columns(3)
         with col1:
             radar_status = st.selectbox(
-                "Radar Status*",
+                "Radar Status",
                 options=RADAR_STATUS_OPTIONS,
-                index=RADAR_STATUS_OPTIONS.index(existing_data.get("radar_status", "ASSESS")) if existing_data else 0,
-                help="Tech Radar status"
+                index=RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status", "ASSESS"))
             )
         with col2:
             stage = st.selectbox(
                 "Stage",
                 options=[""] + STAGE_OPTIONS,
-                index=STAGE_OPTIONS.index(existing_data.get("stage")) + 1 if existing_data and existing_data.get("stage") else 0,
-                help="Development stage"
+                index=STAGE_OPTIONS.index(solution_data.get("stage")) + 1 
+                      if solution_data.get("stage") else 0
             )
         with col3:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=[""] + RECOMMEND_STATUS_OPTIONS,
-                index=RECOMMEND_STATUS_OPTIONS.index(existing_data.get("recommend_status")) + 1 if existing_data and existing_data.get("recommend_status") else 0,
-                help="Strategic recommendation"
+                options=["BUY", "HOLD", "SELL"],
+                index=["BUY", "HOLD", "SELL"].index(solution_data.get("recommend_status", "HOLD"))
+            )
+        
+        # Team Information
+        st.write("**Team Information**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            department = st.text_input(
+                "Department",
+                value=solution_data.get("department", ""),
+                help="Department name"
+            )
+        with col2:
+            team = st.text_input(
+                "Team",
+                value=solution_data.get("team", ""),
+                help="Team name"
+            )
+        with col3:
+            team_email = st.text_input(
+                "Team Email",
+                value=solution_data.get("team_email", ""),
+                help="Team email address"
+            )
+            
+        # Maintainer Information
+        st.write("**Maintainer Information**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            maintainer_name = st.text_input(
+                "Maintainer Name",
+                value=solution_data.get("maintainer_name", ""),
+                help="Maintainer's name"
+            )
+        with col2:
+            maintainer_email = st.text_input(
+                "Maintainer Email",
+                value=solution_data.get("maintainer_email", ""),
+                help="Maintainer's email"
+            )
+        with col3:
+            version = st.text_input(
+                "Version",
+                value=solution_data.get("version", ""),
+                help="Solution version"
             )
             
         # URLs
-        st.subheader("URLs")
+        st.write("**URLs**")
         col1, col2, col3 = st.columns(3)
         with col1:
             official_website = st.text_input(
                 "Official Website",
-                value=existing_data.get("official_website", "") if existing_data else "",
+                value=solution_data.get("official_website", ""),
                 help="Official website URL"
             )
         with col2:
             documentation_url = st.text_input(
                 "Documentation URL",
-                value=existing_data.get("documentation_url", "") if existing_data else "",
+                value=solution_data.get("documentation_url", ""),
                 help="Documentation URL"
             )
         with col3:
             demo_url = st.text_input(
                 "Demo URL",
-                value=existing_data.get("demo_url", "") if existing_data else "",
+                value=solution_data.get("demo_url", ""),
                 help="Demo/POC URL"
             )
             
+        # Tags
+        st.write("**Tags** (comma-separated)")
+        tags = st.text_input(
+            "Tags",
+            value=", ".join(solution_data.get("tags", [])),
+            help="Enter tags separated by commas"
+        )
+        
         # Pros & Cons
-        st.subheader("Pros & Cons")
+        st.write("**Pros & Cons**")
         col1, col2 = st.columns(2)
         with col1:
             pros = st.text_area(
                 "Pros",
-                value="\n".join(existing_data.get("pros", [])) if existing_data else "",
-                help="List advantages (one per line)"
+                value="\n".join(solution_data.get("pros", [])),
+                help="Enter pros (one per line)"
             )
         with col2:
             cons = st.text_area(
                 "Cons",
-                value="\n".join(existing_data.get("cons", [])) if existing_data else "",
-                help="List disadvantages (one per line)"
+                value="\n".join(solution_data.get("cons", [])),
+                help="Enter cons (one per line)"
             )
-            
-        submitted = st.form_submit_button("Save Solution")
+        
+        submitted = st.form_submit_button("Save Changes")
         
         if submitted:
-            if not name or not description or not department or not team or not radar_status:
-                st.error("Please fill in all required fields (*)")
-                return None
-                
-            data = {
+            update_data = {
                 "name": name,
                 "description": description,
                 "category": category if category else None,
+                "stage": stage if stage else None,
+                "recommend_status": recommend_status,
                 "radar_status": radar_status,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
+                "maintainer_name": maintainer_name,
+                "maintainer_email": maintainer_email if maintainer_email else None,
                 "official_website": official_website if official_website else None,
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
-                "stage": stage if stage else None,
-                "recommend_status": recommend_status if recommend_status else None,
-                "pros": [p.strip() for p in pros.split("\n") if p.strip()] if pros else None,
-                "cons": [c.strip() for c in cons.split("\n") if c.strip()] if cons else None
+                "version": version if version else None,
+                "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
+                "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
+                "cons": [con.strip() for con in cons.split("\n") if con.strip()]
             }
             
-            return data
-    return None
+            if update_solution(solution_data["_id"], update_data):
+                st.session_state.selected_solution = None
+                st.session_state.editing = False
+                st.rerun()
 
 def main():
-    st.title("Solutions Management")
+    st.title("💡 Solutions")
     
-    # Tabs for list/create views
-    tab1, tab2 = st.tabs(["Solutions List", "Add Solution"])
-    
-    # Solutions List Tab
-    with tab1:
-        # Filters
-        with st.expander("Filters", expanded=True):
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                category = st.selectbox(
-                    "Category",
-                    options=["All"] + [cat["name"] for cat in load_categories()]
-                )
-            with col2:
-                department = st.text_input("Department")
-            with col3:
-                stage = st.selectbox(
-                    "Stage",
-                    options=["All"] + STAGE_OPTIONS
-                )
-            with col4:
-                radar_status = st.selectbox(
-                    "Radar Status",
-                    options=["All"] + RADAR_STATUS_OPTIONS
-                )
-        
-        # Load solutions with filters
-        filters = {}
-        if category != "All":
-            filters["category"] = category
-        if department:
-            filters["department"] = department
-        if stage != "All":
-            filters["stage"] = stage
-        if radar_status != "All":
-            filters["radar_status"] = radar_status
-            
-        # 移除原来的分页输入控件
-        page_size = 10
-        page = 1
-        if "page" not in st.session_state:
-            st.session_state.page = 1
-        skip = (st.session_state.page - 1) * page_size
-            
-        solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
-        
-        if solutions:
-            # Convert to DataFrame for better display
-            df = pd.DataFrame(solutions)
-            
-            # Format timestamps
-            df['created_at'] = pd.to_datetime(df['created_at']).dt.strftime('%Y-%m-%d %H:%M')
-            df['updated_at'] = pd.to_datetime(df['updated_at']).dt.strftime('%Y-%m-%d %H:%M')
-            
-            # Join tags list into string
-            df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if x else '')
-            
-            # Display solutions in a table
-            st.dataframe(
-                df[[
-                    "name", "category", "department", "team",
-                    "radar_status", "stage", "recommend_status",
-                    "version", "tags", "maintainer_name", 
-                    "maintainer_email", "created_at", "updated_at",
-                    "created_by", "updated_by"
-                ]],
-                column_config={
-                    "name": "Name",
-                    "category": "Category",
-                    "department": "Department",
-                    "team": "Team",
-                    "radar_status": "Radar Status",
-                    "stage": "Stage",
-                    "recommend_status": "Recommend",
-                    "version": "Version",
-                    "tags": "Tags",
-                    "maintainer_name": "Maintainer",
-                    "maintainer_email": "Maintainer Email",
-                    "created_at": "Created At",
-                    "updated_at": "Updated At",
-                    "created_by": "Created By",
-                    "updated_by": "Updated By"
-                },
-                hide_index=True,
-                use_container_width=True
+    # Filters
+    with st.expander("Filters", expanded=True):
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            category = st.selectbox(
+                "Category",
+                options=["All"] + [cat["name"] for cat in load_categories()],
+                key="filter_category"
             )
-            
-            # 添加分页控件到右下方
-            total_pages = (meta["total"] - 1) // page_size + 1
-            
-            # 使用列布局来对齐分页控件
-            _, right_col = st.columns([2, 1])
-            with right_col:
-                col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 2, 1, 1, 2])
-                with col1:
-                    if st.session_state.page > 1:
-                        if st.button("⏮️"):
-                            st.session_state.page = 1
-                            st.rerun()
-                with col2:
-                    if st.session_state.page > 1:
-                        if st.button("◀️"):
-                            st.session_state.page -= 1
-                            st.rerun()
-                with col3:
-                    st.write(f"Page {st.session_state.page} of {total_pages}")
-                with col4:
-                    if st.session_state.page < total_pages:
-                        if st.button("▶️"):
-                            st.session_state.page += 1
-                            st.rerun()
-                with col5:
-                    if st.session_state.page < total_pages:
-                        if st.button("⏭️"):
-                            st.session_state.page = total_pages
-                            st.rerun()
-                with col6:
-                    st.write(f"(Total: {meta['total']} items)")
-        else:
-            st.info("No solutions found")
+        with col2:
+            department = st.text_input("Department", key="filter_department")
+        with col3:
+            stage = st.selectbox(
+                "Stage",
+                options=["All"] + STAGE_OPTIONS,
+                key="filter_stage"
+            )
+        with col4:
+            radar_status = st.selectbox(
+                "Radar Status",
+                options=["All"] + RADAR_STATUS_OPTIONS,
+                key="filter_radar_status"
+            )
     
-    # Add Solution Tab
-    with tab2:
-        solution_data = solution_form()
-        if solution_data:
-            if create_solution(solution_data):
-                st.rerun()
+    # Load solutions with filters
+    filters = {}
+    if category != "All":
+        filters["category"] = category
+    if department:
+        filters["department"] = department
+    if stage != "All":
+        filters["stage"] = stage
+    if radar_status != "All":
+        filters["radar_status"] = radar_status
+        
+    # Get page from session state
+    if "page" not in st.session_state:
+        st.session_state.page = 1
+    page_size = 10
+    skip = (st.session_state.page - 1) * page_size
+        
+    solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
+    
+    # Convert solutions to DataFrame for AgGrid
+    if solutions:
+        # Create DataFrame with explicit column order
+        columns = [
+            'slug', 'name', 'category', 'stage', 'recommend_status', 'radar_status',
+            'department', 'team', 'maintainer_name', 'version', 'tags',
+            'created_at', 'created_by', 'updated_at', 'updated_by'
+        ]
+        df = pd.DataFrame(solutions)  # Create DataFrame from solutions
+        df = df[columns]  # Reorder columns to desired order
+        
+        # Format dates
+        for date_col in ['created_at', 'updated_at']:
+            if date_col in df.columns:
+                df[date_col] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d %H:%M')
+        
+        # Format tags list to string
+        if 'tags' in df.columns:
+            df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
+        
+        # Configure grid options
+        gb = GridOptionsBuilder.from_dataframe(df)
+        gb.configure_selection(
+            selection_mode='single',
+            use_checkbox=False,
+            pre_selected_rows=[]
+        )
+        gb.configure_pagination(enabled=True, paginationAutoPageSize=False, paginationPageSize=page_size)
+        
+        # Configure column properties
+        column_defs = {
+            'slug': {'width': 120, 'headerName': 'Slug'},
+            'name': {'width': 150, 'headerName': 'Name'},
+            'category': {'width': 120, 'headerName': 'Category'},
+            'stage': {'width': 100, 'headerName': 'Stage'},
+            'recommend_status': {'width': 120, 'headerName': 'Recommend'},
+            'radar_status': {'width': 100, 'headerName': 'Radar'},
+            'department': {'width': 120, 'headerName': 'Department'},
+            'team': {'width': 120, 'headerName': 'Team'},
+            'maintainer_name': {'width': 120, 'headerName': 'Maintainer'},
+            'version': {'width': 100, 'headerName': 'Version'},
+            'tags': {'width': 150, 'headerName': 'Tags'},
+            'created_at': {'width': 140, 'headerName': 'Created At'},
+            'created_by': {'width': 100, 'headerName': 'Created By'},
+            'updated_at': {'width': 140, 'headerName': 'Updated At'},
+            'updated_by': {'width': 100, 'headerName': 'Updated By'}
+        }
+        
+        # Apply column configurations
+        for col, props in column_defs.items():
+            gb.configure_column(field=col, **props)
+            
+        gb.configure_grid_options(
+            rowStyle={'cursor': 'pointer'},
+            enableBrowserTooltips=True,
+            rowSelection='single',  # Enforce single row selection
+            suppressRowDeselection=False  # Allow deselecting a row
+        )
+        
+        # Create grid
+        grid_response = AgGrid(
+            df,
+            gridOptions=gb.build(),
+            update_mode=GridUpdateMode.SELECTION_CHANGED,
+            allow_unsafe_jscode=True,
+            theme='streamlit',
+            key='solution_grid'
+        )
+        
+        # Handle selection - always use first selected row if any
+        selected_rows = grid_response.get('selected_rows', [])
+
+        # Always show solution details section
+        st.divider()
+        st.subheader("Solution Details")
+        
+        # Determine if a solution is selected
+        selected_solution = None
+        if selected_rows is not None and len(selected_rows) > 0:
+            selected_solution = selected_rows.iloc[0].to_dict()  # Convert first row of dataframe to dict
+            st.session_state.selected_solution = selected_solution  # Store in session state
+        else:
+            st.session_state.selected_solution = None
+        
+        # Display current values in read-only mode
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.write("**Slug:**", st.session_state.selected_solution.get('slug', '') if st.session_state.selected_solution else '')
+            st.write("**Name:**", st.session_state.selected_solution.get('name', '') if st.session_state.selected_solution else '')
+            st.write("**Category:**", st.session_state.selected_solution.get('category', '') if st.session_state.selected_solution else '')
+            st.write("**Department:**", st.session_state.selected_solution.get('department', '') if st.session_state.selected_solution else '')
+        with col2:
+            st.write("**Team:**", st.session_state.selected_solution.get('team', '') if st.session_state.selected_solution else '')
+            st.write("**Radar Status:**", st.session_state.selected_solution.get('radar_status', '') if st.session_state.selected_solution else '')
+            st.write("**Stage:**", st.session_state.selected_solution.get('stage', '') if st.session_state.selected_solution else '')
+            st.write("**Version:**", st.session_state.selected_solution.get('version', '') if st.session_state.selected_solution else '')
+        with col3:
+            st.write("**Created At:**", st.session_state.selected_solution.get('created_at', '')[:16] if st.session_state.selected_solution else '')
+            st.write("**Updated At:**", st.session_state.selected_solution.get('updated_at', '')[:16] if st.session_state.selected_solution else '')
+            st.write("**Created By:**", st.session_state.selected_solution.get('created_by', '') if st.session_state.selected_solution else '')
+            st.write("**Updated By:**", st.session_state.selected_solution.get('updated_by', '') if st.session_state.selected_solution else '')
+        
+        st.write("**Description:**")
+        st.write(st.session_state.selected_solution.get('description', '') if st.session_state.selected_solution else '')
+        
+        # Edit button
+        if st.button("Edit Solution", key='edit_button') and selected_solution:
+            st.session_state.editing = True
+            st.session_state.selected_solution = selected_solution  # Store solution data only when editing
+        
+        # Show edit form if editing is enabled
+        if st.session_state.get('editing', False):
+            st.divider()
+            render_solution_form(st.session_state.selected_solution)
+    else:
+        st.info("No solutions found")
 
 if __name__ == "__main__":
     main() 
