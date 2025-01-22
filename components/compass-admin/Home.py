@@ -39,6 +39,16 @@ def load_dashboard_stats():
         
     return default_stats
 
+def get_current_user():
+    """Get current user information from API"""
+    try:
+        user_info = APIClient.get("users/me")
+        if user_info and isinstance(user_info, dict):
+            return user_info.get("full_name", "")
+    except Exception as e:
+        st.error(f"Failed to load user information: {str(e)}")
+    return ""
+
 def main():
     if not st.session_state.authenticated:
         login()
@@ -46,17 +56,10 @@ def main():
 
     st.title("Tech Compass Admin")
     
-    # Welcome message and dashboard overview
-    st.markdown("""
-    Welcome to the Tech Compass Admin Dashboard. Use the sidebar to navigate between different modules:
-    
-    - 🔧 **Site Configuration**: Manage website settings and features
-    - 💡 **Solutions**: Manage tech solutions catalog
-    - 📑 **Categories**: Organize solutions by categories
-    - 🏷️ **Tags**: Manage solution tags
-    - ⭐ **Ratings**: View and moderate solution ratings
-    - 💬 **Comments**: Moderate solution comments
-    """)
+    # Welcome message with user's name
+    user_name = get_current_user()
+    welcome_msg = f"Welcome to Tech Compass Admin, {user_name}! 👋" if user_name else "Welcome to Tech Compass Admin! 👋"
+    st.markdown(welcome_msg)
     
     # Quick stats
     st.subheader("Quick Stats")
@@ -82,10 +85,10 @@ def main():
     # Recent Activity
     st.subheader("Recent Activity")
     try:
-        # 获取最近的解决方案更新
+        # Get 10 most recent solution updates
         recent_solutions = APIClient.get("solutions", {
             "page": 1,
-            "page_size": 5,
+            "page_size": 10,
             "sort_by": "updated_at",
             "sort_order": "desc"
         })
