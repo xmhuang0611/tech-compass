@@ -23,19 +23,19 @@ def load_dashboard_stats():
     
     try:
         # Get total solutions count
-        solutions = APIClient.get("solutions", {"skip": 0, "limit": 10})
+        solutions = APIClient.get("solutions/", {"skip": 0, "limit": 10})
         if solutions and isinstance(solutions, dict):
             total_solutions = solutions.get("total", "--")
             default_stats["total_solutions"] = total_solutions
             
         # Get total users count
-        users = APIClient.get("users", {"skip": 0, "limit": 10})
+        users = APIClient.get("users/", {"skip": 0, "limit": 10})
         if users and isinstance(users, dict):
             total_users = users.get("total", "--")
             default_stats["active_users"] = total_users
             
         # Get total categories count
-        categories = APIClient.get("categories", {"skip": 0, "limit": 10})
+        categories = APIClient.get("categories/", {"skip": 0, "limit": 10})
         if categories and isinstance(categories, dict):
             total_categories = categories.get("total", "--")
             default_stats["total_categories"] = total_categories
@@ -48,7 +48,7 @@ def load_dashboard_stats():
 def get_current_user():
     """Get current user information from API"""
     try:
-        user_info = APIClient.get("users/me")
+        user_info = APIClient.get("users/me/")
         if user_info and isinstance(user_info, dict):
             return user_info.get("full_name", "")
     except Exception as e:
@@ -92,7 +92,7 @@ def main():
     st.subheader("Recent Activity")
     try:
         # Get 10 most recent solution updates
-        recent_solutions = APIClient.get("solutions", {
+        recent_solutions = APIClient.get("solutions/", {
             "skip": 0,
             "limit": 10,
             "sort": "-updated_at"  # Using - for descending order
