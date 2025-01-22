@@ -1,217 +1,197 @@
 import streamlit as st
-import json
+from utils.auth import login
 from utils.api import APIClient
 
+# Page configuration
 st.set_page_config(
     page_title="Site Configuration - Tech Compass Admin",
-    page_icon="⚙️",
+    page_icon="🔧",
     layout="wide"
 )
 
+# Initialize session state
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "config_saved" not in st.session_state:
+    st.session_state.config_saved = False
+
+# Check authentication
+if not st.session_state.authenticated:
+    login()
+    st.stop()
+
 def load_site_config():
     """Load current site configuration"""
-    response = APIClient.get("site-config")
-    if isinstance(response, dict):
-        return response
-    return None
+    try:
+        response = APIClient.get("site-config")
+        if response and isinstance(response, dict):
+            return response.get("data", {})
+    except Exception as e:
+        st.error(f"Failed to load site configuration: {str(e)}")
+    return {}
 
 def save_site_config(config_data):
     """Save site configuration"""
-    response = APIClient.put("site-config", config_data)
-    if response and isinstance(response, dict):
-        st.success("Site configuration updated successfully!")
-        return True
+    try:
+        response = APIClient.put("site-config", config_data)
+        if response:
+            st.session_state.config_saved = True
+            return True
+    except Exception as e:
+        st.error(f"Failed to update site configuration: {str(e)}")
     return False
 
-def reset_site_config():
-    """Reset site configuration to defaults"""
-    response = APIClient.post("site-config/reset")
-    if response and isinstance(response, dict):
-        st.success("Site configuration reset to defaults!")
-        return True
-    return False
+def get_current_user():
+    """Get current user information from API"""
+    try:
+        user_info = APIClient.get("users/me")
+        if user_info and isinstance(user_info, dict):
+            return user_info.get("full_name", "")
+    except Exception as e:
+        st.error(f"Failed to load user information: {str(e)}")
+    return ""
 
 def main():
-    st.title("Site Configuration")
+    st.title("🔧 Site Configuration")
+    
+    # Show success message if config was just saved
+    if st.session_state.config_saved:
+        st.success("Site configuration updated successfully!")
+        st.session_state.config_saved = False
     
     # Load current configuration
-    config = load_site_config()
-    if not config:
-        st.error("Failed to load site configuration")
-        if st.button("Initialize Configuration"):
-            # Create initial configuration
-            initial_config = {
-                "site_name": "Tech Compass",
-                "site_description": "Tech Solutions Library",
-                "welcome_message": "Welcome to Tech Compass",
-                "contact_email": "support@techcompass.com",
-                "features": {
-                    "enable_comments": True,
-                    "enable_ratings": True
-                },
-                "custom_links": [],
-                "theme": {
-                    "primary_color": "#1f77b4",
-                    "secondary_color": "#ff7f0e"
-                },
-                "meta": {
-                    "title": "Tech Compass",
-                    "description": "Find and share tech solutions",
-                    "keywords": ["tech", "solutions", "library"]
-                }
-            }
-            response = APIClient.post("site-config", initial_config)
-            if response:
-                st.success("Configuration initialized!")
-                st.rerun()
-        return
-
+    current_config = load_site_config()
+    
+    # Create form for editing
     with st.form("site_config_form"):
         # Basic Information
         st.subheader("Basic Information")
-        col1, col2 = st.columns(2)
-        with col1:
-            site_name = st.text_input(
-                "Site Name", 
-                value=config.get("site_name", ""),
-                help="Name of the site"
-            )
-        with col2:
-            contact_email = st.text_input(
-                "Contact Email",
-                value=config.get("contact_email", ""),
-                help="Contact email for support"
-            )
-        
+        site_name = st.text_input(
+            "Site Name",
+            value=current_config.get("site_name", ""),
+            help="The name of your site"
+        )
         site_description = st.text_area(
             "Site Description",
-            value=config.get("site_description", ""),
-            help="Description of the site"
+            value=current_config.get("site_description", ""),
+            help="A brief description of your site"
         )
-        
         welcome_message = st.text_area(
             "Welcome Message",
-            value=config.get("welcome_message", ""),
-            help="Welcome message shown on homepage"
+            value=current_config.get("welcome_message", ""),
+            help="Welcome message displayed to users"
+        )
+        contact_email = st.text_input(
+            "Contact Email",
+            value=current_config.get("contact_email", ""),
+            help="Primary contact email address"
         )
         
-        # Features
-        st.subheader("Features")
-        features = config.get("features", {})
-        col1, col2 = st.columns(2)
+        # Advanced Settings
+        st.subheader("Advanced Settings")
+        
+        # Features Configuration
+        st.write("Features Configuration")
+        features = current_config.get("features", {})
+        new_features = {}
+        
+        # Display existing features and allow adding new ones
+        for key, value in features.items():
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                new_key = st.text_input("Key", value=key, key=f"feature_key_{key}")
+            with col2:
+                if isinstance(value, bool):
+                    new_value = st.checkbox("Value", value=value, key=f"feature_value_{key}")
+                else:
+                    new_value = st.text_input("Value", value=str(value), key=f"feature_value_{key}")
+            if new_key:
+                new_features[new_key] = new_value
+        
+        # Add new feature
+        st.write("Add New Feature")
+        col1, col2 = st.columns([1, 2])
         with col1:
-            enable_comments = st.checkbox(
-                "Enable Comments",
-                value=features.get("enable_comments", True)
-            )
+            new_feature_key = st.text_input("Key", key="new_feature_key")
         with col2:
-            enable_ratings = st.checkbox(
-                "Enable Ratings",
-                value=features.get("enable_ratings", True)
-            )
+            new_feature_value = st.text_input("Value", key="new_feature_value")
+        if new_feature_key and new_feature_value:
+            # Try to convert string "true"/"false" to boolean
+            if new_feature_value.lower() == "true":
+                new_feature_value = True
+            elif new_feature_value.lower() == "false":
+                new_feature_value = False
+            new_features[new_feature_key] = new_feature_value
             
-        # Theme Configuration
-        st.subheader("Theme")
-        theme = config.get("theme", {})
-        col1, col2 = st.columns(2)
+        # Theme Settings
+        st.write("Theme Settings")
+        theme = current_config.get("theme", {})
+        new_theme = {}
+        
+        # Display existing theme settings and allow adding new ones
+        for key, value in theme.items():
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                new_key = st.text_input("Key", value=key, key=f"theme_key_{key}")
+            with col2:
+                new_value = st.text_input("Value", value=str(value), key=f"theme_value_{key}")
+            if new_key:
+                new_theme[new_key] = new_value
+        
+        # Add new theme setting
+        st.write("Add New Theme Setting")
+        col1, col2 = st.columns([1, 2])
         with col1:
-            primary_color = st.color_picker(
-                "Primary Color",
-                value=theme.get("primary_color", "#1f77b4")
-            )
+            new_theme_key = st.text_input("Key", key="new_theme_key")
         with col2:
-            secondary_color = st.color_picker(
-                "Secondary Color",
-                value=theme.get("secondary_color", "#ff7f0e")
-            )
+            new_theme_value = st.text_input("Value", key="new_theme_value")
+        if new_theme_key and new_theme_value:
+            new_theme[new_theme_key] = new_theme_value
             
         # Meta Information
-        st.subheader("Meta Information")
-        meta = config.get("meta", {})
-        meta_title = st.text_input(
-            "Meta Title",
-            value=meta.get("title", ""),
-            help="Page title for SEO"
-        )
-        meta_description = st.text_area(
-            "Meta Description",
-            value=meta.get("description", ""),
-            help="Page description for SEO"
-        )
-        meta_keywords = st.text_input(
-            "Meta Keywords",
-            value=", ".join(meta.get("keywords", [])),
-            help="Comma-separated keywords for SEO"
-        )
+        st.write("Meta Information")
+        meta = current_config.get("meta", {})
+        new_meta = {}
         
-        # Custom Links
-        st.subheader("Custom Navigation Links")
-        custom_links = config.get("custom_links", [])
-        num_links = len(custom_links)
-        new_links = []
-        
-        for i in range(max(1, num_links)):
-            col1, col2, col3 = st.columns([2, 2, 1])
+        # Display existing meta information and allow adding new ones
+        for key, value in meta.items():
+            col1, col2 = st.columns([1, 2])
             with col1:
-                title = st.text_input(
-                    "Link Title",
-                    value=custom_links[i].get("title", "") if i < num_links else "",
-                    key=f"link_title_{i}"
-                )
+                new_key = st.text_input("Key", value=key, key=f"meta_key_{key}")
             with col2:
-                url = st.text_input(
-                    "URL",
-                    value=custom_links[i].get("url", "") if i < num_links else "",
-                    key=f"link_url_{i}"
-                )
-            with col3:
-                enabled = st.checkbox(
-                    "Enabled",
-                    value=custom_links[i].get("enabled", True) if i < num_links else True,
-                    key=f"link_enabled_{i}"
-                )
-            if title and url:
-                new_links.append({
-                    "title": title,
-                    "url": url,
-                    "enabled": enabled
-                })
+                new_value = st.text_input("Value", value=str(value), key=f"meta_value_{key}")
+            if new_key:
+                new_meta[new_key] = new_value
         
-        # Submit buttons
-        col1, col2 = st.columns([1, 4])
+        # Add new meta information
+        st.write("Add New Meta Information")
+        col1, col2 = st.columns([1, 2])
         with col1:
-            reset = st.form_submit_button("Reset to Defaults")
-        submit = st.form_submit_button("Save Configuration")
+            new_meta_key = st.text_input("Key", key="new_meta_key")
+        with col2:
+            new_meta_value = st.text_input("Value", key="new_meta_value")
+        if new_meta_key and new_meta_value:
+            new_meta[new_meta_key] = new_meta_value
         
-        if reset:
-            if reset_site_config():
-                st.rerun()
+        # Submit button
+        submitted = st.form_submit_button("Save Changes")
         
-        if submit:
-            # Prepare configuration data
-            config_data = {
+        if submitted:
+            # Prepare update data
+            update_data = {
                 "site_name": site_name,
                 "site_description": site_description,
                 "welcome_message": welcome_message,
                 "contact_email": contact_email,
-                "features": {
-                    "enable_comments": enable_comments,
-                    "enable_ratings": enable_ratings
-                },
-                "theme": {
-                    "primary_color": primary_color,
-                    "secondary_color": secondary_color
-                },
-                "meta": {
-                    "title": meta_title,
-                    "description": meta_description,
-                    "keywords": [k.strip() for k in meta_keywords.split(",") if k.strip()]
-                },
-                "custom_links": new_links
+                "features": new_features,
+                "custom_links": current_config.get("custom_links", []),
+                "theme": new_theme,
+                "meta": new_meta
             }
             
-            if save_site_config(config_data):
-                st.rerun()
+            # Save configuration
+            if save_site_config(update_data):
+                st.rerun()  # Refresh the page to show updated values
 
 if __name__ == "__main__":
     main() 
