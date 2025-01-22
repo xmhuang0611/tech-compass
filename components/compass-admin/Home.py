@@ -18,21 +18,27 @@ def load_dashboard_stats():
     default_stats = {
         "total_solutions": "--",
         "active_users": "--",
-        "new_comments": "--"
+        "total_categories": "--"
     }
     
     try:
-        # 尝试获取解决方案总数
-        solutions = APIClient.get("solutions", {"page": 1, "page_size": 1})
+        # Get total solutions count
+        solutions = APIClient.get("solutions", {"skip": 0, "limit": 10})
         if solutions and isinstance(solutions, dict):
-            total_solutions = solutions.get("meta", {}).get("total", "--")
+            total_solutions = solutions.get("total", "--")
             default_stats["total_solutions"] = total_solutions
             
-        # 尝试获取评论数
-        comments = APIClient.get("solutions/comments", {"page": 1, "page_size": 1})
-        if comments and isinstance(comments, dict):
-            total_comments = comments.get("meta", {}).get("total", "--")
-            default_stats["new_comments"] = total_comments
+        # Get total users count
+        users = APIClient.get("users", {"skip": 0, "limit": 10})
+        if users and isinstance(users, dict):
+            total_users = users.get("total", "--")
+            default_stats["active_users"] = total_users
+            
+        # Get total categories count
+        categories = APIClient.get("categories", {"skip": 0, "limit": 10})
+        if categories and isinstance(categories, dict):
+            total_categories = categories.get("total", "--")
+            default_stats["total_categories"] = total_categories
             
     except Exception as e:
         st.error(f"Failed to load some statistics: {str(e)}")
@@ -78,8 +84,8 @@ def main():
         )
     with col3:
         st.metric(
-            label="New Comments",
-            value=stats["new_comments"]
+            label="Total Categories",
+            value=stats["total_categories"]
         )
     
     # Recent Activity
@@ -87,14 +93,13 @@ def main():
     try:
         # Get 10 most recent solution updates
         recent_solutions = APIClient.get("solutions", {
-            "page": 1,
-            "page_size": 10,
-            "sort_by": "updated_at",
-            "sort_order": "desc"
+            "skip": 0,
+            "limit": 10,
+            "sort": "-updated_at"  # Using - for descending order
         })
         
         if recent_solutions and isinstance(recent_solutions, dict):
-            solutions = recent_solutions.get("data", {}).get("solutions", [])
+            solutions = recent_solutions.get("items", [])
             if solutions:
                 for solution in solutions:
                     st.text(f"{solution.get('updated_at', '')} - Updated: {solution.get('name', '')}")
