@@ -73,7 +73,6 @@ def render_solution_form(solution_data):
         st.subheader("Edit Solution")
         
         # Basic Information
-        st.write("**Basic Information**")
         col1, col2 = st.columns(2)
         with col1:
             name = st.text_input(
@@ -97,30 +96,33 @@ def render_solution_form(solution_data):
         )
         
         # Status Information
-        st.write("**Status Information**")
         col1, col2, col3 = st.columns(3)
         with col1:
             radar_status = st.selectbox(
                 "Radar Status",
-                options=RADAR_STATUS_OPTIONS,
-                index=RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status", "ASSESS"))
+                options=[""] + RADAR_STATUS_OPTIONS,
+                index=0 if not solution_data.get("radar_status") else 
+                      RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status")) + 1,
+                help="Select radar status"
             )
         with col2:
             stage = st.selectbox(
                 "Stage",
                 options=[""] + STAGE_OPTIONS,
-                index=STAGE_OPTIONS.index(solution_data.get("stage")) + 1 
-                      if solution_data.get("stage") else 0
+                index=0 if not solution_data.get("stage") else 
+                      STAGE_OPTIONS.index(solution_data.get("stage")) + 1,
+                help="Select stage"
             )
         with col3:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=["BUY", "HOLD", "SELL"],
-                index=["BUY", "HOLD", "SELL"].index(solution_data.get("recommend_status", "HOLD"))
+                options=[""] + ["BUY", "HOLD", "SELL"],
+                index=0 if not solution_data.get("recommend_status") else 
+                      ["BUY", "HOLD", "SELL"].index(solution_data.get("recommend_status")) + 1,
+                help="Select recommend status"
             )
         
         # Team Information
-        st.write("**Team Information**")
         col1, col2, col3 = st.columns(3)
         with col1:
             department = st.text_input(
@@ -142,29 +144,34 @@ def render_solution_form(solution_data):
             )
             
         # Maintainer Information
-        st.write("**Maintainer Information**")
         col1, col2, col3 = st.columns(3)
         with col1:
+            maintainer_id = st.text_input(
+                "Maintainer ID",
+                value=solution_data.get("maintainer_id", ""),
+                help="Maintainer's ID"
+            )
+        with col2:
             maintainer_name = st.text_input(
                 "Maintainer Name",
                 value=solution_data.get("maintainer_name", ""),
                 help="Maintainer's name"
             )
-        with col2:
+        with col3:
             maintainer_email = st.text_input(
                 "Maintainer Email",
                 value=solution_data.get("maintainer_email", ""),
                 help="Maintainer's email"
             )
-        with col3:
-            version = st.text_input(
-                "Version",
-                value=solution_data.get("version", ""),
-                help="Solution version"
-            )
             
+        # Version in a new row
+        version = st.text_input(
+            "Version",
+            value=solution_data.get("version", ""),
+            help="Solution version"
+        )
+        
         # URLs
-        st.write("**URLs**")
         col1, col2, col3 = st.columns(3)
         with col1:
             official_website = st.text_input(
@@ -186,25 +193,23 @@ def render_solution_form(solution_data):
             )
             
         # Tags
-        st.write("**Tags** (comma-separated)")
         tags = st.text_input(
-            "Tags",
+            "Tags (comma-separated)",
             value=", ".join(solution_data.get("tags", [])),
             help="Enter tags separated by commas"
         )
         
         # Pros & Cons
-        st.write("**Pros & Cons**")
         col1, col2 = st.columns(2)
         with col1:
             pros = st.text_area(
-                "Pros",
+                "Pros (one per line)",
                 value="\n".join(solution_data.get("pros", [])),
                 help="Enter pros (one per line)"
             )
         with col2:
             cons = st.text_area(
-                "Cons",
+                "Cons (one per line)",
                 value="\n".join(solution_data.get("cons", [])),
                 help="Enter cons (one per line)"
             )
@@ -217,13 +222,14 @@ def render_solution_form(solution_data):
                 "description": description,
                 "category": category if category else None,
                 "stage": stage if stage else None,
-                "recommend_status": recommend_status,
-                "radar_status": radar_status,
+                "recommend_status": recommend_status if recommend_status else None,
+                "radar_status": radar_status if radar_status else None,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
                 "maintainer_name": maintainer_name,
                 "maintainer_email": maintainer_email if maintainer_email else None,
+                "maintainer_id": maintainer_id if maintainer_id else None,
                 "official_website": official_website if official_website else None,
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
@@ -235,7 +241,6 @@ def render_solution_form(solution_data):
             
             if update_solution(solution_data["_id"], update_data):
                 st.session_state.selected_solution = None
-                st.session_state.editing = False
                 st.rerun()
 
 def main():
@@ -288,9 +293,10 @@ def main():
     if solutions:
         # Create DataFrame with explicit column order
         columns = [
-            'slug', 'name', 'category', 'stage', 'recommend_status', 'radar_status',
-            'department', 'team', 'maintainer_name', 'version', 'tags',
-            'created_at', 'created_by', 'updated_at', 'updated_by'
+            'slug', 'name', 'description', 'category', 'stage', 'recommend_status', 'radar_status',
+            'department', 'team', 'team_email', 'maintainer_id', 'maintainer_name', 'maintainer_email',
+            'version', 'tags', 'official_website', 'documentation_url', 'demo_url',
+            'pros', 'cons', 'created_at', 'created_by', 'updated_at', 'updated_by'
         ]
         df = pd.DataFrame(solutions)  # Create DataFrame from solutions
         df = df[columns]  # Reorder columns to desired order
@@ -300,9 +306,10 @@ def main():
             if date_col in df.columns:
                 df[date_col] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d %H:%M')
         
-        # Format tags list to string
-        if 'tags' in df.columns:
-            df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
+        # Format lists to string
+        for list_col in ['tags', 'pros', 'cons']:
+            if list_col in df.columns:
+                df[list_col] = df[list_col].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
         
         # Configure grid options
         gb = GridOptionsBuilder.from_dataframe(df)
@@ -317,15 +324,24 @@ def main():
         column_defs = {
             'slug': {'width': 120, 'headerName': 'Slug'},
             'name': {'width': 150, 'headerName': 'Name'},
+            'description': {'width': 200, 'headerName': 'Description'},
             'category': {'width': 120, 'headerName': 'Category'},
             'stage': {'width': 100, 'headerName': 'Stage'},
             'recommend_status': {'width': 120, 'headerName': 'Recommend'},
             'radar_status': {'width': 100, 'headerName': 'Radar'},
             'department': {'width': 120, 'headerName': 'Department'},
             'team': {'width': 120, 'headerName': 'Team'},
-            'maintainer_name': {'width': 120, 'headerName': 'Maintainer'},
+            'team_email': {'width': 150, 'headerName': 'Team Email'},
+            'maintainer_id': {'width': 120, 'headerName': 'Maintainer ID'},
+            'maintainer_name': {'width': 120, 'headerName': 'Maintainer Name'},
+            'maintainer_email': {'width': 150, 'headerName': 'Maintainer Email'},
             'version': {'width': 100, 'headerName': 'Version'},
             'tags': {'width': 150, 'headerName': 'Tags'},
+            'official_website': {'width': 150, 'headerName': 'Official Website'},
+            'documentation_url': {'width': 150, 'headerName': 'Documentation URL'},
+            'demo_url': {'width': 150, 'headerName': 'Demo URL'},
+            'pros': {'width': 200, 'headerName': 'Pros'},
+            'cons': {'width': 200, 'headerName': 'Cons'},
             'created_at': {'width': 140, 'headerName': 'Created At'},
             'created_by': {'width': 100, 'headerName': 'Created By'},
             'updated_at': {'width': 140, 'headerName': 'Updated At'},
@@ -356,11 +372,7 @@ def main():
         # Handle selection - always use first selected row if any
         selected_rows = grid_response.get('selected_rows', [])
 
-        # Always show solution details section
-        st.divider()
-        st.subheader("Solution Details")
-        
-        # Determine if a solution is selected
+        # Show edit form if a solution is selected
         selected_solution = None
         if selected_rows is not None and len(selected_rows) > 0:
             selected_solution = selected_rows.iloc[0].to_dict()  # Convert first row of dataframe to dict
@@ -368,36 +380,9 @@ def main():
         else:
             st.session_state.selected_solution = None
         
-        # Display current values in read-only mode
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.write("**Slug:**", st.session_state.selected_solution.get('slug', '') if st.session_state.selected_solution else '')
-            st.write("**Name:**", st.session_state.selected_solution.get('name', '') if st.session_state.selected_solution else '')
-            st.write("**Category:**", st.session_state.selected_solution.get('category', '') if st.session_state.selected_solution else '')
-            st.write("**Department:**", st.session_state.selected_solution.get('department', '') if st.session_state.selected_solution else '')
-        with col2:
-            st.write("**Team:**", st.session_state.selected_solution.get('team', '') if st.session_state.selected_solution else '')
-            st.write("**Radar Status:**", st.session_state.selected_solution.get('radar_status', '') if st.session_state.selected_solution else '')
-            st.write("**Stage:**", st.session_state.selected_solution.get('stage', '') if st.session_state.selected_solution else '')
-            st.write("**Version:**", st.session_state.selected_solution.get('version', '') if st.session_state.selected_solution else '')
-        with col3:
-            st.write("**Created At:**", st.session_state.selected_solution.get('created_at', '')[:16] if st.session_state.selected_solution else '')
-            st.write("**Updated At:**", st.session_state.selected_solution.get('updated_at', '')[:16] if st.session_state.selected_solution else '')
-            st.write("**Created By:**", st.session_state.selected_solution.get('created_by', '') if st.session_state.selected_solution else '')
-            st.write("**Updated By:**", st.session_state.selected_solution.get('updated_by', '') if st.session_state.selected_solution else '')
-        
-        st.write("**Description:**")
-        st.write(st.session_state.selected_solution.get('description', '') if st.session_state.selected_solution else '')
-        
-        # Edit button
-        if st.button("Edit Solution", key='edit_button') and selected_solution:
-            st.session_state.editing = True
-            st.session_state.selected_solution = selected_solution  # Store solution data only when editing
-        
-        # Show edit form if editing is enabled
-        if st.session_state.get('editing', False):
-            st.divider()
-            render_solution_form(st.session_state.selected_solution)
+        # Show edit form if a solution is selected
+        if selected_solution:
+            render_solution_form(selected_solution)
     else:
         st.info("No solutions found")
 
