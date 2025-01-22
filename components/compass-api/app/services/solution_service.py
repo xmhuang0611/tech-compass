@@ -266,3 +266,14 @@ class SolutionService:
     async def count_solutions(self) -> int:
         """Get total number of solutions"""
         return await self.collection.count_documents({})
+
+    async def get_departments(self) -> List[str]:
+        """Get all unique department names from solutions"""
+        try:
+            # Use MongoDB distinct to get unique department values
+            departments = await self.collection.distinct("department")
+            # Filter out None/empty values and sort alphabetically
+            return sorted([dept for dept in departments if dept])
+        except Exception as e:
+            logger.error(f"Error getting departments: {str(e)}")
+            raise

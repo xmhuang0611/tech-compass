@@ -91,6 +91,27 @@ async def get_solutions(
         logger.error(f"Error listing solutions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error listing solutions: {str(e)}")
 
+@router.get("/departments", response_model=dict, tags=["solutions"])
+async def get_departments(
+    solution_service: SolutionService = Depends()
+):
+    """
+    Get all unique department names from solutions.
+    
+    Returns:
+    - items: List of unique department names
+    - total: Total number of unique departments
+    """
+    try:
+        departments = await solution_service.get_departments()
+        return {
+            "items": departments,
+            "total": len(departments)
+        }
+    except Exception as e:
+        logger.error(f"Error getting departments: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting departments: {str(e)}")
+
 @router.get("/{slug}", response_model=Solution)
 async def get_solution(
     slug: str,
