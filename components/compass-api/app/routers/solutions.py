@@ -35,9 +35,10 @@ async def get_solutions(
     recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (BUY/HOLD/SELL)"),
     radar_status: Optional[str] = Query(None, description="Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)"),
     stage: Optional[str] = Query(None, description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)"),
+    sort: str = Query("name", description="Sort field (prefix with - for descending order)"),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Get all solutions with pagination and filtering.
+    """Get all solutions with pagination, filtering and sorting.
     
     Query Parameters:
     - category: Filter by category name
@@ -46,6 +47,7 @@ async def get_solutions(
     - recommend_status: Filter by recommendation status (BUY/HOLD/SELL)
     - radar_status: Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
     - stage: Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
+    - sort: Sort field (name, category, created_at, updated_at). Prefix with - for descending order
     """
     try:
         # Validate enum values if provided
@@ -73,7 +75,8 @@ async def get_solutions(
             team=team,
             recommend_status=recommend_status,
             radar_status=radar_status,
-            stage=stage
+            stage=stage,
+            sort=sort
         )
         total = await solution_service.count_solutions()
         return {
@@ -82,6 +85,8 @@ async def get_solutions(
             "skip": skip,
             "limit": limit
         }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error listing solutions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error listing solutions: {str(e)}")

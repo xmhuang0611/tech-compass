@@ -3,12 +3,14 @@ from datetime import datetime
 from typing import List, Optional
 
 from bson import ObjectId
+from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
 from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
 from app.services.category_service import CategoryService
 from app.services.tag_service import TagService
 
+VALID_SORT_FIELDS = {'name', 'category', 'created_at', 'updated_at'}
 
 def generate_slug(name: str) -> str:
     """Generate a URL-friendly slug from solution name
@@ -103,7 +105,8 @@ class SolutionService:
         team: Optional[str] = None,
         recommend_status: Optional[str] = None,
         radar_status: Optional[str] = None,
-        stage: Optional[str] = None
+        stage: Optional[str] = None,
+        sort: str = "name"
     ) -> List[SolutionInDB]:
         """Get all solutions with filtering and pagination"""
         query = {}
@@ -125,7 +128,21 @@ class SolutionService:
         if stage:
             query["stage"] = stage
 
-        cursor = self.collection.find(query).sort("name", 1).skip(skip).limit(limit)
+        # Parse sort parameter
+        sort_field = "name"
+        sort_direction = ASCENDING
+
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
         
         # Populate category names
