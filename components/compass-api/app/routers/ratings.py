@@ -112,4 +112,41 @@ async def get_solution_rating_summary(
     return {
         "status": "success",
         "data": summary
-    } 
+    }
+
+@router.get("/", response_model=dict, tags=["ratings"])
+async def get_all_ratings(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    rating_service: RatingService = Depends()
+):
+    """
+    Get all ratings with pagination and sorting.
+    Default sort is by created_at in descending order (newest first).
+    
+    - **page**: Page number for pagination
+    - **page_size**: Number of ratings per page
+    - **sort**: Field to sort by (created_at, updated_at, score). Prefix with - for descending order
+    """
+    try:
+        skip = (page - 1) * page_size
+        ratings, total = await rating_service.get_ratings(
+            skip=skip,
+            limit=page_size,
+            sort=sort
+        )
+        return {
+            "status": "success",
+            "data": ratings,
+            "meta": {
+                "page": page,
+                "page_size": page_size,
+                "total": total
+            }
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error getting ratings: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting ratings: {str(e)}") 

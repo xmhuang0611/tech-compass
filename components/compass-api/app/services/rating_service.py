@@ -1,13 +1,46 @@
 from typing import List, Tuple, Dict
-from pymongo import DESCENDING
+from pymongo import DESCENDING, ASCENDING
 from app.models.rating import RatingCreate, RatingInDB, RatingDistribution
 from app.core.database import get_database
 from datetime import datetime
 from bson import ObjectId
 
+VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
+
 class RatingService:
     def __init__(self):
         self.db = get_database()
+
+    async def get_ratings(
+        self,
+        skip: int = 0,
+        limit: int = 20,
+        sort: str = "-created_at"  # Default sort by created_at desc
+    ) -> Tuple[List[RatingInDB], int]:
+        """Get all ratings with pagination and sorting.
+        Default sort is by created_at in descending order (newest first)."""
+        
+        # Parse sort parameter
+        sort_field = "created_at"
+        sort_direction = DESCENDING  # Default to descending
+
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+            sort_direction = ASCENDING
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        # Execute query with sort
+        cursor = self.db.ratings.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+        ratings = [RatingInDB(**rating) async for rating in cursor]
+        total = await self.db.ratings.count_documents({})
+        
+        return ratings, total
 
     async def get_solution_ratings(self, solution_slug: str, skip: int, limit: int, sort_by: str) -> Tuple[List[RatingInDB], int]:
         query = {"solution_slug": solution_slug}
