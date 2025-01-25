@@ -269,154 +269,341 @@ def render_solution_form(solution_data):
                 st.session_state.selected_solution = None
                 st.rerun()
 
+def render_add_solution_form():
+    """Render form for adding new solution"""
+    with st.form("add_solution_form"):
+        st.subheader("Add New Solution")
+        
+        # Basic Information
+        col1, col2 = st.columns(2)
+        with col1:
+            name = st.text_input(
+                "Name",
+                help="Solution name"
+            )
+        with col2:
+            categories = load_categories()
+            category_names = [""] + [cat["name"] for cat in categories]
+            category = st.selectbox(
+                "Category",
+                options=category_names,
+                help="Solution category"
+            )
+        
+        description = st.text_area(
+            "Description",
+            help="Solution description"
+        )
+        
+        # Status Information
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            radar_status = st.selectbox(
+                "Radar Status",
+                options=[""] + RADAR_STATUS_OPTIONS,
+                help="Select radar status"
+            )
+        with col2:
+            stage = st.selectbox(
+                "Stage",
+                options=[""] + STAGE_OPTIONS,
+                help="Select stage"
+            )
+        with col3:
+            recommend_status = st.selectbox(
+                "Recommend Status",
+                options=[""] + ["BUY", "HOLD", "SELL"],
+                help="Select recommend status"
+            )
+        
+        # Team Information
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            department = st.text_input(
+                "Department",
+                help="Department name"
+            )
+        with col2:
+            team = st.text_input(
+                "Team",
+                help="Team name"
+            )
+        with col3:
+            team_email = st.text_input(
+                "Team Email",
+                help="Team email address"
+            )
+            
+        # Maintainer Information
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            maintainer_id = st.text_input(
+                "Maintainer ID",
+                help="Maintainer's ID"
+            )
+        with col2:
+            maintainer_name = st.text_input(
+                "Maintainer Name",
+                help="Maintainer's name"
+            )
+        with col3:
+            maintainer_email = st.text_input(
+                "Maintainer Email",
+                help="Maintainer's email"
+            )
+            
+        # Version and Tags in the same row
+        col1, col2 = st.columns(2)
+        with col1:
+            version = st.text_input(
+                "Version",
+                help="Solution version"
+            )
+        with col2:
+            tags = st.text_input(
+                "Tags (comma-separated)",
+                help="Enter tags separated by commas"
+            )
+        
+        # URLs
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            official_website = st.text_input(
+                "Official Website",
+                help="Official website URL"
+            )
+        with col2:
+            documentation_url = st.text_input(
+                "Documentation URL",
+                help="Documentation URL"
+            )
+        with col3:
+            demo_url = st.text_input(
+                "Demo URL",
+                help="Demo/POC URL"
+            )
+            
+        # Pros & Cons
+        col1, col2 = st.columns(2)
+        with col1:
+            pros = st.text_area(
+                "Pros (one per line)",
+                help="Enter pros (one per line)"
+            )
+        with col2:
+            cons = st.text_area(
+                "Cons (one per line)",
+                help="Enter cons (one per line)"
+            )
+        
+        # Add button
+        submitted = st.form_submit_button("Add Solution")
+        
+        # Show messages right below the button
+        if st.session_state.show_success_message:
+            st.success("✅ Solution added successfully!")
+            st.session_state.show_success_message = False
+        
+        if st.session_state.show_error_message:
+            st.error(f"❌ Failed to add solution: {st.session_state.show_error_message}")
+            st.session_state.show_error_message = None
+        
+        if submitted:
+            solution_data = {
+                "name": name,
+                "description": description,
+                "category": category if category else None,
+                "stage": stage if stage else None,
+                "recommend_status": recommend_status if recommend_status else None,
+                "radar_status": radar_status if radar_status else None,
+                "department": department,
+                "team": team,
+                "team_email": team_email if team_email else None,
+                "maintainer_name": maintainer_name,
+                "maintainer_email": maintainer_email if maintainer_email else None,
+                "maintainer_id": maintainer_id if maintainer_id else None,
+                "official_website": official_website if official_website else None,
+                "documentation_url": documentation_url if documentation_url else None,
+                "demo_url": demo_url if demo_url else None,
+                "version": version if version else None,
+                "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
+                "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
+                "cons": [con.strip() for con in cons.split("\n") if con.strip()]
+            }
+            
+            try:
+                response = APIClient.post("solutions/", solution_data)
+                # Check if response status code is 201 (Created)
+                if response and response.get('status_code') == 201:
+                    st.session_state.show_success_message = True
+                    st.rerun()
+                else:
+                    # Get error details from response
+                    error_msg = response.get('detail', 'Unknown error occurred')
+                    if isinstance(error_msg, dict):
+                        # Handle validation errors
+                        error_details = []
+                        for field, msgs in error_msg.items():
+                            if isinstance(msgs, list):
+                                error_details.extend([f"{field}: {msg}" for msg in msgs])
+                            else:
+                                error_details.append(f"{field}: {msgs}")
+                        error_msg = "\n".join(error_details)
+                    st.session_state.show_error_message = error_msg
+                    st.rerun()
+            except Exception as e:
+                st.session_state.show_error_message = str(e)
+                st.rerun()
+
 def main():
     st.title("💡 Solutions")
     
-    # Filters
-    with st.expander("Filters", expanded=True):
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            category = st.selectbox(
-                "Category",
-                options=["All"] + [cat["name"] for cat in load_categories()],
-                key="filter_category"
-            )
-        with col2:
-            department = st.text_input("Department", key="filter_department")
-        with col3:
-            stage = st.selectbox(
-                "Stage",
-                options=["All"] + STAGE_OPTIONS,
-                key="filter_stage"
-            )
-        with col4:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=["All"] + RADAR_STATUS_OPTIONS,
-                key="filter_radar_status"
-            )
+    # Create tabs
+    list_tab, add_tab = st.tabs(["Solutions List", "Add New Solution"])
     
-    # Load solutions with filters
-    filters = {}
-    if category != "All":
-        filters["category"] = category
-    if department:
-        filters["department"] = department
-    if stage != "All":
-        filters["stage"] = stage
-    if radar_status != "All":
-        filters["radar_status"] = radar_status
+    with list_tab:
+        # Filters
+        with st.expander("Filters", expanded=True):
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                category = st.selectbox(
+                    "Category",
+                    options=["All"] + [cat["name"] for cat in load_categories()],
+                    key="filter_category"
+                )
+            with col2:
+                department = st.text_input("Department", key="filter_department")
+            with col3:
+                stage = st.selectbox(
+                    "Stage",
+                    options=["All"] + STAGE_OPTIONS,
+                    key="filter_stage"
+                )
+            with col4:
+                radar_status = st.selectbox(
+                    "Radar Status",
+                    options=["All"] + RADAR_STATUS_OPTIONS,
+                    key="filter_radar_status"
+                )
         
-    # Get page from session state
-    if "page" not in st.session_state:
-        st.session_state.page = 1
-    page_size = 100
-    skip = (st.session_state.page - 1) * page_size
-        
-    solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
-    
-    # Convert solutions to DataFrame for AgGrid
-    if solutions:
-        # Create DataFrame with explicit column order
-        columns = [
-            'slug', 'name', 'description', 'category', 'stage', 'recommend_status', 'radar_status',
-            'department', 'team', 'team_email', 'maintainer_id', 'maintainer_name', 'maintainer_email',
-            'version', 'tags', 'official_website', 'documentation_url', 'demo_url',
-            'pros', 'cons', 'created_at', 'created_by', 'updated_at', 'updated_by'
-        ]
-        df = pd.DataFrame(solutions)  # Create DataFrame from solutions
-        df = df[columns]  # Reorder columns to desired order
-        
-        # Format dates
-        for date_col in ['created_at', 'updated_at']:
-            if date_col in df.columns:
-                df[date_col] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d %H:%M')
-        
-        # Format lists to string
-        # Format tags with commas, pros and cons with newlines
-        if 'tags' in df.columns:
-            df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
-        for list_col in ['pros', 'cons']:
-            if list_col in df.columns:
-                df[list_col] = df[list_col].apply(lambda x: '\n'.join(x) if isinstance(x, list) else '')
-        # Configure grid options
-        gb = GridOptionsBuilder.from_dataframe(df)
-        gb.configure_selection(
-            selection_mode='single',
-            use_checkbox=False,
-            pre_selected_rows=[]
-        )
-        gb.configure_pagination(
-            enabled=True,
-            paginationAutoPageSize=False,
-            paginationPageSize=page_size
-        )
-        
-        # Configure column properties
-        column_defs = {
-            'slug': {'width': 120, 'headerName': 'Slug'},
-            'name': {'width': 150, 'headerName': 'Name'},
-            'description': {'width': 200, 'headerName': 'Description'},
-            'category': {'width': 120, 'headerName': 'Category'},
-            'stage': {'width': 100, 'headerName': 'Stage'},
-            'recommend_status': {'width': 120, 'headerName': 'Recommend'},
-            'radar_status': {'width': 100, 'headerName': 'Radar'},
-            'department': {'width': 120, 'headerName': 'Department'},
-            'team': {'width': 120, 'headerName': 'Team'},
-            'team_email': {'width': 150, 'headerName': 'Team Email'},
-            'maintainer_id': {'width': 120, 'headerName': 'Maintainer ID'},
-            'maintainer_name': {'width': 120, 'headerName': 'Maintainer Name'},
-            'maintainer_email': {'width': 150, 'headerName': 'Maintainer Email'},
-            'version': {'width': 100, 'headerName': 'Version'},
-            'tags': {'width': 150, 'headerName': 'Tags'},
-            'official_website': {'width': 150, 'headerName': 'Official Website'},
-            'documentation_url': {'width': 150, 'headerName': 'Documentation URL'},
-            'demo_url': {'width': 150, 'headerName': 'Demo URL'},
-            'pros': {'width': 200, 'headerName': 'Pros'},
-            'cons': {'width': 200, 'headerName': 'Cons'},
-            'created_at': {'width': 140, 'headerName': 'Created At'},
-            'created_by': {'width': 100, 'headerName': 'Created By'},
-            'updated_at': {'width': 140, 'headerName': 'Updated At'},
-            'updated_by': {'width': 100, 'headerName': 'Updated By'}
-        }
-        
-        # Apply column configurations
-        for col, props in column_defs.items():
-            gb.configure_column(field=col, **props)
+        # Load solutions with filters
+        filters = {}
+        if category != "All":
+            filters["category"] = category
+        if department:
+            filters["department"] = department
+        if stage != "All":
+            filters["stage"] = stage
+        if radar_status != "All":
+            filters["radar_status"] = radar_status
             
-        gb.configure_grid_options(
-            rowStyle={'cursor': 'pointer'},
-            enableBrowserTooltips=True,
-            rowSelection='single',  # Enforce single row selection
-            suppressRowDeselection=False  # Allow deselecting a row
-        )
+        # Get page from session state
+        if "page" not in st.session_state:
+            st.session_state.page = 1
+        page_size = 100
+        skip = (st.session_state.page - 1) * page_size
+            
+        solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
         
-        # Create grid
-        grid_response = AgGrid(
-            df,
-            gridOptions=gb.build(),
-            update_mode=GridUpdateMode.SELECTION_CHANGED,
-            allow_unsafe_jscode=True,
-            theme='streamlit',
-            key='solution_grid'
-        )
-        
-        # Handle selection - always use first selected row if any
-        selected_rows = grid_response.get('selected_rows', [])
+        # Convert solutions to DataFrame for AgGrid
+        if solutions:
+            # Create DataFrame with explicit column order
+            columns = [
+                'slug', 'name', 'description', 'category', 'stage', 'recommend_status', 'radar_status',
+                'department', 'team', 'team_email', 'maintainer_id', 'maintainer_name', 'maintainer_email',
+                'version', 'tags', 'official_website', 'documentation_url', 'demo_url',
+                'pros', 'cons', 'created_at', 'created_by', 'updated_at', 'updated_by'
+            ]
+            df = pd.DataFrame(solutions)  # Create DataFrame from solutions
+            df = df[columns]  # Reorder columns to desired order
+            
+            # Format dates
+            for date_col in ['created_at', 'updated_at']:
+                if date_col in df.columns:
+                    df[date_col] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d %H:%M')
+            
+            # Format lists to string
+            # Format tags with commas, pros and cons with newlines
+            if 'tags' in df.columns:
+                df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
+            for list_col in ['pros', 'cons']:
+                if list_col in df.columns:
+                    df[list_col] = df[list_col].apply(lambda x: '\n'.join(x) if isinstance(x, list) else '')
+            # Configure grid options
+            gb = GridOptionsBuilder.from_dataframe(df)
+            gb.configure_selection(
+                selection_mode='single',
+                use_checkbox=False,
+                pre_selected_rows=[]
+            )
+            gb.configure_pagination(
+                enabled=True,
+                paginationAutoPageSize=False,
+                paginationPageSize=page_size
+            )
+            
+            # Configure column properties
+            column_defs = {
+                'slug': {'width': 120, 'headerName': 'Slug'},
+                'name': {'width': 150, 'headerName': 'Name'},
+                'description': {'width': 200, 'headerName': 'Description'},
+                'category': {'width': 120, 'headerName': 'Category'},
+                'stage': {'width': 100, 'headerName': 'Stage'},
+                'recommend_status': {'width': 120, 'headerName': 'Recommend'},
+                'radar_status': {'width': 100, 'headerName': 'Radar'},
+                'department': {'width': 120, 'headerName': 'Department'},
+                'team': {'width': 120, 'headerName': 'Team'},
+                'team_email': {'width': 150, 'headerName': 'Team Email'},
+                'maintainer_id': {'width': 120, 'headerName': 'Maintainer ID'},
+                'maintainer_name': {'width': 120, 'headerName': 'Maintainer Name'},
+                'maintainer_email': {'width': 150, 'headerName': 'Maintainer Email'},
+                'version': {'width': 100, 'headerName': 'Version'},
+                'tags': {'width': 150, 'headerName': 'Tags'},
+                'official_website': {'width': 150, 'headerName': 'Official Website'},
+                'documentation_url': {'width': 150, 'headerName': 'Documentation URL'},
+                'demo_url': {'width': 150, 'headerName': 'Demo URL'},
+                'pros': {'width': 200, 'headerName': 'Pros'},
+                'cons': {'width': 200, 'headerName': 'Cons'},
+                'created_at': {'width': 140, 'headerName': 'Created At'},
+                'created_by': {'width': 100, 'headerName': 'Created By'},
+                'updated_at': {'width': 140, 'headerName': 'Updated At'},
+                'updated_by': {'width': 100, 'headerName': 'Updated By'}
+            }
+            
+            # Apply column configurations
+            for col, props in column_defs.items():
+                gb.configure_column(field=col, **props)
+            
+            gb.configure_grid_options(
+                rowStyle={'cursor': 'pointer'},
+                enableBrowserTooltips=True,
+                rowSelection='single',  # Enforce single row selection
+                suppressRowDeselection=False  # Allow deselecting a row
+            )
+            
+            # Create grid
+            grid_response = AgGrid(
+                df,
+                gridOptions=gb.build(),
+                update_mode=GridUpdateMode.SELECTION_CHANGED,
+                allow_unsafe_jscode=True,
+                theme='streamlit',
+                key='solution_grid'
+            )
+            
+            # Handle selection - always use first selected row if any
+            selected_rows = grid_response.get('selected_rows', [])
 
-        # Show edit form if a solution is selected
-        selected_solution = None
-        if selected_rows is not None and len(selected_rows) > 0:
-            selected_solution = selected_rows.iloc[0].to_dict()  # Convert first row of dataframe to dict
-            st.session_state.selected_solution = selected_solution  # Store in session state
+            # Show only edit form in list tab when row selected
+            if selected_rows is not None and len(selected_rows) > 0:
+                selected_solution = selected_rows.iloc[0].to_dict()
+                st.session_state.selected_solution = selected_solution
+                render_solution_form(selected_solution)
         else:
-            st.session_state.selected_solution = None
-        
-        # Show edit form if a solution is selected
-        if selected_solution:
-            render_solution_form(selected_solution)
-    else:
-        st.info("No solutions found")
+            st.info("No solutions found")
+    
+    with add_tab:
+        render_add_solution_form()
 
 if __name__ == "__main__":
     main() 
