@@ -56,10 +56,10 @@ def load_solutions(skip=0, limit=10, **filters):
         st.error(f"Failed to load solutions: {str(e)}")
     return [], {"total": 0, "skip": 0, "limit": 10}
 
-def update_solution(solution_id, data):
+def update_solution(solution_slug, data):
     """Update solution"""
     try:
-        response = APIClient.put(f"solutions/{solution_id}/", data)
+        response = APIClient.put(f"solutions/{solution_slug}/", data)
         if response:
             st.success("Solution updated successfully!")
             return True
@@ -81,12 +81,23 @@ def render_solution_form(solution_data):
                 help="Solution name"
             )
         with col2:
+            categories = load_categories()
+            category_names = [""] + [cat["name"] for cat in categories]
+            current_category = solution_data.get("category", "")
+            
+            # Find the index of the current category
+            selected_index = 0
+            if current_category:
+                try:
+                    selected_index = category_names.index(current_category)
+                except ValueError:
+                    selected_index = 0
+            
             category = st.selectbox(
                 "Category",
-                options=[""] + [cat["name"] for cat in load_categories()],
-                index=0 if not solution_data.get("category") else 
-                      next((i + 1 for i, cat in enumerate(load_categories()) 
-                           if cat["name"] == solution_data.get("category")), 0)
+                options=category_names,
+                index=selected_index,
+                help="Solution category"
             )
         
         description = st.text_area(
@@ -195,7 +206,7 @@ def render_solution_form(solution_data):
         # Tags
         tags = st.text_input(
             "Tags (comma-separated)",
-            value=", ".join(solution_data.get("tags", [])),
+            value=solution_data.get("tags", ''),
             help="Enter tags separated by commas"
         )
         
@@ -204,13 +215,13 @@ def render_solution_form(solution_data):
         with col1:
             pros = st.text_area(
                 "Pros (one per line)",
-                value="\n".join(solution_data.get("pros", [])),
+                value=solution_data.get("pros", ''),
                 help="Enter pros (one per line)"
             )
         with col2:
             cons = st.text_area(
                 "Cons (one per line)",
-                value="\n".join(solution_data.get("cons", [])),
+                value=solution_data.get("cons", ''),
                 help="Enter cons (one per line)"
             )
         
@@ -239,7 +250,7 @@ def render_solution_form(solution_data):
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()]
             }
             
-            if update_solution(solution_data["_id"], update_data):
+            if update_solution(solution_data["slug"], update_data):
                 st.session_state.selected_solution = None
                 st.rerun()
 
@@ -307,10 +318,12 @@ def main():
                 df[date_col] = pd.to_datetime(df[date_col]).dt.strftime('%Y-%m-%d %H:%M')
         
         # Format lists to string
-        for list_col in ['tags', 'pros', 'cons']:
+        # Format tags with commas, pros and cons with newlines
+        if 'tags' in df.columns:
+            df['tags'] = df['tags'].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
+        for list_col in ['pros', 'cons']:
             if list_col in df.columns:
-                df[list_col] = df[list_col].apply(lambda x: ', '.join(x) if isinstance(x, list) else '')
-        
+                df[list_col] = df[list_col].apply(lambda x: '\n'.join(x) if isinstance(x, list) else '')
         # Configure grid options
         gb = GridOptionsBuilder.from_dataframe(df)
         gb.configure_selection(
