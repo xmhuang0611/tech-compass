@@ -98,8 +98,7 @@ def render_category_form(category_data):
         name = st.text_input(
             "Name*",
             value=category_data.get("name", ""),
-            help="Category name",
-            disabled=True  # Name cannot be changed as it's the identifier
+            help="Category name"
         )
         
         description = st.text_area(
@@ -134,7 +133,8 @@ def render_category_form(category_data):
                 "description": description if description else None
             }
             
-            if update_category(name, update_data):
+            # Use the original name for the API call, but send the new name in the update data
+            if update_category(category_data["name"], update_data):
                 st.session_state.selected_category = None
                 st.rerun()
     
