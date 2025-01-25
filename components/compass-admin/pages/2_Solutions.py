@@ -25,6 +25,8 @@ if "show_success_message" not in st.session_state:
     st.session_state.show_success_message = False
 if "show_error_message" not in st.session_state:
     st.session_state.show_error_message = None
+if "show_delete_success_toast" not in st.session_state:
+    st.session_state.show_delete_success_toast = False
 
 # Check authentication
 if not st.session_state.authenticated:
@@ -70,6 +72,31 @@ def update_solution(solution_slug, data):
     except Exception as e:
         st.session_state.show_error_message = str(e)
     return False
+
+def delete_solution(solution_slug):
+    """Delete solution"""
+    try:
+        # For DELETE requests with 204 response, APIClient.delete returns None
+        APIClient.delete(f"solutions/{solution_slug}/")
+        # If no exception was raised, deletion was successful
+        return True
+    except Exception as e:
+        st.session_state.show_error_message = str(e)
+        return False
+
+@st.dialog("Confirm Deletion")
+def confirm_delete(solution_data):
+    st.write(f"Are you sure you want to delete solution '{solution_data.get('name')}'?")
+    st.warning("This action cannot be undone!")
+    
+    if st.button("Yes, Delete", type="primary"):
+        if delete_solution(solution_data["slug"]):
+            st.session_state.show_delete_success_toast = True
+            st.session_state.selected_solution = None
+            # Clear the grid selection by regenerating the key
+            if 'solution_grid' in st.session_state:
+                del st.session_state['solution_grid']
+            st.rerun()
 
 def render_solution_form(solution_data):
     """Render form for editing solution"""
@@ -230,10 +257,14 @@ def render_solution_form(solution_data):
                 help="Enter cons (one per line)"
             )
         
-        # Save Changes button
-        submitted = st.form_submit_button("Save Changes")
+        # Save Changes button only in the form
+        col1, col2,col3 = st.columns([1, 1, 3])
+        with col1:
+            submitted = st.form_submit_button("Save Changes")
+        with col2:
+            delete_clicked = st.form_submit_button("Delete Solution")
         
-        # Show messages right below the button
+        # Show update messages inside form
         if st.session_state.show_success_message:
             st.success("✅ Solution updated successfully!")
             st.session_state.show_success_message = False
@@ -268,6 +299,10 @@ def render_solution_form(solution_data):
             if update_solution(solution_data["slug"], update_data):
                 st.session_state.selected_solution = None
                 st.rerun()
+    
+    # Show delete confirmation dialog when delete button is clicked
+    if delete_clicked:
+        confirm_delete(solution_data)
 
 def render_add_solution_form():
     """Render form for adding new solution"""
@@ -458,6 +493,11 @@ def render_add_solution_form():
 def main():
     st.title("💡 Solutions")
     
+    # Show toast message if deletion was successful
+    if st.session_state.show_delete_success_toast:
+        st.toast("Solution deleted successfully!", icon="✅")
+        st.session_state.show_delete_success_toast = False
+    
     # Create tabs
     list_tab, add_tab = st.tabs(["Solutions List", "Add New Solution"])
     
@@ -594,8 +634,8 @@ def main():
             # Handle selection - always use first selected row if any
             selected_rows = grid_response.get('selected_rows', [])
 
-            # Show only edit form in list tab when row selected
-            if selected_rows is not None and len(selected_rows) > 0:
+            # Show edit form only if we have selected rows and no deletion just happened
+            if selected_rows is not None and not st.session_state.show_delete_success_toast:
                 selected_solution = selected_rows.iloc[0].to_dict()
                 st.session_state.selected_solution = selected_solution
                 render_solution_form(selected_solution)
