@@ -32,7 +32,7 @@ RadarStatusEnum = Literal[
 
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
-    name: str = Field(..., description="Solution name")
+    name: str = Field(..., min_length=1, description="Solution name")
     description: str = Field(..., description="Detailed description")
     category: Optional[str] = Field(None, description="Primary category")
     radar_status: RadarStatusEnum = Field(..., description="Tech Radar status (ADOPT/TRIAL/ASSESS/HOLD)")
