@@ -52,12 +52,16 @@ def update_category(category_name, data):
     """Update category"""
     try:
         response = APIClient.put(f"categories/{category_name}", data)
-        if response:
+        if response and response.get('status_code') == 200:
             st.session_state.show_success_message = True
             return True
+        else:
+            error_msg = response.get('detail', 'Unknown error occurred')
+            st.session_state.show_error_message = str(error_msg)
+            return False
     except Exception as e:
         st.session_state.show_error_message = str(e)
-    return False
+        return False
 
 def delete_category(category_name):
     """Delete category"""
@@ -114,15 +118,6 @@ def render_category_form(category_data):
         with col2:
             delete_clicked = st.form_submit_button("Delete Category")
         
-        # Show update messages inside form
-        if st.session_state.show_success_message:
-            st.success("✅ Category updated successfully!")
-            st.session_state.show_success_message = False
-        
-        if st.session_state.show_error_message:
-            st.error(f"❌ Failed to update category: {st.session_state.show_error_message}")
-            st.session_state.show_error_message = None
-        
         if submitted:
             if not name:
                 st.error("Category name is required")
@@ -135,8 +130,12 @@ def render_category_form(category_data):
             
             # Use the original name for the API call, but send the new name in the update data
             if update_category(category_data["name"], update_data):
+                st.success("✅ Category updated successfully!")
                 st.session_state.selected_category = None
                 st.rerun()
+            else:
+                st.error(f"❌ Failed to update category: {st.session_state.show_error_message}")
+                st.session_state.show_error_message = None
     
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
