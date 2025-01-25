@@ -26,10 +26,10 @@ async def create_tag(
 @router.get("/", response_model=dict)
 async def get_tags(
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 100,  # Default to 100 items
     tag_service: TagService = Depends()
 ) -> Any:
-    """Get all tags with pagination."""
+    """Get all tags with pagination. Default limit is 100 items."""
     tags = await tag_service.get_tags(skip=skip, limit=limit)
     total = await tag_service.count_tags()
     return {

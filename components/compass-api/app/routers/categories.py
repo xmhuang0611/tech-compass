@@ -24,10 +24,10 @@ async def create_category(
 @router.get("/", response_model=dict)
 async def get_categories(
     skip: int = 0,
-    limit: int = 10,
+    limit: int = 100,
     category_service: CategoryService = Depends()
 ) -> Any:
-    """Get all categories with pagination."""
+    """Get all categories with pagination. Default limit is 100 items."""
     categories = await category_service.get_categories(skip=skip, limit=limit)
     total = await category_service.count_categories()
     return {
