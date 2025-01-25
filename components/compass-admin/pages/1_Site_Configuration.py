@@ -1,6 +1,7 @@
 import streamlit as st
 from utils.auth import login
 from utils.api import APIClient
+import json
 
 # Page configuration
 st.set_page_config(
@@ -24,7 +25,7 @@ def load_site_config():
     """Load current site configuration"""
     try:
         response = APIClient.get("site-config")
-        if response and isinstance(response, dict):
+        if response and isinstance(response, dict) and response.get('status_code') == 200:
             return response.get("data", {})
     except Exception as e:
         st.error(f"Failed to load site configuration: {str(e)}")
@@ -50,6 +51,14 @@ def get_current_user():
     except Exception as e:
         st.error(f"Failed to load user information: {str(e)}")
     return ""
+
+def is_valid_json(text):
+    """Validate if text is a valid JSON object"""
+    try:
+        json_obj = json.loads(text)
+        return isinstance(json_obj, dict)
+    except:
+        return False
 
 def main():
     st.title("🔧 Site Configuration")
@@ -92,106 +101,76 @@ def main():
         
         # Features Configuration
         st.write("Features Configuration")
-        features = current_config.get("features", {})
-        new_features = {}
+        features_json = st.text_area(
+            "Features (JSON)",
+            value=json.dumps(current_config.get("features", {}), indent=2),
+            help="Features configuration in JSON format"
+        )
         
-        # Display existing features and allow adding new ones
-        for key, value in features.items():
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                new_key = st.text_input("Key", value=key, key=f"feature_key_{key}")
-            with col2:
-                if isinstance(value, bool):
-                    new_value = st.checkbox("Value", value=value, key=f"feature_value_{key}")
-                else:
-                    new_value = st.text_input("Value", value=str(value), key=f"feature_value_{key}")
-            if new_key:
-                new_features[new_key] = new_value
-        
-        # Add new feature
-        st.write("Add New Feature")
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            new_feature_key = st.text_input("Key", key="new_feature_key")
-        with col2:
-            new_feature_value = st.text_input("Value", key="new_feature_value")
-        if new_feature_key and new_feature_value:
-            # Try to convert string "true"/"false" to boolean
-            if new_feature_value.lower() == "true":
-                new_feature_value = True
-            elif new_feature_value.lower() == "false":
-                new_feature_value = False
-            new_features[new_feature_key] = new_feature_value
-            
         # Theme Settings
         st.write("Theme Settings")
-        theme = current_config.get("theme", {})
-        new_theme = {}
+        theme_json = st.text_area(
+            "Theme (JSON)",
+            value=json.dumps(current_config.get("theme", {}), indent=2),
+            help="Theme settings in JSON format"
+        )
         
-        # Display existing theme settings and allow adding new ones
-        for key, value in theme.items():
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                new_key = st.text_input("Key", value=key, key=f"theme_key_{key}")
-            with col2:
-                new_value = st.text_input("Value", value=str(value), key=f"theme_value_{key}")
-            if new_key:
-                new_theme[new_key] = new_value
-        
-        # Add new theme setting
-        st.write("Add New Theme Setting")
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            new_theme_key = st.text_input("Key", key="new_theme_key")
-        with col2:
-            new_theme_value = st.text_input("Value", key="new_theme_value")
-        if new_theme_key and new_theme_value:
-            new_theme[new_theme_key] = new_theme_value
-            
         # Meta Information
         st.write("Meta Information")
-        meta = current_config.get("meta", {})
-        new_meta = {}
-        
-        # Display existing meta information and allow adding new ones
-        for key, value in meta.items():
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                new_key = st.text_input("Key", value=key, key=f"meta_key_{key}")
-            with col2:
-                new_value = st.text_input("Value", value=str(value), key=f"meta_value_{key}")
-            if new_key:
-                new_meta[new_key] = new_value
-        
-        # Add new meta information
-        st.write("Add New Meta Information")
-        col1, col2 = st.columns([1, 2])
-        with col1:
-            new_meta_key = st.text_input("Key", key="new_meta_key")
-        with col2:
-            new_meta_value = st.text_input("Value", key="new_meta_value")
-        if new_meta_key and new_meta_value:
-            new_meta[new_meta_key] = new_meta_value
+        meta_json = st.text_area(
+            "Meta (JSON)",
+            value=json.dumps(current_config.get("meta", {}), indent=2),
+            help="Meta information in JSON format"
+        )
+
+        # Custom Links
+        st.write("Custom Links")
+        custom_links_json = st.text_area(
+            "Custom Links (JSON)",
+            value=json.dumps(current_config.get("custom_links", []), indent=2),
+            help="Custom links configuration in JSON format"
+        )
         
         # Submit button
         submitted = st.form_submit_button("Save Changes")
         
         if submitted:
-            # Prepare update data
-            update_data = {
-                "site_name": site_name,
-                "site_description": site_description,
-                "welcome_message": welcome_message,
-                "contact_email": contact_email,
-                "features": new_features,
-                "custom_links": current_config.get("custom_links", []),
-                "theme": new_theme,
-                "meta": new_meta
-            }
+            # Validate JSON inputs
+            validation_error = False
+            if not is_valid_json(features_json):
+                st.error("Features configuration is not a valid JSON object")
+                validation_error = True
+            if not is_valid_json(theme_json):
+                st.error("Theme settings is not a valid JSON object")
+                validation_error = True
+            if not is_valid_json(meta_json):
+                st.error("Meta information is not a valid JSON object")
+                validation_error = True
+            try:
+                custom_links = json.loads(custom_links_json)
+                if not isinstance(custom_links, list):
+                    st.error("Custom links must be a JSON array")
+                    validation_error = True
+            except:
+                st.error("Custom links is not a valid JSON array")
+                validation_error = True
             
-            # Save configuration
-            if save_site_config(update_data):
-                st.rerun()  # Refresh the page to show updated values
+            if not validation_error:
+                # Prepare update data
+                update_data = {
+                    "site_name": site_name,
+                    "site_description": site_description,
+                    "welcome_message": welcome_message,
+                    "contact_email": contact_email,
+                    "features": json.loads(features_json),
+                    "custom_links": json.loads(custom_links_json),
+                    "theme": json.loads(theme_json),
+                    "meta": json.loads(meta_json)
+                }
+                
+                # Save configuration
+                if save_site_config(update_data):
+                    st.rerun()  # Refresh the page to show updated values
 
 if __name__ == "__main__":
     main() 
