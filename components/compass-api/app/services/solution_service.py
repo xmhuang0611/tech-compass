@@ -62,7 +62,9 @@ class SolutionService:
         # Handle tags
         if "tags" in solution_dict:
             formatted_tags = []
-            for tag_name in solution_dict["tags"]:
+            # Get unique tags first
+            unique_tags = list(set(solution_dict["tags"]))
+            for tag_name in unique_tags:
                 # Create tag if it doesn't exist
                 tag = await self.tag_service.get_tag_by_name(tag_name)
                 if not tag:
@@ -205,8 +207,10 @@ class SolutionService:
 
         # Handle tags update
         if "tags" in update_dict:
+            # Get distinct tags first
+            distinct_tags = list(set(update_dict["tags"]))
             formatted_tags = []
-            for tag_name in update_dict["tags"]:
+            for tag_name in distinct_tags:
                 # Create tag if it doesn't exist
                 tag = await self.tag_service.get_tag_by_name(tag_name)
                 if not tag:
