@@ -18,7 +18,7 @@ if "authenticated" not in st.session_state:
 if "solutions_page" not in st.session_state:
     st.session_state.solutions_page = 0
 if "solutions_per_page" not in st.session_state:
-    st.session_state.solutions_per_page = 10
+    st.session_state.solutions_per_page = 100
 if "selected_solution" not in st.session_state:
     st.session_state.selected_solution = None
 if "show_success_message" not in st.session_state:
@@ -310,7 +310,7 @@ def main():
     # Get page from session state
     if "page" not in st.session_state:
         st.session_state.page = 1
-    page_size = 10
+    page_size = 100
     skip = (st.session_state.page - 1) * page_size
         
     solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
@@ -346,7 +346,11 @@ def main():
             use_checkbox=False,
             pre_selected_rows=[]
         )
-        gb.configure_pagination(enabled=True, paginationAutoPageSize=False, paginationPageSize=page_size)
+        gb.configure_pagination(
+            enabled=True,
+            paginationAutoPageSize=False,
+            paginationPageSize=page_size
+        )
         
         # Configure column properties
         column_defs = {
