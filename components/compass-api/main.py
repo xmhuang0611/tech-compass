@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 
 from app.core.mongodb import connect_to_mongo, close_mongo_connection
 from app.routers import api_router
+from app.services.user_service import UserService
 
 # Configure logging
 logging.basicConfig(
@@ -20,6 +21,15 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     await connect_to_mongo()
+    
+    # Ensure default admin exists
+    user_service = UserService()
+    try:
+        await user_service.ensure_default_admin()
+        logger.info("Default admin user check completed")
+    except Exception as e:
+        logger.error(f"Error ensuring default admin user: {e}")
+    
     yield
     # Shutdown
     await close_mongo_connection()

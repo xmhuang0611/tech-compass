@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     AUTH_SERVER_URL: str = "http://localhost:8000/auth"  # Default value for development
     AUTH_SERVER_ENABLED: bool = False  # For development, set to False to use fake auth
     
+    # Default Admin settings
+    DEFAULT_ADMIN_USERNAME: str = "admin"
+    DEFAULT_ADMIN_PASSWORD: str = "admin123"
+    DEFAULT_ADMIN_EMAIL: str = "admin@techcompass.com"
+    
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
     AUTH_RATE_LIMIT_PER_MINUTE: int = 1000

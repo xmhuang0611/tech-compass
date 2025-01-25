@@ -6,12 +6,29 @@ from fastapi import HTTPException, status
 from app.core.mongodb import get_database
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserList
+from app.core.config import settings
 
 
 class UserService:
     def __init__(self):
         self.db = get_database()
         self.collection = self.db.users
+
+    async def ensure_default_admin(self) -> None:
+        """Ensure default admin user exists in the database."""
+        admin_username = getattr(settings, "DEFAULT_ADMIN_USERNAME", "admin")
+        admin = await self.get_user_by_username(admin_username)
+        
+        if not admin:
+            admin_user = UserCreate(
+                username=admin_username,
+                email=getattr(settings, "DEFAULT_ADMIN_EMAIL", "admin@techcompass.com"),
+                password=getattr(settings, "DEFAULT_ADMIN_PASSWORD", "admin123"),
+                full_name="Default Admin",
+                is_active=True,
+                is_superuser=True
+            )
+            await self.create_user(admin_user)
 
     async def get_user_by_username(self, username: str) -> Optional[UserInDB]:
         """Get a user by username - internal use only."""
