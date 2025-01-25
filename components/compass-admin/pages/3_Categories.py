@@ -62,8 +62,13 @@ def update_category(category_name, data):
 def delete_category(category_name):
     """Delete category"""
     try:
-        APIClient.delete(f"categories/{category_name}")
-        return True
+        response = APIClient.delete(f"categories/{category_name}")
+        if response and response.get('status_code') == 204:
+            return True
+        else:
+            error_msg = response.get('detail', 'Unknown error occurred')
+            st.session_state.show_error_message = str(error_msg)
+            return False
     except Exception as e:
         st.session_state.show_error_message = str(e)
         return False
@@ -80,6 +85,9 @@ def confirm_delete(category_data):
             if 'category_grid' in st.session_state:
                 del st.session_state['category_grid']
             st.rerun()
+        else:
+            st.error(f"Failed to delete category: {st.session_state.show_error_message}")
+            st.session_state.show_error_message = None
 
 def render_category_form(category_data):
     """Render form for editing category"""
@@ -176,15 +184,7 @@ def render_add_category_form():
                     st.rerun()
                 else:
                     error_msg = response.get('detail', 'Unknown error occurred')
-                    if isinstance(error_msg, dict):
-                        error_details = []
-                        for field, msgs in error_msg.items():
-                            if isinstance(msgs, list):
-                                error_details.extend([f"{field}: {msg}" for msg in msgs])
-                            else:
-                                error_details.append(f"{field}: {msgs}")
-                        error_msg = "\n".join(error_details)
-                    st.session_state.show_error_message = error_msg
+                    st.session_state.show_error_message = str(error_msg)
                     st.rerun()
             except Exception as e:
                 st.session_state.show_error_message = str(e)
