@@ -4,7 +4,7 @@ from typing import Optional
 from fastapi import HTTPException, status
 
 from app.core.mongodb import get_database
-from app.core.security import get_password_hash, verify_password
+from app.core.password import get_password_hash, verify_password
 from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserList
 from app.core.config import settings
 
