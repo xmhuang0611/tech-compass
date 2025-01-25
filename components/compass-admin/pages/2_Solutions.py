@@ -65,7 +65,7 @@ def load_solutions(skip=0, limit=10, **filters):
 def update_solution(solution_slug, data):
     """Update solution"""
     try:
-        response = APIClient.put(f"solutions/{solution_slug}/", data)
+        response = APIClient.put(f"solutions/{solution_slug}", data)
         if response:
             st.session_state.show_success_message = True
             return True
@@ -77,7 +77,7 @@ def delete_solution(solution_slug):
     """Delete solution"""
     try:
         # For DELETE requests with 204 response, APIClient.delete returns None
-        APIClient.delete(f"solutions/{solution_slug}/")
+        APIClient.delete(f"solutions/{solution_slug}")
         # If no exception was raised, deletion was successful
         return True
     except Exception as e:
