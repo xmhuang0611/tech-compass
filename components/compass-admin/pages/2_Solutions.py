@@ -468,22 +468,12 @@ def render_add_solution_form():
             
             try:
                 response = APIClient.post("solutions/", solution_data)
-                # Check if response status code is 201 (Created)
                 if response and response.get('status_code') == 201:
                     st.session_state.show_success_message = True
                     st.rerun()
                 else:
-                    # Get error details from response
+                    # Get error message from response
                     error_msg = response.get('detail', 'Unknown error occurred')
-                    if isinstance(error_msg, dict):
-                        # Handle validation errors
-                        error_details = []
-                        for field, msgs in error_msg.items():
-                            if isinstance(msgs, list):
-                                error_details.extend([f"{field}: {msg}" for msg in msgs])
-                            else:
-                                error_details.append(f"{field}: {msgs}")
-                        error_msg = "\n".join(error_details)
                     st.session_state.show_error_message = error_msg
                     st.rerun()
             except Exception as e:
