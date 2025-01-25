@@ -21,6 +21,10 @@ if "solutions_per_page" not in st.session_state:
     st.session_state.solutions_per_page = 10
 if "selected_solution" not in st.session_state:
     st.session_state.selected_solution = None
+if "show_success_message" not in st.session_state:
+    st.session_state.show_success_message = False
+if "show_error_message" not in st.session_state:
+    st.session_state.show_error_message = None
 
 # Check authentication
 if not st.session_state.authenticated:
@@ -61,10 +65,10 @@ def update_solution(solution_slug, data):
     try:
         response = APIClient.put(f"solutions/{solution_slug}/", data)
         if response:
-            st.success("Solution updated successfully!")
+            st.session_state.show_success_message = True
             return True
     except Exception as e:
-        st.error(f"Failed to update solution: {str(e)}")
+        st.session_state.show_error_message = str(e)
     return False
 
 def render_solution_form(solution_data):
@@ -175,12 +179,20 @@ def render_solution_form(solution_data):
                 help="Maintainer's email"
             )
             
-        # Version in a new row
-        version = st.text_input(
-            "Version",
-            value=solution_data.get("version", ""),
-            help="Solution version"
-        )
+        # Version and Tags in the same row
+        col1, col2 = st.columns(2)
+        with col1:
+            version = st.text_input(
+                "Version",
+                value=solution_data.get("version", ""),
+                help="Solution version"
+            )
+        with col2:
+            tags = st.text_input(
+                "Tags (comma-separated)",
+                value=solution_data.get("tags", ''),
+                help="Enter tags separated by commas"
+            )
         
         # URLs
         col1, col2, col3 = st.columns(3)
@@ -203,13 +215,6 @@ def render_solution_form(solution_data):
                 help="Demo/POC URL"
             )
             
-        # Tags
-        tags = st.text_input(
-            "Tags (comma-separated)",
-            value=solution_data.get("tags", ''),
-            help="Enter tags separated by commas"
-        )
-        
         # Pros & Cons
         col1, col2 = st.columns(2)
         with col1:
@@ -225,7 +230,17 @@ def render_solution_form(solution_data):
                 help="Enter cons (one per line)"
             )
         
+        # Save Changes button
         submitted = st.form_submit_button("Save Changes")
+        
+        # Show messages right below the button
+        if st.session_state.show_success_message:
+            st.success("✅ Solution updated successfully!")
+            st.session_state.show_success_message = False
+        
+        if st.session_state.show_error_message:
+            st.error(f"❌ Failed to update solution: {st.session_state.show_error_message}")
+            st.session_state.show_error_message = None
         
         if submitted:
             update_data = {
