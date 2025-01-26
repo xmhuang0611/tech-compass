@@ -2,6 +2,7 @@ from typing import List, Tuple, Optional
 from datetime import datetime
 from bson import ObjectId
 from pymongo import DESCENDING, ASCENDING
+from fastapi import HTTPException, status
 
 from app.core.database import get_database
 from app.models.comment import CommentCreate, CommentInDB
@@ -73,6 +74,14 @@ class CommentService:
         username: str
     ) -> CommentInDB:
         """Create a new comment"""
+        # Check if solution exists
+        solution = await self.db.solutions.find_one({"slug": solution_slug})
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Solution with slug '{solution_slug}' not found"
+            )
+
         now = datetime.utcnow().isoformat()
         comment_dict = comment.model_dump()
         new_comment = {
