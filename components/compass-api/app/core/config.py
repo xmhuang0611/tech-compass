@@ -9,11 +9,11 @@ class Settings(BaseSettings):
     # JWT settings
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5256000  # 10 years
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 5256000
     
     # Auth Server settings
-    AUTH_SERVER_URL: str = "http://localhost:8000/auth"  # Default value for development
-    AUTH_SERVER_ENABLED: bool = False  # For development, set to False to use fake auth
+    AUTH_SERVER_URL: str = "http://localhost:8000/auth"
+    AUTH_SERVER_ENABLED: bool = False
     
     # Default Admin settings
     DEFAULT_ADMIN_USERNAME: str = "admin"
