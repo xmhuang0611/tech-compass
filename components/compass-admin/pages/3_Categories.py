@@ -36,10 +36,10 @@ if not st.session_state.authenticated:
 def load_categories(skip=0, limit=10):
     """Load categories with pagination"""
     try:
-        params = {"skip": skip, "limit": limit, "sort": "-updated_at"}
+        params = {"skip": skip, "limit": limit, "sort": "name"}
         response = APIClient.get("categories/", params)
         if response and isinstance(response, dict):
-            return response.get("items", {}).get("categories", []), {
+            return response.get("data", []), {
                 "total": response.get("total", 0),
                 "skip": response.get("skip", 0),
                 "limit": response.get("limit", 10)

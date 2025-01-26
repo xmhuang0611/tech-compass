@@ -42,7 +42,7 @@ def load_categories():
     try:
         response = APIClient.get("categories/")
         if response and isinstance(response, dict):
-            return response.get("items", {}).get("categories", [])
+            return response.get("data", [])
     except Exception as e:
         st.error(f"Failed to load categories: {str(e)}")
     return []
@@ -50,10 +50,10 @@ def load_categories():
 def load_solutions(skip=0, limit=10, **filters):
     """Load solutions with pagination and filters"""
     try:
-        params = {"skip": skip, "limit": limit, "sort": "-updated_at", **filters}
+        params = {"skip": skip, "limit": limit, "sort": "name", **filters}
         response = APIClient.get("solutions/", params)
         if response and isinstance(response, dict):
-            return response.get("items", []), {
+            return response.get("data", []), {
                 "total": response.get("total", 0),
                 "skip": response.get("skip", 0),
                 "limit": response.get("limit", 10)
