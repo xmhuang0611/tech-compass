@@ -107,7 +107,7 @@ async def get_departments(
     """
     try:
         departments = await solution_service.get_departments()
-        return StandardResponse.of(departments)
+        return StandardResponse.paginated(departments, len(departments), 0, 0)
     except Exception as e:
         logger.error(f"Error getting departments: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting departments: {str(e)}")

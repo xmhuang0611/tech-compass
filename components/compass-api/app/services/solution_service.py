@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from bson import ObjectId
+from fastapi import logger
 from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
