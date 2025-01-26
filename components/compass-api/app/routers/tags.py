@@ -1,17 +1,19 @@
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user
-from app.models.tag import Tag, TagCreate, TagUpdate
+from app.models.tag import Tag, TagCreate, TagUpdate, TagInDB
 from app.models.user import User
+from app.models.response import StandardResponse
 from app.services.tag_service import TagService
 from app.services.solution_service import SolutionService
 from app.models.solution import SolutionUpdate
 
 router = APIRouter()
 
-@router.post("/", response_model=Tag, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=StandardResponse[Tag], status_code=status.HTTP_201_CREATED)
 async def create_tag(
     tag: TagCreate,
     current_user: User = Depends(get_current_active_user),
@@ -19,11 +21,12 @@ async def create_tag(
 ) -> Any:
     """Create a new tag."""
     try:
-        return await tag_service.create_tag(tag, current_user.username)
+        result = await tag_service.create_tag(tag, current_user.username)
+        return StandardResponse.of(result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=dict)
+@router.get("/", response_model=StandardResponse[List[TagInDB]])
 async def get_tags(
     skip: int = 0,
     limit: int = 100,  # Default to 100 items
@@ -32,14 +35,14 @@ async def get_tags(
     """Get all tags with pagination. Default limit is 100 items."""
     tags = await tag_service.get_tags(skip=skip, limit=limit)
     total = await tag_service.count_tags()
-    return {
-        "items": tags,
-        "total": total,
-        "skip": skip,
-        "limit": limit
-    }
+    return StandardResponse.paginated(
+        data=tags,
+        total=total,
+        skip=skip,
+        limit=limit
+    )
 
-@router.get("/{name}", response_model=Tag)
+@router.get("/{name}", response_model=StandardResponse[Tag])
 async def get_tag(
     name: str,
     tag_service: TagService = Depends()
@@ -51,9 +54,9 @@ async def get_tag(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tag not found"
         )
-    return tag
+    return StandardResponse.of(tag)
 
-@router.put("/{name}", response_model=Tag)
+@router.put("/{name}", response_model=StandardResponse[Tag])
 async def update_tag(
     name: str,
     tag_update: TagUpdate,
@@ -83,7 +86,7 @@ async def update_tag(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Tag not found"
             )
-        return tag
+        return StandardResponse.of(tag)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -92,7 +95,7 @@ async def update_tag(
             detail=f"Error updating tag: {str(e)}"
         )
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_tag(
     name: str,
     current_user: User = Depends(get_current_active_user),
@@ -112,7 +115,7 @@ async def delete_tag(
             detail=str(e)
         )
 
-@router.get("/solution/{solution_slug}", response_model=List[str], tags=["tags"])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[str]], tags=["tags"])
 async def get_solution_tags(
     solution_slug: str,
     solution_service: SolutionService = Depends()
@@ -124,9 +127,9 @@ async def get_solution_tags(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solution not found"
         )
-    return solution.tags if solution.tags else []
+    return StandardResponse.of(solution.tags if solution.tags else [])
 
-@router.post("/solution/{solution_slug}/tag/{tag_name}", status_code=status.HTTP_201_CREATED, tags=["tags"])
+@router.post("/solution/{solution_slug}/tag/{tag_name}", response_model=StandardResponse[dict], status_code=status.HTTP_201_CREATED, tags=["tags"])
 async def add_solution_tag(
     solution_slug: str,
     tag_name: str,
@@ -171,7 +174,7 @@ async def add_solution_tag(
                 detail="Failed to update solution with new tag"
             )
         
-        return {"message": f"Tag '{tag_name}' added successfully"}
+        return StandardResponse.of({"message": f"Tag '{tag_name}' added successfully"})
     except HTTPException:
         raise
     except Exception as e:
@@ -180,7 +183,7 @@ async def add_solution_tag(
             detail=f"Error adding tag to solution: {str(e)}"
         )
 
-@router.delete("/solution/{solution_slug}/tag/{tag_name}", status_code=status.HTTP_200_OK, tags=["tags"])
+@router.delete("/solution/{solution_slug}/tag/{tag_name}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK, tags=["tags"])
 async def delete_solution_tag(
     solution_slug: str,
     tag_name: str,
@@ -226,7 +229,7 @@ async def delete_solution_tag(
                 detail="Failed to update solution after removing tag"
             )
         
-        return {"message": f"Tag '{tag_name}' removed successfully"}
+        return StandardResponse.of({"message": f"Tag '{tag_name}' removed successfully"})
     except HTTPException:
         raise
     except Exception as e:

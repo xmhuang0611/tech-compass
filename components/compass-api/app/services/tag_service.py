@@ -49,7 +49,7 @@ class TagService:
             return TagInDB(**tag)
         return None
 
-    async def get_tags(self, skip: int = 0, limit: int = 100) -> TagList:
+    async def get_tags(self, skip: int = 0, limit: int = 100) -> list[TagInDB]:
         """Get all tags with pagination"""
         # Get tags with usage count
         pipeline = [
@@ -83,7 +83,7 @@ class TagService:
         ]
         cursor = self.collection.aggregate(pipeline)
         tags = await cursor.to_list(length=limit)
-        return TagList(tags=[TagInDB(**tag) for tag in tags])
+        return [TagInDB(**tag) for tag in tags]
 
     async def update_tag_by_name(
         self,
