@@ -61,11 +61,11 @@ class CategoryService:
         )
         return await self.create_category(category, username)
 
-    async def get_categories(self, skip: int = 0, limit: int = 100) -> CategoryList:
+    async def get_categories(self, skip: int = 0, limit: int = 100) -> list[CategoryInDB]:
         """Get all categories with pagination"""
         cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
         categories = await cursor.to_list(length=limit)
-        return CategoryList(categories=[CategoryInDB(**category) for category in categories])
+        return [CategoryInDB(**category) for category in categories]
 
     async def update_category_by_name(
         self,

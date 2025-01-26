@@ -1,15 +1,17 @@
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user
-from app.models.category import Category, CategoryCreate, CategoryUpdate
+from app.models.category import Category, CategoryCreate, CategoryUpdate, CategoryInDB
 from app.models.user import User
+from app.models.response import StandardResponse
 from app.services.category_service import CategoryService
 
 router = APIRouter()
 
-@router.post("/", response_model=Category, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=StandardResponse[Category], status_code=status.HTTP_201_CREATED)
 async def create_category(
     category: CategoryCreate,
     current_user: User = Depends(get_current_active_user),
@@ -17,11 +19,12 @@ async def create_category(
 ) -> Any:
     """Create a new category."""
     try:
-        return await category_service.create_category(category, current_user.username)
+        result = await category_service.create_category(category, current_user.username)
+        return StandardResponse.of(result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=dict)
+@router.get("/", response_model=StandardResponse[List[CategoryInDB]])
 async def get_categories(
     skip: int = 0,
     limit: int = 100,
@@ -30,14 +33,14 @@ async def get_categories(
     """Get all categories with pagination. Default limit is 100 items."""
     categories = await category_service.get_categories(skip=skip, limit=limit)
     total = await category_service.count_categories()
-    return {
-        "items": categories,
-        "total": total,
-        "skip": skip,
-        "limit": limit
-    }
+    return StandardResponse.paginated(
+        data=categories,
+        total=total,
+        skip=skip,
+        limit=limit
+    )
 
-@router.get("/{name}", response_model=Category)
+@router.get("/{name}", response_model=StandardResponse[Category])
 async def get_category(
     name: str,
     category_service: CategoryService = Depends()
@@ -49,9 +52,9 @@ async def get_category(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Category not found"
         )
-    return category
+    return StandardResponse.of(category)
 
-@router.put("/{name}", response_model=Category)
+@router.put("/{name}", response_model=StandardResponse[Category])
 async def update_category(
     name: str,
     category_update: CategoryUpdate,
@@ -66,11 +69,11 @@ async def update_category(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Category not found"
             )
-        return category
+        return StandardResponse.of(category)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_category(
     name: str,
     current_user: User = Depends(get_current_active_user),
