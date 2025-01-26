@@ -3,13 +3,14 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import get_current_active_user
+from app.models.response import StandardResponse
 from app.models.user import User
 from app.services.comment_service import CommentService
 from app.models.comment import CommentCreate, CommentInDB
 
 router = APIRouter()
 
-@router.get("/solution/{solution_slug}", response_model=dict, tags=["comments"])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[list[CommentInDB]], tags=["comments"])
 async def get_solution_comments(
     solution_slug: str,
     page: int = Query(1, ge=1),
@@ -33,17 +34,9 @@ async def get_solution_comments(
         limit=page_size,
         sort_by=sort_by
     )
-    return {
-        "status": "success",
-        "data": comments,
-        "meta": {
-            "page": page,
-            "page_size": page_size,
-            "total": total
-        }
-    }
+    return StandardResponse.paginated(comments, total, skip, page_size)
 
-@router.post("/solution/{solution_slug}", response_model=dict, status_code=status.HTTP_201_CREATED, tags=["comments"])
+@router.post("/solution/{solution_slug}", response_model=StandardResponse[CommentInDB], status_code=status.HTTP_201_CREATED, tags=["comments"])
 async def create_comment(
     solution_slug: str,
     comment: CommentCreate,
@@ -62,27 +55,23 @@ async def create_comment(
             comment=comment,
             username=current_user.username
         )
-        return {
-            "status": "success",
-            "data": new_comment
-        }
+        return StandardResponse.of(new_comment)
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error creating comment: {str(e)}"
         )
 
-@router.put("/solution/{solution_slug}/comment/{comment_id}", response_model=dict, tags=["comments"])
+@router.put("/{comment_id}",
+            response_model=StandardResponse[CommentInDB], 
+            tags=["comments"])
 async def update_comment(
-    solution_slug: str,
     comment_id: str,
     comment: CommentCreate,
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Update a comment's content.
-    
-    - **solution_slug**: Unique identifier of the solution
     - **comment_id**: Unique identifier of the comment
     - **comment**: Updated comment content
     """
@@ -97,21 +86,18 @@ async def update_comment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Comment not found or you don't have permission to update it"
         )
-    return {
-        "status": "success",
-        "data": updated_comment
-    }
+    return StandardResponse.of(updated_comment)
 
-@router.delete("/solution/{solution_slug}/comment/{comment_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["comments"])
+@router.delete("/{comment_id}", 
+            status_code=status.HTTP_204_NO_CONTENT, 
+            tags=["comments"])
 async def delete_comment(
-    solution_slug: str,
     comment_id: str,
     current_user: User = Depends(get_current_active_user)
 ):
     """
     Delete a comment.
     
-    - **solution_slug**: Unique identifier of the solution
     - **comment_id**: Unique identifier of the comment
     """
     comment_service = CommentService()
@@ -124,8 +110,8 @@ async def delete_comment(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Comment not found or you don't have permission to delete it"
         )
-
-@router.get("/", response_model=dict, tags=["comments"])
+    return StandardResponse.of(None)
+@router.get("/", response_model=StandardResponse[list[CommentInDB]], tags=["comments"])
 async def get_all_comments(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -147,17 +133,8 @@ async def get_all_comments(
             limit=page_size,
             sort=sort
         )
-        return {
-            "status": "success",
-            "data": comments,
-            "meta": {
-                "page": page,
-                "page_size": page_size,
-                "total": total
-            }
-        }
+        return StandardResponse.paginated(comments, total, skip, page_size)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        logger.error(f"Error getting comments: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting comments: {str(e)}") 
