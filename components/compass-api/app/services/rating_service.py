@@ -4,6 +4,7 @@ from app.models.rating import RatingCreate, RatingInDB, RatingDistribution
 from app.core.database import get_database
 from datetime import datetime
 from bson import ObjectId
+from fastapi import HTTPException, status
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
 
@@ -91,6 +92,14 @@ class RatingService:
         }
 
     async def create_or_update_rating(self, solution_slug: str, rating: RatingCreate, username: str) -> RatingInDB:
+        # First check if solution exists
+        solution = await self.db.solutions.find_one({"slug": solution_slug})
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Solution with slug '{solution_slug}' not found"
+            )
+
         now = datetime.utcnow().isoformat()
         rating_data = rating.model_dump()
         
