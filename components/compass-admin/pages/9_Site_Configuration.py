@@ -24,11 +24,7 @@ def load_site_config():
     """Load current site configuration"""
     try:
         response = APIClient.get("site-config")
-        if (
-            response
-            and isinstance(response, dict)
-            and response.get("status_code") == 200
-        ):
+        if response and response.get("status_code") == 200:
             return response.get("data", {})
     except Exception as e:
         st.error(f"Failed to load site configuration: {str(e)}")
@@ -39,23 +35,12 @@ def save_site_config(config_data):
     """Save site configuration"""
     try:
         response = APIClient.put("site-config", config_data)
-        if response:
+        if response and response.get("status_code") == 200:
             st.session_state.config_saved = True
             return True
     except Exception as e:
         st.error(f"Failed to update site configuration: {str(e)}")
     return False
-
-
-def get_current_user():
-    """Get current user information from API"""
-    try:
-        user_info = APIClient.get("users/me")
-        if user_info and isinstance(user_info, dict):
-            return user_info.get("full_name", "")
-    except Exception as e:
-        st.error(f"Failed to load user information: {str(e)}")
-    return ""
 
 
 def is_valid_json(text):

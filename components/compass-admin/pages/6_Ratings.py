@@ -32,7 +32,7 @@ def load_solutions():
     try:
         params = {"skip": 0, "limit": 100, "sort": "-updated_at"}
         response = APIClient.get("solutions/", params)
-        if response and response.get("success"):
+        if response and response.get("status_code") == 200:
             return response.get("data", [])
     except Exception as e:
         st.error(f"Failed to load solutions: {str(e)}")
@@ -59,7 +59,7 @@ def load_ratings(solution_slug=None, skip=0, limit=20):
             }
             response = APIClient.get("ratings/", params)
 
-        if response and response.get("success"):
+        if response and response.get("status_code") == 200:
             return response.get("data", []), {
                 "total": response.get("total", 0),
                 "skip": skip,
@@ -78,7 +78,7 @@ def load_rating_summary(solution_slug):
     """Load rating summary for a solution"""
     try:
         response = APIClient.get(f"ratings/solution/{solution_slug}/summary")
-        if response and response.get("success"):
+        if response and response.get("status_code") == 200:
             return response.get("data", {})
     except Exception as e:
         st.error(f"Failed to load rating summary: {str(e)}")
