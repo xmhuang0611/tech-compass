@@ -2,21 +2,43 @@ from datetime import datetime
 from typing import Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic_core.core_schema import ValidationInfo
 
 from app.models.common import PyObjectId
 
 
 class CategoryBase(BaseModel):
     """Base category model with common fields"""
-    name: str = Field(..., description="Category name (spaces will be trimmed)")
-    description: str = Field(..., description="Category description")
+    name: str = Field(
+        ..., 
+        description="Category name (spaces will be trimmed)",
+        min_length=1,
+        max_length=100,
+        examples=["Development", "Infrastructure"]
+    )
+    description: str = Field(
+        "", 
+        description="Category description",
+        max_length=500
+    )
 
     @field_validator('name')
     @classmethod
-    def trim_name(cls, name: str) -> str:
-        """Trim spaces from category name"""
-        return name.strip()
+    def validate_name(cls, name: str) -> str:
+        """Validate and transform category name"""
+        # Trim spaces
+        name = name.strip()
+        # Check if empty after trimming
+        if not name:
+            raise ValueError("Category name cannot be empty")
+        return name
+
+    @field_validator('description')
+    @classmethod
+    def validate_description(cls, description: str) -> str:
+        """Validate category description"""
+        return description.strip() if description else ""
 
 class CategoryCreate(CategoryBase):
     """Category creation model"""
@@ -24,16 +46,36 @@ class CategoryCreate(CategoryBase):
 
 class CategoryUpdate(BaseModel):
     """Category update model"""
-    name: Optional[str] = Field(None, description="Category name (spaces will be trimmed)")
-    description: Optional[str] = Field(None, description="Category description")
+    name: Optional[str] = Field(
+        None, 
+        description="Category name (spaces will be trimmed)",
+        min_length=1,
+        max_length=100
+    )
+    description: Optional[str] = Field(
+        None, 
+        description="Category description",
+        max_length=500
+    )
 
     @field_validator('name')
     @classmethod
-    def trim_name(cls, name: Optional[str]) -> Optional[str]:
-        """Trim spaces from category name if provided"""
+    def validate_name(cls, name: Optional[str]) -> Optional[str]:
+        """Validate and transform category name if provided"""
         if name is None:
             return None
-        return name.strip()
+        name = name.strip()
+        if not name:
+            raise ValueError("Category name cannot be empty")
+        return name
+
+    @field_validator('description')
+    @classmethod
+    def validate_description(cls, description: Optional[str]) -> Optional[str]:
+        """Validate category description if provided"""
+        if description is None:
+            return None
+        return description.strip()
 
 class CategoryInDB(CategoryBase):
     """Category model as stored in database"""

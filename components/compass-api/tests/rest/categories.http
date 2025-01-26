@@ -23,6 +23,26 @@ Authorization: Bearer {{token}}
     "description": "Tools and platforms for software development"
 }
 
+### Create category with empty description (should succeed)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Testing",
+    "description": ""
+}
+
+### Create category with whitespace description (should succeed, will be trimmed)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Infrastructure",
+    "description": "    "
+}
+
 ### Update category (requires auth)
 PUT {{baseUrl}}/categories/Development
 Content-Type: application/json
@@ -31,6 +51,15 @@ Authorization: Bearer {{token}}
 {
     "name": "Development",
     "description": "Updated description for development tools category"
+}
+
+### Update category with empty description (should succeed)
+PUT {{baseUrl}}/categories/Testing
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": ""
 }
 
 ### Delete category (requires auth)
@@ -49,6 +78,26 @@ Authorization: Bearer {{token}}
     "description": "This should fail validation"
 }
 
+### Try to create category with only whitespace name (should fail)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "    ",
+    "description": "This should fail validation"
+}
+
+### Try to create category with too long name (>100 chars, should fail)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "This is a very very very very very very very very very very very very very very very very very very very very long name",
+    "description": "This should fail validation"
+}
+
 ### Try to get non-existent category (should return 404)
 GET {{baseUrl}}/categories/non-existent-category
 Content-Type: application/json
@@ -59,7 +108,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Development Tools",
+    "name": "Development",
     "description": "This should fail if category already exists"
 }
 
@@ -70,4 +119,14 @@ Content-Type: application/json
 {
     "name": "Development",
     "description": "This should fail without token"
+}
+
+### Try to update with empty name (should fail)
+PUT {{baseUrl}}/categories/Development
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "",
+    "description": "This should fail validation"
 } 
