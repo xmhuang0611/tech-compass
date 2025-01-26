@@ -26,7 +26,7 @@ pip install -r requirements.txt
 To run the application locally:
 
 ```bash
-streamlit run app.py
+streamlit run Home.py
 ```
 
 The application will be available at `http://localhost:8501`

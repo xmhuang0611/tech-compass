@@ -117,7 +117,7 @@ pip install -r requirements.txt
 cp .streamlit/config.example.toml .streamlit/config.toml
 # Edit config.toml with your configuration
 
-streamlit run app.py
+streamlit run Home.py
 ```
 
 5. **Tech Radar Setup**
