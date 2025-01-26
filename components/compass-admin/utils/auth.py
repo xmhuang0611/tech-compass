@@ -31,7 +31,6 @@ def check_auth(username: str, password: str) -> bool:
             "Content-Type": "application/x-www-form-urlencoded"
         }
         
-        # 完全匹配 curl 请求的参数
         data = {
             "grant_type": "",
             "username": username,
@@ -47,13 +46,6 @@ def check_auth(username: str, password: str) -> bool:
             headers=headers
         )
         
-        # Debug information
-        if response.status_code != 200:
-            st.write(f"Status Code: {response.status_code}")
-            st.write(f"Response: {response.text}")
-            st.write("Request Headers:", headers)
-            st.write("Request Data:", data)
-        
         if response.status_code == 200:
             data = response.json()
             if data.get("access_token"):
@@ -66,11 +58,11 @@ def check_auth(username: str, password: str) -> bool:
         elif response.status_code == 401:
             st.error("Invalid credentials")
         else:
-            st.error(f"Authentication failed: {response.status_code}")
+            st.error("Authentication failed. Please try again.")
             
         return False
     except Exception as e:
-        st.error(f"Authentication error: {str(e)}")
+        st.error("Authentication failed. Please try again later.")
         return False
 
 def get_auth_header() -> Optional[dict]:

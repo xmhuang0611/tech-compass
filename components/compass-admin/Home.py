@@ -70,8 +70,8 @@ def get_current_user():
     """Get current user information from API"""
     try:
         user_info = APIClient.get("users/me/")
-        if user_info and isinstance(user_info, dict):
-            return user_info.get("full_name", "")
+        if user_info and user_info.get("status_code") == 200:
+            return user_info.get("data", {}).get("full_name", "")
     except Exception as e:
         st.error(f"Failed to load user information: {str(e)}")
     return ""
