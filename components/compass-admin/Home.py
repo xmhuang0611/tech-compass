@@ -18,7 +18,10 @@ def load_dashboard_stats():
     default_stats = {
         "total_solutions": "--",
         "active_users": "--",
-        "total_categories": "--"
+        "total_categories": "--",
+        "total_tags": "--",
+        "total_comments": "--",
+        "total_ratings": "--"
     }
     
     try:
@@ -39,6 +42,24 @@ def load_dashboard_stats():
         if categories and isinstance(categories, dict):
             total_categories = categories.get("total", "--")
             default_stats["total_categories"] = total_categories
+            
+        # Get total tags count
+        tags = APIClient.get("tags/", {"skip": 0, "limit": 10})
+        if tags and isinstance(tags, dict):
+            total_tags = tags.get("total", "--")
+            default_stats["total_tags"] = total_tags
+            
+        # Get total comments count
+        comments = APIClient.get("comments/", {"skip": 0, "limit": 10})
+        if comments and isinstance(comments, dict):
+            total_comments = comments.get("total", "--")
+            default_stats["total_comments"] = total_comments
+            
+        # Get total ratings count
+        ratings = APIClient.get("ratings/", {"skip": 0, "limit": 10})
+        if ratings and isinstance(ratings, dict):
+            total_ratings = ratings.get("total", "--")
+            default_stats["total_ratings"] = total_ratings
             
     except Exception as e:
         st.error(f"Failed to load some statistics: {str(e)}")
@@ -86,6 +107,23 @@ def main():
         st.metric(
             label="Total Categories",
             value=stats["total_categories"]
+        )
+        
+    col4, col5, col6 = st.columns(3)
+    with col4:
+        st.metric(
+            label="Total Tags",
+            value=stats["total_tags"]
+        )
+    with col5:
+        st.metric(
+            label="Total Comments",
+            value=stats["total_comments"]
+        )
+    with col6:
+        st.metric(
+            label="Total Ratings",
+            value=stats["total_ratings"]
         )
     
     # Recent Activity
