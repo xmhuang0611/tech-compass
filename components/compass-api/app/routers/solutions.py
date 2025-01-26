@@ -2,17 +2,19 @@ import logging
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user
 from app.models.solution import Solution, SolutionCreate, SolutionUpdate
 from app.models.user import User
+from app.models.response import StandardResponse
 from app.services.solution_service import SolutionService
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/", response_model=Solution, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=StandardResponse[Solution], status_code=status.HTTP_201_CREATED)
 async def create_solution(
     solution: SolutionCreate,
     current_user: User = Depends(get_current_active_user),
@@ -20,12 +22,13 @@ async def create_solution(
 ) -> Any:
     """Create a new solution."""
     try:
-        return await solution_service.create_solution(solution, current_user.username)
+        result = await solution_service.create_solution(solution, current_user.username)
+        return StandardResponse.of(result)
     except Exception as e:
         logger.error(f"Error creating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating solution: {str(e)}")
 
-@router.get("/", response_model=dict)
+@router.get("/", response_model=StandardResponse[List[Solution]])
 async def get_solutions(
     skip: int = 0,
     limit: int = 10,
@@ -79,19 +82,19 @@ async def get_solutions(
             sort=sort
         )
         total = await solution_service.count_solutions()
-        return {
-            "items": solutions,
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
+        return StandardResponse.paginated(
+            data=solutions,
+            total=total,
+            skip=skip,
+            limit=limit
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error listing solutions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error listing solutions: {str(e)}")
 
-@router.get("/departments", response_model=dict, tags=["solutions"])
+@router.get("/departments", response_model=StandardResponse[List[str]], tags=["solutions"])
 async def get_departments(
     solution_service: SolutionService = Depends()
 ):
@@ -104,15 +107,12 @@ async def get_departments(
     """
     try:
         departments = await solution_service.get_departments()
-        return {
-            "items": departments,
-            "total": len(departments)
-        }
+        return StandardResponse.of(departments)
     except Exception as e:
         logger.error(f"Error getting departments: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting departments: {str(e)}")
 
-@router.get("/{slug}", response_model=Solution)
+@router.get("/{slug}", response_model=StandardResponse[Solution])
 async def get_solution(
     slug: str,
     solution_service: SolutionService = Depends()
@@ -124,9 +124,9 @@ async def get_solution(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solution not found"
         )
-    return solution
+    return StandardResponse.of(solution)
 
-@router.put("/{slug}", response_model=Solution)
+@router.put("/{slug}", response_model=StandardResponse[Solution])
 async def update_solution(
     slug: str,
     solution_update: SolutionUpdate,
@@ -141,12 +141,12 @@ async def update_solution(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Solution not found"
             )
-        return solution
+        return StandardResponse.of(solution)
     except Exception as e:
         logger.error(f"Error updating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating solution: {str(e)}")
 
-@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_solution(
     slug: str,
     current_user: User = Depends(get_current_active_user),
