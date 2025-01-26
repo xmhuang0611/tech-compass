@@ -1,0 +1,73 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all categories
+GET {{baseUrl}}/categories
+Content-Type: application/json
+
+### Get all categories with pagination
+GET {{baseUrl}}/categories?skip=0&limit=5
+Content-Type: application/json
+
+### Get specific category by name
+GET {{baseUrl}}/categories/Development
+Content-Type: application/json
+
+### Create new category (requires auth)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Development",
+    "description": "Tools and platforms for software development"
+}
+
+### Update category (requires auth)
+PUT {{baseUrl}}/categories/Development
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Development",
+    "description": "Updated description for development tools category"
+}
+
+### Delete category (requires auth)
+DELETE {{baseUrl}}/categories/Development
+Authorization: Bearer {{token}}
+
+### Test error cases
+
+### Try to create category with empty name (should fail)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "",
+    "description": "This should fail validation"
+}
+
+### Try to get non-existent category (should return 404)
+GET {{baseUrl}}/categories/non-existent-category
+Content-Type: application/json
+
+### Try to create duplicate category (should fail)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Development Tools",
+    "description": "This should fail if category already exists"
+}
+
+### Try to update without auth token (should fail)
+PUT {{baseUrl}}/categories/development
+Content-Type: application/json
+
+{
+    "name": "Development",
+    "description": "This should fail without token"
+} 
