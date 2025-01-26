@@ -1,0 +1,182 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all users (with pagination)
+GET {{baseUrl}}/users?skip=0&limit=10
+Content-Type: application/json
+
+### Get current user's profile
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get specific user by username
+GET {{baseUrl}}/users/newuser
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Create new user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "strongpassword123",
+    "full_name": "New User",
+    "role": "USER"
+}
+
+### Update user (requires auth, can only update own profile)
+PUT {{baseUrl}}/users/newuser
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "email": "updated@example.com",
+    "full_name": "Updated Name",
+    "password": "newpassword123"
+}
+
+### Delete user (requires auth, can only delete own profile)
+DELETE {{baseUrl}}/users/newuser
+Authorization: Bearer {{token}}
+
+### Test error cases
+
+### Try to create user with existing username (should fail with 400)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "password123",
+    "full_name": "New User",
+    "role": "USER"
+}
+
+### Try to get non-existent user (should fail with 404)
+GET {{baseUrl}}/users/nonexistent
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to update non-existent user (should fail with 404)
+PUT {{baseUrl}}/users/nonexistent
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "email": "new@example.com",
+    "full_name": "New Name"
+}
+
+### Try to update another user's profile (should fail with 403)
+PUT {{baseUrl}}/users/other-user
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "email": "new@example.com",
+    "full_name": "New Name"
+}
+
+### Try to delete another user's profile (should fail with 403)
+DELETE {{baseUrl}}/users/other-user
+Authorization: Bearer {{token}}
+
+### Try to access protected endpoint without auth (should fail with 401)
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+
+### Example responses:
+
+# Get all users response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "username": "test",
+#             "email": "test@example.com",
+#             "full_name": "Test User",
+#             "role": "USER",
+#             "is_active": true,
+#             "created_at": "2024-01-22T10:30:00",
+#             "updated_at": "2024-01-22T10:30:00"
+#         },
+#         {
+#             "username": "other-user",
+#             "email": "other@example.com",
+#             "full_name": "Other User",
+#             "role": "USER",
+#             "is_active": true,
+#             "created_at": "2024-01-22T10:35:00",
+#             "updated_at": "2024-01-22T10:35:00"
+#         }
+#     ],
+#     "total": 2,
+#     "skip": 0,
+#     "limit": 10
+# }
+
+# Single user response
+# {
+#     "success": true,
+#     "data": {
+#         "username": "test",
+#         "email": "test@example.com",
+#         "full_name": "Test User",
+#         "role": "USER",
+#         "is_active": true,
+#         "created_at": "2024-01-22T10:30:00",
+#         "updated_at": "2024-01-22T10:30:00"
+#     }
+# }
+
+# Create/Update user response
+# {
+#     "success": true,
+#     "data": {
+#         "username": "newuser",
+#         "email": "newuser@example.com",
+#         "full_name": "New User",
+#         "role": "USER",
+#         "is_active": true,
+#         "created_at": "2024-01-22T10:30:00",
+#         "updated_at": "2024-01-22T10:30:00"
+#     }
+# }
+
+# Delete user response
+# {
+#     "success": true,
+#     "data": {
+#         "message": "User deleted successfully"
+#     }
+# }
+
+# Error responses examples:
+
+# Not found error
+# {
+#     "success": false,
+#     "error": "User not found"
+# }
+
+# Validation error - duplicate username
+# {
+#     "success": false,
+#     "error": "Username already exists"
+# }
+
+# Permission error
+# {
+#     "success": false,
+#     "error": "You don't have permission to update this user"
+# }
+
+# Authentication error
+# {
+#     "success": false,
+#     "error": "Not authenticated"
+# } 

@@ -1,0 +1,210 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all comments (with pagination and sorting)
+GET {{baseUrl}}/comments?page=1&page_size=10&sort=-created_at
+Content-Type: application/json
+
+### Get all comments for a specific solution
+GET {{baseUrl}}/comments/solution/my-solution?page=1&page_size=10&sort_by=created_at
+Content-Type: application/json
+
+### Create new comment for a solution (requires auth)
+POST {{baseUrl}}/comments/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "This is a great solution! I've been using it in production for several months now."
+}
+
+### Create comment with whitespace (will be trimmed)
+POST {{baseUrl}}/comments/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "   This comment has whitespace around it   "
+}
+
+### Update comment (requires auth, only author can update)
+PUT {{baseUrl}}/comments/comment123
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Updated comment content with more details about my experience."
+}
+
+### Delete comment (requires auth, only author can delete)
+DELETE {{baseUrl}}/comments/comment123
+Authorization: Bearer {{token}}
+
+### Test error cases
+
+### Try to create comment for non-existent solution (should fail with 404)
+POST {{baseUrl}}/comments/solution/non-existent-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "This should fail because solution doesn't exist"
+}
+
+### Try to create empty comment (should fail with 400)
+POST {{baseUrl}}/comments/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": ""
+}
+
+### Try to create comment with only whitespace (should fail with 400)
+POST {{baseUrl}}/comments/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "    "
+}
+
+### Try to update comment with empty content (should fail with 400)
+PUT {{baseUrl}}/comments/comment123
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": ""
+}
+
+### Try to update comment with only whitespace (should fail with 400)
+PUT {{baseUrl}}/comments/comment123
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "   "
+}
+
+### Try to create too long comment (>1000 chars, should fail with 400)
+POST {{baseUrl}}/comments/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+}
+
+### Try to update non-existent comment (should fail with 404)
+PUT {{baseUrl}}/comments/non-existent-comment
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "This should fail because comment doesn't exist"
+}
+
+### Try to update comment without auth (should fail with 401)
+PUT {{baseUrl}}/comments/comment123
+Content-Type: application/json
+
+{
+    "content": "This should fail without auth token"
+}
+
+### Try to update another user's comment (should fail with 403)
+PUT {{baseUrl}}/comments/other-users-comment
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "This should fail because it's not my comment"
+}
+
+### Try to delete non-existent comment (should fail with 404)
+DELETE {{baseUrl}}/comments/non-existent-comment
+Authorization: Bearer {{token}}
+
+### Try to delete another user's comment (should fail with 403)
+DELETE {{baseUrl}}/comments/other-users-comment
+Authorization: Bearer {{token}}
+
+### Example responses:
+
+# Get all comments response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "id": "comment123",
+#             "content": "This is a great solution! I've been using it in production for several months now.",
+#             "solution_slug": "my-solution",
+#             "username": "test",
+#             "created_at": "2024-01-22T10:30:00",
+#             "updated_at": "2024-01-22T10:30:00"
+#         },
+#         {
+#             "id": "comment124",
+#             "content": "Another helpful comment about the solution.",
+#             "solution_slug": "my-solution",
+#             "username": "other-user",
+#             "created_at": "2024-01-22T10:35:00",
+#             "updated_at": "2024-01-22T10:35:00"
+#         }
+#     ],
+#     "total": 2,
+#     "skip": 0,
+#     "limit": 10
+# }
+
+# Get single comment response (after create/update)
+# {
+#     "success": true,
+#     "data": {
+#         "id": "comment123",
+#         "content": "This is a great solution! I've been using it in production for several months now.",
+#         "solution_slug": "my-solution",
+#         "username": "test",
+#         "created_at": "2024-01-22T10:30:00",
+#         "updated_at": "2024-01-22T10:30:00"
+#     }
+# }
+
+# Error responses examples:
+
+# Not found error - Solution
+# {
+#     "success": false,
+#     "error": "Solution with slug 'non-existent-solution' not found"
+# }
+
+# Not found error - Comment
+# {
+#     "success": false,
+#     "error": "Comment not found"
+# }
+
+# Validation error - empty content
+# {
+#     "success": false,
+#     "error": "Comment content cannot be empty"
+# }
+
+# Validation error - whitespace only
+# {
+#     "success": false,
+#     "error": "Comment content cannot be empty"
+# }
+
+# Permission error
+# {
+#     "success": false,
+#     "error": "You don't have permission to update this comment"
+# }
+
+# Authentication error
+# {
+#     "success": false,
+#     "error": "Not authenticated"
+# } 

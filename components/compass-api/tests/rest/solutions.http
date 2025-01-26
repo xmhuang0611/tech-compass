@@ -1,0 +1,171 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all solutions (basic)
+GET {{baseUrl}}/solutions
+Content-Type: application/json
+
+### Get solutions with pagination
+GET {{baseUrl}}/solutions?skip=0&limit=5
+Content-Type: application/json
+
+### Get solutions with filters
+GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&radar_status=ADOPT&recommend_status=BUY&stage=PRODUCTION&sort=-created_at
+Content-Type: application/json
+
+### Get all departments
+GET {{baseUrl}}/solutions/departments
+Content-Type: application/json
+
+### Get specific solution by slug
+GET {{baseUrl}}/solutions/my-solution
+Content-Type: application/json
+
+### Create new solution (requires auth)
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "My Solution",
+    "description": "A comprehensive solution for testing",
+    "category": "Development",
+    "radar_status": "ADOPT",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "official_website": "https://solution.com",
+    "documentation_url": "https://docs.solution.com",
+    "demo_url": "https://demo.solution.com",
+    "version": "1.0.0",
+    "tags": ["testing", "development"],
+    "pros": ["Easy to use", "Well documented"],
+    "cons": ["Learning curve"],
+    "stage": "DEVELOPING",
+    "recommend_status": "BUY"
+}
+
+### Update solution (requires auth)
+PUT {{baseUrl}}/solutions/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Updated description",
+    "radar_status": "TRIAL",
+    "stage": "UAT",
+    "tags": ["testing", "development", "updated"]
+}
+
+### Delete solution (requires auth)
+DELETE {{baseUrl}}/solutions/my-solution
+Authorization: Bearer {{token}}
+
+### Test error cases
+
+### Try to create solution with missing required fields
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution"
+}
+
+### Try to create solution with invalid radar status
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Testing invalid radar status",
+    "radar_status": "INVALID",
+    "department": "Engineering",
+    "team": "Platform"
+}
+
+### Try to create solution with invalid stage
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Testing invalid stage",
+    "radar_status": "ADOPT",
+    "department": "Engineering",
+    "team": "Platform",
+    "stage": "INVALID"
+}
+
+### Try to get non-existent solution
+GET {{baseUrl}}/solutions/non-existent-solution
+Content-Type: application/json
+
+### Try to update without auth token
+PUT {{baseUrl}}/solutions/my-solution
+Content-Type: application/json
+
+{
+    "description": "This should fail without token"
+}
+
+### Try to update non-existent solution
+PUT {{baseUrl}}/solutions/non-existent-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "This should fail with 404"
+}
+
+### Try to delete non-existent solution
+DELETE {{baseUrl}}/solutions/non-existent-solution
+Authorization: Bearer {{token}}
+
+### Example responses:
+
+# Get all solutions response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "name": "My Solution",
+#             "description": "A comprehensive solution for testing",
+#             "category": "Development",
+#             "radar_status": "ADOPT",
+#             "department": "Engineering",
+#             "team": "Platform",
+#             "team_email": "platform@company.com",
+#             "maintainer_name": "John Doe",
+#             "maintainer_email": "john@company.com",
+#             "official_website": "https://solution.com",
+#             "documentation_url": "https://docs.solution.com",
+#             "demo_url": "https://demo.solution.com",
+#             "version": "1.0.0",
+#             "tags": ["testing", "development"],
+#             "pros": ["Easy to use", "Well documented"],
+#             "cons": ["Learning curve"],
+#             "stage": "DEVELOPING",
+#             "recommend_status": "BUY",
+#             "id": "...",
+#             "slug": "my-solution",
+#             "created_at": "2024-01-22T00:00:00",
+#             "created_by": "test",
+#             "updated_at": "2024-01-22T00:00:00",
+#             "updated_by": "test"
+#         }
+#     ],
+#     "total": 1,
+#     "skip": 0,
+#     "limit": 10
+# }
+
+# Error response example
+# {
+#     "success": false,
+#     "error": "Solution not found"
+# } 

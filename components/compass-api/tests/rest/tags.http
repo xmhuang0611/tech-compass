@@ -1,0 +1,219 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all tags
+GET {{baseUrl}}/tags
+Content-Type: application/json
+
+### Get all tags with pagination
+GET {{baseUrl}}/tags?skip=0&limit=5
+Content-Type: application/json
+
+### Get specific tag by name
+GET {{baseUrl}}/tags/python
+Content-Type: application/json
+
+### Create new tag (requires auth)
+POST {{baseUrl}}/tags
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Python",
+    "description": "Python programming language and ecosystem"
+}
+
+### Create tag without description (should succeed)
+POST {{baseUrl}}/tags
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "FastAPI"
+}
+
+### Update tag (requires auth)
+PUT {{baseUrl}}/tags/python
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Updated description for Python ecosystem"
+}
+
+### Update tag name (requires auth, will update all solutions using this tag)
+PUT {{baseUrl}}/tags/fastapi
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "FastAPI Framework",
+    "description": "Modern Python web framework"
+}
+
+### Delete tag (requires auth)
+DELETE {{baseUrl}}/tags/python
+Authorization: Bearer {{token}}
+
+### Solution Tag Operations
+
+### Get all tags for a solution
+GET {{baseUrl}}/tags/solution/my-solution
+Content-Type: application/json
+
+### Add tag to solution (requires auth)
+POST {{baseUrl}}/tags/solution/my-solution/tag/python
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Remove tag from solution (requires auth)
+DELETE {{baseUrl}}/tags/solution/my-solution/tag/python
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Test error cases
+
+### Try to create tag with invalid characters (will be formatted)
+POST {{baseUrl}}/tags
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Python & Django!@#",
+    "description": "This name will be formatted to 'python-django'"
+}
+
+### Try to create duplicate tag
+POST {{baseUrl}}/tags
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "python",
+    "description": "This should fail if tag exists"
+}
+
+### Try to update to existing tag name
+PUT {{baseUrl}}/tags/python
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "fastapi",
+    "description": "This should fail if 'fastapi' tag exists"
+}
+
+### Try to get non-existent tag
+GET {{baseUrl}}/tags/non-existent-tag
+Content-Type: application/json
+
+### Try to update without auth token
+PUT {{baseUrl}}/tags/python
+Content-Type: application/json
+
+{
+    "description": "This should fail without token"
+}
+
+### Try to add non-existent tag to solution
+POST {{baseUrl}}/tags/solution/my-solution/tag/non-existent-tag
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to remove non-existent tag from solution
+DELETE {{baseUrl}}/tags/solution/my-solution/tag/non-existent-tag
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Example responses:
+
+# Get all tags response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "name": "python-3",
+#             "description": "Python programming language and ecosystem",
+#             "id": "65ae1234b5c3e1234567890a",
+#             "created_at": "2024-01-22T10:30:00",
+#             "created_by": "test",
+#             "updated_at": "2024-01-22T10:30:00",
+#             "updated_by": "test",
+#             "usage_count": 2
+#         },
+#         {
+#             "name": "fastapi",
+#             "description": null,
+#             "id": "65ae1234b5c3e1234567890b",
+#             "created_at": "2024-01-22T10:35:00",
+#             "created_by": "test",
+#             "updated_at": "2024-01-22T10:35:00",
+#             "updated_by": "test",
+#             "usage_count": 1
+#         }
+#     ],
+#     "total": 2,
+#     "skip": 0,
+#     "limit": 100
+# }
+
+# Get single tag response
+# {
+#     "success": true,
+#     "data": {
+#         "name": "python-3",
+#         "description": "Python programming language and ecosystem",
+#         "id": "65ae1234b5c3e1234567890a",
+#         "created_at": "2024-01-22T10:30:00",
+#         "created_by": "test",
+#         "updated_at": "2024-01-22T10:30:00",
+#         "updated_by": "test",
+#         "usage_count": 2
+#     }
+# }
+
+# Get solution tags response
+# {
+#     "success": true,
+#     "data": ["python-3", "fastapi", "web"]
+# }
+
+# Add/Remove tag response
+# {
+#     "success": true,
+#     "data": {
+#         "message": "Tag 'python-3' added successfully"
+#     }
+# }
+
+# Error responses examples:
+
+# Not found error
+# {
+#     "success": false,
+#     "error": "Tag not found"
+# }
+
+# Validation error
+# {
+#     "success": false,
+#     "error": "Tag name cannot be empty"
+# }
+
+# Duplicate error
+# {
+#     "success": false,
+#     "error": "Tag name 'python-3' already exists"
+# }
+
+# Authentication error
+# {
+#     "success": false,
+#     "error": "Not authenticated"
+# }
+
+# Solution tag error
+# {
+#     "success": false,
+#     "error": "Tag 'python-3' is already added to this solution"
+# } 

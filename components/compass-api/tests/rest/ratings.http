@@ -1,0 +1,150 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get all ratings (with pagination and sorting)
+GET {{baseUrl}}/ratings?page=1&page_size=10&sort=-created_at
+Content-Type: application/json
+
+### Get all ratings for a solution (with pagination and sorting)
+GET {{baseUrl}}/ratings/solution/my-solution?page=1&page_size=10&sort_by=created_at
+Content-Type: application/json
+
+### Get current user's rating for a solution
+GET {{baseUrl}}/ratings/solution/my-solution/me
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get rating summary for a solution
+GET {{baseUrl}}/ratings/solution/my-solution/summary
+Content-Type: application/json
+
+### Create new rating for a solution (requires auth)
+POST {{baseUrl}}/ratings/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 5,
+    "comment": "This is an excellent solution! The documentation is clear and comprehensive."
+}
+
+### Update existing rating for a solution (requires auth)
+POST {{baseUrl}}/ratings/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 4,
+    "comment": "Updated: Still a great solution, but could use some improvements in the UI."
+}
+
+### Test error cases
+
+### Try to rate non-existent solution (should fail with 404)
+POST {{baseUrl}}/ratings/solution/non-existent-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 5,
+    "comment": "This should fail because solution doesn't exist"
+}
+
+### Try to create rating with invalid score (should fail with 400)
+POST {{baseUrl}}/ratings/solution/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 6,
+    "comment": "Score must be between 1 and 5"
+}
+
+### Try to create rating without auth (should fail with 401)
+POST {{baseUrl}}/ratings/solution/my-solution
+Content-Type: application/json
+
+{
+    "score": 5,
+    "comment": "This should fail without auth token"
+}
+
+### Example responses:
+
+# Get all ratings response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "id": "rating123",
+#             "solution_slug": "my-solution",
+#             "username": "test",
+#             "score": 5,
+#             "comment": "This is an excellent solution! The documentation is clear and comprehensive.",
+#             "created_at": "2024-01-22T10:30:00",
+#             "updated_at": "2024-01-22T10:30:00"
+#         },
+#         {
+#             "id": "rating124",
+#             "solution_slug": "my-solution",
+#             "username": "other-user",
+#             "score": 4,
+#             "comment": "Good solution overall",
+#             "created_at": "2024-01-22T10:35:00",
+#             "updated_at": "2024-01-22T10:35:00"
+#         }
+#     ],
+#     "total": 2,
+#     "skip": 0,
+#     "limit": 10
+# }
+
+# Get rating summary response
+# {
+#     "success": true,
+#     "data": {
+#         "average": 4.5,
+#         "count": 2,
+#         "distribution": {
+#             "1": 0,
+#             "2": 0,
+#             "3": 0,
+#             "4": 1,
+#             "5": 1
+#         }
+#     }
+# }
+
+# Single rating response (after create/update)
+# {
+#     "success": true,
+#     "data": {
+#         "id": "rating123",
+#         "solution_slug": "my-solution",
+#         "username": "test",
+#         "score": 5,
+#         "comment": "This is an excellent solution! The documentation is clear and comprehensive.",
+#         "created_at": "2024-01-22T10:30:00",
+#         "updated_at": "2024-01-22T10:30:00"
+#     }
+# }
+
+# Error responses examples:
+
+# Not found error
+# {
+#     "success": false,
+#     "error": "Solution not found"
+# }
+
+# Validation error - invalid score
+# {
+#     "success": false,
+#     "error": "Score must be between 1 and 5"
+# }
+
+# Authentication error
+# {
+#     "success": false,
+#     "error": "Not authenticated"
+# } 
