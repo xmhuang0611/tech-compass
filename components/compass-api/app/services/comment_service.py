@@ -102,9 +102,23 @@ class CommentService:
         username: str
     ) -> Optional[CommentInDB]:
         """Update a comment's content"""
+        # First check if comment exists and verify ownership
+        existing_comment = await self.db.comments.find_one({"id": comment_id})
+        if not existing_comment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Comment not found"
+            )
+        
+        if existing_comment["username"] != username:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to update this comment"
+            )
+
         now = datetime.utcnow().isoformat()
         result = await self.db.comments.update_one(
-            {"id": comment_id, "username": username},  # Only allow update by comment author
+            {"id": comment_id, "username": username},  # Double-check ownership
             {
                 "$set": {
                     "content": content,
@@ -112,8 +126,6 @@ class CommentService:
                 }
             }
         )
-        if result.modified_count == 0:
-            return None
         return await self.get_comment_by_id(comment_id)
 
     async def delete_comment(self, comment_id: str, username: str) -> bool:
