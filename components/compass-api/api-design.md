@@ -15,19 +15,14 @@ This document details the API design for the Tech Compass (TC) platform. The API
 
 ```json
 {
-  "status": "success|error",
+  "success": true|false,
   "data": {
     // Response data
   },
-  "meta": {
-    "page": 1,
-    "page_size": 20,
-    "total": 100
-  },
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Error message"
-  }
+  "error": "string", // set if success is false, optional
+  "total": 100, // only for list endpoints
+  "skip": 0, // only for list endpoints
+  "limit": 20, // only for list endpoints
 }
 ```
 
