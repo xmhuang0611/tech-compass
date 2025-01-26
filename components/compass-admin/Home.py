@@ -99,7 +99,7 @@ def main():
         })
         
         if recent_solutions and isinstance(recent_solutions, dict):
-            solutions = recent_solutions.get("items", [])
+            solutions = recent_solutions.get("data", [])
             if solutions:
                 for solution in solutions:
                     st.text(f"{solution.get('updated_at', '')} - Updated: {solution.get('name', '')}")
