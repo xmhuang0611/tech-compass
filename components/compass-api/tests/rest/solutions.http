@@ -166,6 +166,5 @@ Authorization: Bearer {{token}}
 
 # Error response example
 # {
-#     "success": false,
-#     "error": "Solution not found"
+#     "detail": "Solution not found"
 # } 

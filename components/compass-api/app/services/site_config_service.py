@@ -23,7 +23,7 @@ class SiteConfigService:
         if existing:
             raise ValueError("Site configuration already exists. Use update instead.")
 
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         config_dict = config.model_dump()
         new_config = {
             "id": str(ObjectId()),
@@ -42,7 +42,7 @@ class SiteConfigService:
         username: str
     ) -> Optional[SiteConfigInDB]:
         """Update site configuration"""
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         update_dict = config_update.model_dump(exclude_unset=True)
         
         if not update_dict:

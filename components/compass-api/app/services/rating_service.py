@@ -1,10 +1,12 @@
-from typing import List, Tuple, Dict
-from pymongo import DESCENDING, ASCENDING
-from app.models.rating import RatingCreate, RatingInDB, RatingDistribution
-from app.core.database import get_database
 from datetime import datetime
+from typing import List, Tuple, Dict
+
 from bson import ObjectId
 from fastapi import HTTPException, status
+from pymongo import DESCENDING, ASCENDING
+
+from app.core.database import get_database
+from app.models.rating import RatingCreate, RatingInDB
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
 
@@ -100,7 +102,7 @@ class RatingService:
                 detail=f"Solution with slug '{solution_slug}' not found"
             )
 
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         rating_data = rating.model_dump()
         
         # Try to update existing rating first

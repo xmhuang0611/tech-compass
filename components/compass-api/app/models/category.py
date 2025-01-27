@@ -1,10 +1,7 @@
-from datetime import datetime
-from typing import Optional
-
 from bson import ObjectId
 from pydantic import BaseModel, Field, field_validator
 
-from app.models.common import AuditModel, PyObjectId
+from app.models.common import AuditModel
 
 
 class CategoryBase(BaseModel):
@@ -58,13 +55,3 @@ class CategoryInDB(CategoryBase, AuditModel):
 class Category(CategoryInDB):
     """Category model for API responses"""
     pass
-
-
-class CategoryList(BaseModel):
-    """API response model for list of categories"""
-    categories: list[CategoryInDB]
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}

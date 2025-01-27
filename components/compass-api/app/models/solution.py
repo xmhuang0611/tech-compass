@@ -4,6 +4,7 @@ from typing import List, Optional, Literal
 from bson import ObjectId
 from pydantic import BaseModel, Field
 
+from app.models import AuditModel
 from app.models.common import PyObjectId
 
 # Stage values as defined in db-design.md
@@ -78,20 +79,10 @@ class SolutionUpdate(BaseModel):
     stage: Optional[StageEnum] = None
     recommend_status: Optional[RecommendStatusEnum] = None
 
-class SolutionInDB(SolutionBase):
+class SolutionInDB(SolutionBase,AuditModel):
     """Solution model as stored in database"""
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: Optional[str] = Field(None, description="Username who created")
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_by: Optional[str] = Field(None, description="Username who last updated")
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
 
 class Solution(SolutionInDB):
     """Solution model for API responses"""

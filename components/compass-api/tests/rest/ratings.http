@@ -133,18 +133,15 @@ Content-Type: application/json
 
 # Not found error
 # {
-#     "success": false,
-#     "error": "Solution not found"
+#     "detail": "Solution not found"
 # }
 
 # Validation error - invalid score
 # {
-#     "success": false,
-#     "error": "Score must be between 1 and 5"
+#     "detail": "Score must be between 1 and 5"
 # }
 
 # Authentication error
 # {
-#     "success": false,
-#     "error": "Not authenticated"
+#     "detail": "Not authenticated"
 # } 

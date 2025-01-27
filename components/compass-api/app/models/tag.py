@@ -4,6 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.models import AuditModel
 from app.models.common import PyObjectId
 
 
@@ -36,33 +37,11 @@ class TagCreate(TagBase):
 
 class TagUpdate(TagBase):
     """Model for updating an existing tag"""
-    name: Optional[str] = None
-    description: Optional[str] = None
+    pass
 
-    @field_validator('name')
-    @classmethod
-    def format_name(cls, name: Optional[str]) -> Optional[str]:
-        """Format and validate tag name if provided"""
-        if name is None:
-            return None
-        return format_tag_name(name)
-
-class TagInDB(TagBase):
+class TagInDB(TagBase,AuditModel):
     """Model for tag in database"""
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: Optional[str] = Field(None, description="Username who created")
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_by: Optional[str] = Field(None, description="Username who last updated")
-    usage_count: int = Field(default=0, description="Number of solutions using this tag")
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat(),
-            PyObjectId: str
-        }
+    pass
 
 class Tag(TagInDB):
     """API response model for tag"""

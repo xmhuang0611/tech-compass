@@ -1,6 +1,9 @@
 from typing import Optional, List
 from pydantic import BaseModel, Field
 
+from app.models import AuditModel
+
+
 class SiteConfigBase(BaseModel):
     """Base model for site configuration"""
     site_name: str = Field(..., description="Name of the site")
@@ -37,9 +40,6 @@ class SiteConfigUpdate(SiteConfigBase):
     theme: Optional[dict] = None
     meta: Optional[dict] = None
 
-class SiteConfigInDB(SiteConfigBase):
+class SiteConfigInDB(SiteConfigBase, AuditModel):
     """Model for site configuration in database"""
-    id: str = Field(..., description="Unique identifier")
-    created_at: str = Field(..., description="Timestamp when the config was created")
-    updated_at: str = Field(..., description="Timestamp when the config was last updated")
-    updated_by: str = Field(..., description="Username who last updated the config") 
+    pass

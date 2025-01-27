@@ -21,10 +21,6 @@ class CommentService:
     ) -> Tuple[List[CommentInDB], int]:
         """Get all comments with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
-        
-        # Parse sort parameter
-        sort_field = "created_at"
-        sort_direction = DESCENDING  # Default to descending
 
         if sort.startswith("-"):
             sort_field = sort[1:]  # Remove the minus sign
@@ -82,7 +78,7 @@ class CommentService:
                 detail=f"Solution with slug '{solution_slug}' not found"
             )
 
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         comment_dict = comment.model_dump()
         new_comment = {
             "id": str(ObjectId()),
@@ -116,7 +112,7 @@ class CommentService:
                 detail="You don't have permission to update this comment"
             )
 
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow()
         result = await self.db.comments.update_one(
             {"id": comment_id, "username": username},  # Double-check ownership
             {

@@ -70,7 +70,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to update comment with empty content (should fail with 400)
-PUT {{baseUrl}}/comments/comment123
+PUT {{baseUrl}}/comments/id123
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -79,7 +79,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to update comment with only whitespace (should fail with 400)
-PUT {{baseUrl}}/comments/comment123
+PUT {{baseUrl}}/comments/id123
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -106,7 +106,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to update comment without auth (should fail with 401)
-PUT {{baseUrl}}/comments/comment123
+PUT {{baseUrl}}/comments/id123
 Content-Type: application/json
 
 {
@@ -175,36 +175,30 @@ Authorization: Bearer {{token}}
 
 # Not found error - Solution
 # {
-#     "success": false,
-#     "error": "Solution with slug 'non-existent-solution' not found"
+#     "detail": "Solution with slug 'non-existent-solution' not found"
 # }
 
 # Not found error - Comment
 # {
-#     "success": false,
-#     "error": "Comment not found"
+#     "detail": "Comment not found"
 # }
 
 # Validation error - empty content
 # {
-#     "success": false,
-#     "error": "Comment content cannot be empty"
+#     "detail": "Comment content cannot be empty"
 # }
 
 # Validation error - whitespace only
 # {
-#     "success": false,
-#     "error": "Comment content cannot be empty"
+#     "detail": "Comment content cannot be empty"
 # }
 
 # Permission error
 # {
-#     "success": false,
-#     "error": "You don't have permission to update this comment"
+#     "detail": "You don't have permission to update this comment"
 # }
 
 # Authentication error
 # {
-#     "success": false,
-#     "error": "Not authenticated"
+#     "detail": "Not authenticated"
 # } 

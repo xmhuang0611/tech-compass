@@ -16,14 +16,18 @@ class UserService:
 
     async def ensure_default_admin(self) -> None:
         """Ensure default admin user exists in the database."""
-        admin_username = getattr(settings, "DEFAULT_ADMIN_USERNAME", "admin")
+        if not settings.ENABLE_DEFAULT_ADMIN:
+            raise ValueError("DEFAULT_ADMIN_USERNAME is not set")
+        if not settings.DEFAULT_ADMIN_PASSWORD:
+            raise ValueError("DEFAULT_ADMIN_PASSWORD is not set")
+        admin_username = getattr(settings, "DEFAULT_ADMIN_USERNAME")
         admin = await self.get_user_by_username(admin_username)
         
         if not admin:
             admin_user = UserCreate(
                 username=admin_username,
                 email=getattr(settings, "DEFAULT_ADMIN_EMAIL", "admin@techcompass.com"),
-                password=getattr(settings, "DEFAULT_ADMIN_PASSWORD", "admin123"),
+                password=getattr(settings, "DEFAULT_ADMIN_PASSWORD"),
                 full_name="Default Admin",
                 is_active=True,
                 is_superuser=True

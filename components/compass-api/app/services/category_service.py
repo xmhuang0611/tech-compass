@@ -4,7 +4,7 @@ from typing import Optional
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, CategoryList
+from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB
 
 
 class CategoryService:
