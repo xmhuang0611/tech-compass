@@ -11,5 +11,5 @@ email-validator==2.1.0.post1
 python-dotenv==1.0.0
 httpx==0.26.0
 requests==2.32.0
-Faker==22.6.0
+Faker==35.0.0
 
