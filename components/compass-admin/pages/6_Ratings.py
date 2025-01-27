@@ -1,31 +1,47 @@
 import streamlit as st
 from utils.auth import login
 from utils.api import APIClient
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import pandas as pd
+from utils.common import (
+    initialize_page_state,
+    render_grid,
+    show_success_toast,
+    show_error_message,
+    format_dataframe_dates,
+)
 
 # Page configuration
 st.set_page_config(
-    page_title="Ratings - Tech Compass Admin", page_icon="⭐", layout="wide"
+    page_title="Ratings - Tech Compass Admin",
+    page_icon="⭐",
+    layout="wide"
 )
 
 # Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-if "selected_rating" not in st.session_state:
-    st.session_state.selected_rating = None
-if "show_success_message" not in st.session_state:
-    st.session_state.show_success_message = False
-if "show_error_message" not in st.session_state:
-    st.session_state.show_error_message = None
-if "show_delete_success_toast" not in st.session_state:
-    st.session_state.show_delete_success_toast = False
+initialize_page_state({
+    "authenticated": False,
+    "selected_rating": None,
+    "show_success_message": False,
+    "show_error_message": None,
+    "show_delete_success_toast": False,
+    "page": 1
+})
 
 # Check authentication
 if not st.session_state.authenticated:
     login()
     st.stop()
 
+# Constants
+COLUMN_DEFS = {
+    "_id": {"width": 120, "headerName": "Rating ID"},
+    "solution_slug": {"width": 150, "headerName": "Solution"},
+    "score": {"width": 100, "headerName": "Score"},
+    "comment": {"width": 400, "headerName": "Comment"},
+    "username": {"width": 120, "headerName": "Username"},
+    "created_at": {"width": 140, "headerName": "Created At"},
+    "updated_at": {"width": 140, "headerName": "Updated At"},
+}
 
 def load_solutions():
     """Load all solutions for dropdown"""
@@ -35,9 +51,8 @@ def load_solutions():
         if response and response.get("status_code") == 200:
             return response.get("data", [])
     except Exception as e:
-        st.error(f"Failed to load solutions: {str(e)}")
+        show_error_message(f"Failed to load solutions: {str(e)}")
     return []
-
 
 def load_ratings(solution_slug=None, skip=0, limit=20):
     """Load ratings with pagination"""
@@ -66,13 +81,10 @@ def load_ratings(solution_slug=None, skip=0, limit=20):
                 "limit": limit,
             }
         else:
-            st.error(
-                f"Failed to load ratings: {response.get('detail', 'Unknown error occurred')}"
-            )
+            show_error_message(response.get("detail", "Unknown error occurred"))
     except Exception as e:
-        st.error(f"Failed to load ratings: {str(e)}")
+        show_error_message(f"Failed to load ratings: {str(e)}")
     return [], {"total": 0, "skip": 0, "limit": 20}
-
 
 def load_rating_summary(solution_slug):
     """Load rating summary for a solution"""
@@ -81,9 +93,8 @@ def load_rating_summary(solution_slug):
         if response and response.get("status_code") == 200:
             return response.get("data", {})
     except Exception as e:
-        st.error(f"Failed to load rating summary: {str(e)}")
+        show_error_message(f"Failed to load rating summary: {str(e)}")
     return {}
-
 
 def render_rating_details(rating_data):
     """Render rating details view"""
@@ -93,17 +104,35 @@ def render_rating_details(rating_data):
     col1, col2 = st.columns(2)
     with col1:
         st.text_input(
-            "Solution", value=rating_data.get("solution_slug", ""), disabled=True
+            "Solution",
+            value=rating_data.get("solution_slug", ""),
+            disabled=True
         )
-        st.text_input("Username", value=rating_data.get("username", ""), disabled=True)
         st.text_input(
-            "Created At", value=rating_data.get("created_at", ""), disabled=True
+            "Username",
+            value=rating_data.get("username", ""),
+            disabled=True
+        )
+        st.text_input(
+            "Created At",
+            value=rating_data.get("created_at", ""),
+            disabled=True
         )
     with col2:
-        st.text_input("Rating ID", value=rating_data.get("_id", ""), disabled=True)
-        st.text_input("Score", value=str(rating_data.get("score", "")), disabled=True)
         st.text_input(
-            "Updated At", value=rating_data.get("updated_at", ""), disabled=True
+            "Rating ID",
+            value=rating_data.get("_id", ""),
+            disabled=True
+        )
+        st.text_input(
+            "Score",
+            value=str(rating_data.get("score", "")),
+            disabled=True
+        )
+        st.text_input(
+            "Updated At",
+            value=rating_data.get("updated_at", ""),
+            disabled=True
         )
 
     # Rating content
@@ -111,7 +140,7 @@ def render_rating_details(rating_data):
         "Comment",
         value=rating_data.get("comment", ""),
         disabled=True,
-        help="Rating comment",
+        help="Rating comment"
     )
 
     # Load and display rating summary for the solution
@@ -133,7 +162,6 @@ def render_rating_details(rating_data):
                     count = distribution.get(str(score), 0)
                     st.write(f"{score} ⭐: {count} rating{'s' if count != 1 else ''}")
 
-
 def main():
     st.title("⭐ Ratings")
 
@@ -150,9 +178,6 @@ def main():
             key="filter_solution_slug",
         )
 
-    # Get page from session state
-    if "page" not in st.session_state:
-        st.session_state.page = 1
     page_size = 20
     skip = (st.session_state.page - 1) * page_size
 
@@ -163,70 +188,13 @@ def main():
         limit=page_size,
     )
 
-    # Convert ratings to DataFrame for AgGrid
     if ratings:
         # Create DataFrame with explicit column order
-        columns = [
-            "_id",
-            "solution_slug",
-            "score",
-            "comment",
-            "username",
-            "created_at",
-            "updated_at",
-        ]
-        df = pd.DataFrame(ratings)
-        df = df[columns]  # Reorder columns to desired order
+        df = pd.DataFrame(ratings)[COLUMN_DEFS.keys()]
+        df = format_dataframe_dates(df, ["created_at", "updated_at"])
 
-        # Format dates
-        for date_col in ["created_at", "updated_at"]:
-            if date_col in df.columns:
-                df[date_col] = pd.to_datetime(df[date_col]).dt.strftime(
-                    "%Y-%m-%d %H:%M"
-                )
-
-        # Configure grid options
-        gb = GridOptionsBuilder.from_dataframe(df)
-        gb.configure_selection(
-            selection_mode="single", use_checkbox=False, pre_selected_rows=[]
-        )
-        gb.configure_pagination(
-            enabled=True, paginationAutoPageSize=False, paginationPageSize=page_size
-        )
-
-        # Configure column properties
-        column_defs = {
-            "_id": {"width": 120, "headerName": "Rating ID"},
-            "solution_slug": {"width": 150, "headerName": "Solution"},
-            "score": {"width": 100, "headerName": "Score"},
-            "comment": {"width": 400, "headerName": "Comment"},
-            "username": {"width": 120, "headerName": "Username"},
-            "created_at": {"width": 140, "headerName": "Created At"},
-            "updated_at": {"width": 140, "headerName": "Updated At"},
-        }
-
-        # Apply column configurations
-        for col, props in column_defs.items():
-            gb.configure_column(field=col, **props)
-
-        gb.configure_grid_options(
-            rowStyle={"cursor": "pointer"},
-            enableBrowserTooltips=True,
-            rowSelection="single",
-            suppressRowDeselection=False,
-        )
-
-        # Create grid
-        grid_response = AgGrid(
-            df,
-            gridOptions=gb.build(),
-            update_mode=GridUpdateMode.SELECTION_CHANGED,
-            allow_unsafe_jscode=True,
-            theme="streamlit",
-            key="rating_grid",
-        )
-
-        # Handle selection
+        # Render grid
+        grid_response = render_grid(df, COLUMN_DEFS, "rating_grid", page_size)
         selected_rows = grid_response.get("selected_rows", [])
 
         # Show rating details if a row is selected
@@ -236,7 +204,6 @@ def main():
             render_rating_details(selected_rating)
     else:
         st.info("No ratings found")
-
 
 if __name__ == "__main__":
     main()

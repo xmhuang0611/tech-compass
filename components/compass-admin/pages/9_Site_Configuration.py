@@ -2,23 +2,29 @@ import streamlit as st
 from utils.auth import login
 from utils.api import APIClient
 import json
+from utils.common import (
+    initialize_page_state,
+    show_success_message,
+    show_error_message,
+)
 
 # Page configuration
 st.set_page_config(
-    page_title="Site Configuration - Tech Compass Admin", page_icon="🔧", layout="wide"
+    page_title="Site Configuration - Tech Compass Admin",
+    page_icon="🔧",
+    layout="wide"
 )
 
 # Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-if "config_saved" not in st.session_state:
-    st.session_state.config_saved = False
+initialize_page_state({
+    "authenticated": False,
+    "config_saved": False
+})
 
 # Check authentication
 if not st.session_state.authenticated:
     login()
     st.stop()
-
 
 def load_site_config():
     """Load current site configuration"""
@@ -27,9 +33,8 @@ def load_site_config():
         if response and response.get("status_code") == 200:
             return response.get("data", {})
     except Exception as e:
-        st.error(f"Failed to load site configuration: {str(e)}")
+        show_error_message(f"Failed to load site configuration: {str(e)}")
     return {}
-
 
 def save_site_config(config_data):
     """Save site configuration"""
@@ -39,9 +44,8 @@ def save_site_config(config_data):
             st.session_state.config_saved = True
             return True
     except Exception as e:
-        st.error(f"Failed to update site configuration: {str(e)}")
+        show_error_message(f"Failed to update site configuration: {str(e)}")
     return False
-
 
 def is_valid_json(text):
     """Validate if text is a valid JSON object"""
@@ -51,41 +55,30 @@ def is_valid_json(text):
     except:
         return False
 
-
-def main():
-    st.title("🔧 Site Configuration")
-
-    # Show success message if config was just saved
-    if st.session_state.config_saved:
-        st.success("Site configuration updated successfully!")
-        st.session_state.config_saved = False
-
-    # Load current configuration
-    current_config = load_site_config()
-
-    # Create form for editing
+def render_config_form(current_config):
+    """Render the configuration form"""
     with st.form("site_config_form"):
         # Basic Information
         st.subheader("Basic Information")
         site_name = st.text_input(
             "Site Name",
             value=current_config.get("site_name", ""),
-            help="The name of your site",
+            help="The name of your site"
         )
         site_description = st.text_area(
             "Site Description",
             value=current_config.get("site_description", ""),
-            help="A brief description of your site",
+            help="A brief description of your site"
         )
         welcome_message = st.text_area(
             "Welcome Message",
             value=current_config.get("welcome_message", ""),
-            help="Welcome message displayed to users",
+            help="Welcome message displayed to users"
         )
         contact_email = st.text_input(
             "Contact Email",
             value=current_config.get("contact_email", ""),
-            help="Primary contact email address",
+            help="Primary contact email address"
         )
 
         # Advanced Settings
@@ -96,7 +89,7 @@ def main():
         features_json = st.text_area(
             "Features (JSON)",
             value=json.dumps(current_config.get("features", {}), indent=2),
-            help="Features configuration in JSON format",
+            help="Features configuration in JSON format"
         )
 
         # Theme Settings
@@ -104,7 +97,7 @@ def main():
         theme_json = st.text_area(
             "Theme (JSON)",
             value=json.dumps(current_config.get("theme", {}), indent=2),
-            help="Theme settings in JSON format",
+            help="Theme settings in JSON format"
         )
 
         # Meta Information
@@ -112,7 +105,7 @@ def main():
         meta_json = st.text_area(
             "Meta (JSON)",
             value=json.dumps(current_config.get("meta", {}), indent=2),
-            help="Meta information in JSON format",
+            help="Meta information in JSON format"
         )
 
         # Custom Links
@@ -120,7 +113,7 @@ def main():
         custom_links_json = st.text_area(
             "Custom Links (JSON)",
             value=json.dumps(current_config.get("custom_links", []), indent=2),
-            help="Custom links configuration in JSON format",
+            help="Custom links configuration in JSON format"
         )
 
         # Submit button
@@ -130,21 +123,21 @@ def main():
             # Validate JSON inputs
             validation_error = False
             if not is_valid_json(features_json):
-                st.error("Features configuration is not a valid JSON object")
+                show_error_message("Features configuration is not a valid JSON object")
                 validation_error = True
             if not is_valid_json(theme_json):
-                st.error("Theme settings is not a valid JSON object")
+                show_error_message("Theme settings is not a valid JSON object")
                 validation_error = True
             if not is_valid_json(meta_json):
-                st.error("Meta information is not a valid JSON object")
+                show_error_message("Meta information is not a valid JSON object")
                 validation_error = True
             try:
                 custom_links = json.loads(custom_links_json)
                 if not isinstance(custom_links, list):
-                    st.error("Custom links must be a JSON array")
+                    show_error_message("Custom links must be a JSON array")
                     validation_error = True
             except:
-                st.error("Custom links is not a valid JSON array")
+                show_error_message("Custom links is not a valid JSON array")
                 validation_error = True
 
             if not validation_error:
@@ -164,6 +157,19 @@ def main():
                 if save_site_config(update_data):
                     st.rerun()  # Refresh the page to show updated values
 
+def main():
+    st.title("🔧 Site Configuration")
+
+    # Show success message if config was just saved
+    if st.session_state.config_saved:
+        show_success_message("Site configuration updated successfully!")
+        st.session_state.config_saved = False
+
+    # Load current configuration
+    current_config = load_site_config()
+
+    # Render the configuration form
+    render_config_form(current_config)
 
 if __name__ == "__main__":
     main()
