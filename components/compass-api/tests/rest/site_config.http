@@ -1,0 +1,87 @@
+@baseUrl = http://127.0.0.1:8000/api
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get site configuration (public endpoint)
+GET {{baseUrl}}/site-config
+Accept: application/json
+
+### Create site configuration (requires authentication)
+POST {{baseUrl}}/site-config
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "site_name": "Tech Compass V1",
+    "site_description": "Navigate your technology landscape",
+    "welcome_message": "Welcome to Tech Compass!",
+    "contact_email": "support@techcompass.com",
+    "features": {
+      "ratings_enabled": true,
+      "comments_enabled": true,
+      "tags_enabled": true
+    },
+    "custom_links": [],
+    "theme": {
+      "primary_color": "#1890ff",
+      "secondary_color": "#52c41a",
+      "layout": "default"
+    },
+    "meta": {
+    }
+  }
+
+### Update site configuration (requires authentication)
+PUT {{baseUrl}}/site-config
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "site_name": "Tech Compass Updated"
+}
+
+### Reset site configuration to defaults (requires authentication)
+POST {{baseUrl}}/site-config/reset
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to update config without authentication (should fail with 401)
+PUT {{baseUrl}}/site-config
+Content-Type: application/json
+
+{
+    "site_name": "Unauthorized Update"
+}
+
+### Example responses:
+
+# Get site config response
+# {
+#   "status": "success",
+#   "data": {
+#     "_id": "67972abebd4be877a5173d1d",
+#     "created_at": "2025-01-27T06:42:06.378000",
+#     "created_by": null,
+#     "updated_at": "2025-01-27T06:42:06.378000",
+#     "updated_by": "test",
+#     "site_name": "Tech Compass",
+#     "site_description": "Navigate your technology landscape",
+#     "welcome_message": "Welcome to Tech Compass",
+#     "contact_email": "support@techcompass.com",
+#     "features": {
+#       "ratings_enabled": true,
+#       "comments_enabled": true,
+#       "tags_enabled": true
+#     },
+#     "custom_links": [],
+#     "theme": {
+#       "primary_color": "#1890ff",
+#       "secondary_color": "#52c41a",
+#       "layout": "default"
+#     },
+#     "meta": {
+#       "keywords": [],
+#       "author": "",
+#       "favicon": ""
+#     }
+#   }
+# }
