@@ -10,6 +10,7 @@ This script will:
 import os
 import random
 import time
+import traceback
 from typing import Dict, Optional
 from urllib.parse import urlencode
 
@@ -52,7 +53,6 @@ class TestDataGenerator:
         }
         
         try:
-            # Try to login first to check if user exists
             self.login_user('test', 'test')
             print("Test user already exists, skipping creation")
             return None
@@ -123,7 +123,7 @@ class TestDataGenerator:
         debug_request('POST', url, headers=headers, json=solution_data)
         response = self.session.post(url, json=solution_data, headers=headers)
         response.raise_for_status()
-        return response.json()
+        return response.json()['data']
 
     def create_comment(self, solution_slug: str) -> Dict:
         """Create a new comment on a solution."""
@@ -199,6 +199,7 @@ def main():
             print(f"Response: {e.response.text}")
     except Exception as e:
         print(f"Unexpected error occurred: {e}")
+        traceback.print_exc()
 
 if __name__ == '__main__':
     main()
