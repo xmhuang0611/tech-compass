@@ -58,7 +58,7 @@ class CommentService:
 
     async def get_comment_by_id(self, comment_id: str) -> Optional[CommentInDB]:
         """Get a specific comment by ID"""
-        comment = await self.db.comments.find_one({"id": comment_id})
+        comment = await self.db.comments.find_one({"_id": ObjectId(comment_id)})
         if comment:
             return CommentInDB(**comment)
         return None
@@ -81,7 +81,6 @@ class CommentService:
         now = datetime.utcnow()
         comment_dict = comment.model_dump()
         new_comment = {
-            "id": str(ObjectId()),
             "solution_slug": solution_slug,
             "username": username,
             "content": comment_dict["content"],
@@ -98,8 +97,9 @@ class CommentService:
         username: str
     ) -> Optional[CommentInDB]:
         """Update a comment's content"""
+        id = ObjectId(comment_id)
         # First check if comment exists and verify ownership
-        existing_comment = await self.db.comments.find_one({"id": comment_id})
+        existing_comment = await self.db.comments.find_one({"_id": id})
         if not existing_comment:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -113,8 +113,8 @@ class CommentService:
             )
 
         now = datetime.utcnow()
-        result = await self.db.comments.update_one(
-            {"id": comment_id, "username": username},  # Double-check ownership
+        await self.db.comments.update_one(
+            {"_id": id, "username": username},  # Double-check ownership
             {
                 "$set": {
                     "content": content,
@@ -127,7 +127,7 @@ class CommentService:
     async def delete_comment(self, comment_id: str, username: str) -> bool:
         """Delete a comment"""
         result = await self.db.comments.delete_one({
-            "id": comment_id,
+            "_id": ObjectId(comment_id),
             "username": username  # Only allow deletion by comment author
         })
         return result.deleted_count > 0 

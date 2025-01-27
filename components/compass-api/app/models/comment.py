@@ -31,4 +31,5 @@ class CommentCreate(CommentBase):
 
 class CommentInDB(CommentBase, AuditModel):
     """Model for comment in database"""
-    pass
+    solution_slug: str = Field(..., description="Slug of the solution this comment belongs to")
+    username: str = Field(..., description="Username of the comment author")

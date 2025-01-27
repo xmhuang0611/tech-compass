@@ -100,7 +100,7 @@ def render_rating_details(rating_data):
             "Created At", value=rating_data.get("created_at", ""), disabled=True
         )
     with col2:
-        st.text_input("Rating ID", value=rating_data.get("id", ""), disabled=True)
+        st.text_input("Rating ID", value=rating_data.get("_id", ""), disabled=True)
         st.text_input("Score", value=str(rating_data.get("score", "")), disabled=True)
         st.text_input(
             "Updated At", value=rating_data.get("updated_at", ""), disabled=True
@@ -167,7 +167,7 @@ def main():
     if ratings:
         # Create DataFrame with explicit column order
         columns = [
-            "id",
+            "_id",
             "solution_slug",
             "score",
             "comment",
@@ -196,7 +196,7 @@ def main():
 
         # Configure column properties
         column_defs = {
-            "id": {"width": 120, "headerName": "Rating ID"},
+            "_id": {"width": 120, "headerName": "Rating ID"},
             "solution_slug": {"width": 150, "headerName": "Solution"},
             "score": {"width": 100, "headerName": "Score"},
             "comment": {"width": 400, "headerName": "Comment"},

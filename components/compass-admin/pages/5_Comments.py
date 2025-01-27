@@ -95,7 +95,7 @@ def confirm_delete(comment_data):
     st.warning("This action cannot be undone!")
 
     if st.button("Yes, Delete", type="primary"):
-        if delete_comment(comment_data["id"]):
+        if delete_comment(comment_data["_id"]):
             st.session_state.show_delete_success_toast = True
             st.session_state.selected_comment = None
             # Clear the grid selection by regenerating the key
@@ -122,7 +122,7 @@ def render_comment_form(comment_data):
                 "Created At", value=comment_data.get("created_at", ""), disabled=True
             )
         with col2:
-            st.text_input("Comment ID", value=comment_data.get("id", ""), disabled=True)
+            st.text_input("Comment ID", value=comment_data.get("_id", ""), disabled=True)
             st.text_input(
                 "Updated At", value=comment_data.get("updated_at", ""), disabled=True
             )
@@ -153,7 +153,7 @@ def render_comment_form(comment_data):
         if submitted:
             update_data = {"content": content}
 
-            if update_comment(comment_data["id"], update_data):
+            if update_comment(comment_data["_id"], update_data):
                 st.session_state.selected_comment = None
                 st.rerun()
 
@@ -200,7 +200,7 @@ def main():
     if comments:
         # Create DataFrame with explicit column order
         columns = [
-            "id",
+            "_id",
             "solution_slug",
             "content",
             "username",
@@ -228,7 +228,7 @@ def main():
 
         # Configure column properties
         column_defs = {
-            "id": {"width": 120, "headerName": "Comment ID"},
+            "_id": {"width": 120, "headerName": "Comment ID"},
             "solution_slug": {"width": 150, "headerName": "Solution"},
             "content": {"width": 400, "headerName": "Content"},
             "username": {"width": 120, "headerName": "Username"},
