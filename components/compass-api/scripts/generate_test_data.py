@@ -9,7 +9,6 @@ This script will:
 
 import os
 import random
-import time
 import traceback
 from typing import Dict, Optional
 from urllib.parse import urlencode
@@ -154,9 +153,9 @@ class TestDataGenerator:
 
     def generate_test_data(
         self,
-        num_solutions: int = 10,
-        num_comments_per_solution: int = 3,
-        num_ratings_per_solution: int = 5
+        num_solutions: int = 5,
+        num_comments_per_solution: int = 4,
+        num_ratings_per_solution: int = 1
     ):
         """Generate complete test dataset."""
         print("Starting test data generation...")
