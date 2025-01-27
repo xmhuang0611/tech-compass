@@ -76,17 +76,12 @@ def update_tag(tag_name, data):
         return False
 
 def delete_tag(tag_name):
-    """Delete tag"""
-    try:
+        """Delete tag"""
         response = APIClient.delete(f"tags/{tag_name}")
         if response and response.get("status_code") == 204:
-            return True
+            return
         else:
-            st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
-            return False
-    except Exception as e:
-        st.session_state.show_error_message = str(e)
-        return False
+            return response.get("detail", "Unknown error occurred")
 
 def render_tag_form(tag_data):
     """Render form for editing tag"""
@@ -125,15 +120,26 @@ def render_tag_form(tag_data):
             if update_tag(tag_data["name"], update_data):
                 st.session_state.selected_tag = None
                 st.rerun()
+        
+        if st.session_state.show_success_message:
+            st.success("✅ Tag updated successfully!")
+            st.session_state.show_success_message = False
+
+        if st.session_state.show_error_message:
+            st.error(f"❌ Failed to update tag: {st.session_state.show_error_message}")
+            st.session_state.show_error_message = None
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        if confirm_delete_dialog(f"tag '{tag_data['name']}'", lambda: delete_tag(tag_data["name"])):
-            st.session_state.show_delete_success_toast = True
-            st.session_state.selected_tag = None
-            if "tag_grid" in st.session_state:
-                del st.session_state["tag_grid"]
-            st.rerun()
+        confirm_delete_dialog(f"tag '{tag_data['name']}'", lambda: delete_tag(tag_data["name"]), delete_success_callback)
+
+def delete_success_callback():
+    st.toast("Tag deleted successfully!", icon="✅")
+    st.session_state.show_delete_success_toast = True
+    st.session_state.selected_tag = None
+    if "tag_grid" in st.session_state:
+        del st.session_state["tag_grid"]
+    st.rerun()
 
 def render_add_tag_form():
     """Render form for adding new tag"""

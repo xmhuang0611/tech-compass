@@ -79,14 +79,19 @@ def show_success_message(message: str):
     st.success(f"✅ {message}")
 
 @st.dialog("Confirm Deletion")
-def confirm_delete_dialog(item_name: str, delete_callback):
+def confirm_delete_dialog(item_name: str, delete_callback, success_callback):
     """Generic confirmation dialog for deletion"""
     st.write(f"Are you sure you want to delete {item_name}?")
     st.warning("This action cannot be undone!")
+    delete_clicked = st.button("Yes, Delete", type="primary")
 
-    if st.button("Yes, Delete", type="primary"):
-        if delete_callback():
-            return True
+    if delete_clicked:
+        error = delete_callback()
+        if error is not None:
+            st.error(f"❌ Failed to delete {item_name}: {error}")
+            return False
+        success_callback()
+        return True
     return False
 
 def format_dataframe_dates(df: pd.DataFrame, date_columns: list) -> pd.DataFrame:

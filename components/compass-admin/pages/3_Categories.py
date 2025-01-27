@@ -77,16 +77,11 @@ def update_category(category_name, data):
 
 def delete_category(category_name):
     """Delete category"""
-    try:
-        response = APIClient.delete(f"categories/{category_name}")
-        if response and response.get("status_code") == 204:
-            return True
-        else:
-            st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
-            return False
-    except Exception as e:
-        st.session_state.show_error_message = str(e)
-        return False
+    response = APIClient.delete(f"categories/{category_name}")
+    if response and response.get("status_code") == 204:
+        return
+    else:
+        return response.get("detail", "Unknown error occurred")
 
 def render_category_form(category_data):
     """Render form for editing category"""
@@ -136,12 +131,17 @@ def render_category_form(category_data):
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        if confirm_delete_dialog(f"category '{category_data['name']}'", lambda: delete_category(category_data["name"])):
-            st.session_state.show_delete_success_toast = True
-            st.session_state.selected_category = None
-            if "category_grid" in st.session_state:
-                del st.session_state["category_grid"]
-            st.rerun()
+        confirm_delete_dialog(f"category '{category_data['name']}'", 
+                              lambda: delete_category(category_data["name"]), 
+                              delete_success_callback)
+
+def delete_success_callback():
+    st.toast("Category deleted successfully!", icon="✅")
+    st.session_state.show_delete_success_toast = True
+    st.session_state.selected_category = None
+    if "category_grid" in st.session_state:
+        del st.session_state["category_grid"]
+    st.rerun()
 
 def render_add_category_form():
     """Render form for adding new category"""

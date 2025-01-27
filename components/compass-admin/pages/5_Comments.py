@@ -92,13 +92,11 @@ def update_comment(comment_id, data):
 
 def delete_comment(comment_id):
     """Delete comment"""
-    try:
-        response = APIClient.delete(f"comments/{comment_id}")
-        if response.get("status_code") == 204:
-            return True
-    except Exception as e:
-        st.session_state.show_error_message = str(e)
-    return False
+    response = APIClient.delete(f"comments/{comment_id}")
+    if response and response.get("status_code") == 204:
+        return
+    else:
+        return response.get("detail", "Unknown error occurred")
 
 def render_comment_form(comment_data):
     """Render form for editing comment"""
@@ -167,12 +165,15 @@ def render_comment_form(comment_data):
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        if confirm_delete_dialog("this comment", lambda: delete_comment(comment_data["_id"])):
-            st.session_state.show_delete_success_toast = True
-            st.session_state.selected_comment = None
-            if "comment_grid" in st.session_state:
-                del st.session_state["comment_grid"]
-            st.rerun()
+        confirm_delete_dialog("this comment", lambda: delete_comment(comment_data["_id"]), delete_success_callback)
+
+def delete_success_callback():
+    st.toast("Comment deleted successfully!", icon="✅")
+    st.session_state.show_delete_success_toast = True
+    st.session_state.selected_comment = None
+    if "comment_grid" in st.session_state:
+        del st.session_state["comment_grid"]
+    st.rerun()
 
 def main():
     st.title("💬 Comments")

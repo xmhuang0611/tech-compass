@@ -4,6 +4,8 @@ from utils.api import APIClient
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import pandas as pd
 
+from utils.common import confirm_delete_dialog
+
 # Page configuration
 st.set_page_config(
     page_title="Solutions - Tech Compass Admin", page_icon="💡", layout="wide"
@@ -76,30 +78,12 @@ def update_solution(solution_slug, data):
 
 def delete_solution(solution_slug):
     """Delete solution"""
-    try:
-        # For DELETE requests with 204 response, APIClient.delete returns None
-        APIClient.delete(f"solutions/{solution_slug}")
-        # If no exception was raised, deletion was successful
-        return True
-    except Exception as e:
-        st.session_state.show_error_message = str(e)
-        return False
-
-
-@st.dialog("Confirm Deletion")
-def confirm_delete(solution_data):
-    st.write(f"Are you sure you want to delete solution '{solution_data.get('name')}'?")
-    st.warning("This action cannot be undone!")
-
-    if st.button("Yes, Delete", type="primary"):
-        if delete_solution(solution_data["slug"]):
-            st.session_state.show_delete_success_toast = True
-            st.session_state.selected_solution = None
-            # Clear the grid selection by regenerating the key
-            if "solution_grid" in st.session_state:
-                del st.session_state["solution_grid"]
-            st.rerun()
-
+    # For DELETE requests with 204 response, APIClient.delete returns None
+    response = APIClient.delete(f"solutions/{solution_slug}")
+    if response and response.get("status_code") == 204:
+        return
+    else:
+        return response.get("detail", "Unknown error occurred")
 
 def render_solution_form(solution_data):
     """Render form for editing solution"""
@@ -314,8 +298,15 @@ def render_solution_form(solution_data):
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        confirm_delete(solution_data)
+        confirm_delete_dialog("this solution", lambda: delete_solution(solution_data["slug"]), delete_success_callback)
 
+def delete_success_callback():
+    st.toast("Solution deleted successfully!", icon="✅")
+    st.session_state.show_delete_success_toast = True
+    st.session_state.selected_solution = None
+    if "solution_grid" in st.session_state:
+        del st.session_state["solution_grid"]
+    st.rerun()
 
 def render_add_solution_form():
     """Render form for adding new solution"""
