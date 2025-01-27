@@ -16,7 +16,8 @@ Backend service for Tech Compass (TC) platform built with FastAPI.
 1. Create and activate Python virtual environment:
 ```bash
 python -m venv venv311
-source venv311/bin/activate  # On Windows: venv311\Scripts\activate
+source venv311/bin/activate
+# On Windows: venv311\Scripts\activate
 ```
 
 2. Install dependencies:
@@ -60,33 +61,3 @@ Once the server is running, you can access:
 2. Use the Swagger UI to test API endpoints interactively
 3. For development, the authentication is set to accept any username/password combination
 4. MongoDB connection is verified on startup
-
-## Common Operations
-
-### Authentication
-```bash
-# Get access token
-curl -X POST "http://localhost:8000/api/auth/login" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "username=test_user&password=test_password"
-```
-
-### Create Solution
-```bash
-# Create a new solution (requires auth token)
-curl -X POST "http://localhost:8000/api/solutions/" \
-  -H "Authorization: Bearer your_access_token" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Test Solution",
-    "description": "A test technical solution",
-    "category": "Development",
-    "status": "Active"
-  }'
-```
-
-### List Solutions
-```bash
-# List all solutions (requires auth token)
-curl -X GET "http://localhost:8000/api/solutions/" \
-  -H "Authorization: Bearer your_access_token"

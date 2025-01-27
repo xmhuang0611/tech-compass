@@ -1,4 +1,4 @@
-from app.db.mongodb import get_database
+from app.core.database import get_database
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt

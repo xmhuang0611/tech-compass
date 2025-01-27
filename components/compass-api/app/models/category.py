@@ -2,23 +2,22 @@ from datetime import datetime
 from typing import Optional
 
 from bson import ObjectId
-from pydantic import BaseModel, Field, field_validator, model_validator
-from pydantic_core.core_schema import ValidationInfo
+from pydantic import BaseModel, Field, field_validator
 
-from app.models.common import PyObjectId
+from app.models.common import AuditModel, PyObjectId
 
 
 class CategoryBase(BaseModel):
     """Base category model with common fields"""
     name: str = Field(
-        ..., 
+        ...,
         description="Category name (spaces will be trimmed)",
         min_length=1,
         max_length=100,
         examples=["Development", "Infrastructure"]
     )
     description: str = Field(
-        "", 
+        "",
         description="Category description",
         max_length=500
     )
@@ -40,59 +39,26 @@ class CategoryBase(BaseModel):
         """Validate category description"""
         return description.strip() if description else ""
 
+
 class CategoryCreate(CategoryBase):
     """Category creation model"""
     pass
 
-class CategoryUpdate(BaseModel):
+
+class CategoryUpdate(CategoryBase):
     """Category update model"""
-    name: Optional[str] = Field(
-        None, 
-        description="Category name (spaces will be trimmed)",
-        min_length=1,
-        max_length=100
-    )
-    description: Optional[str] = Field(
-        None, 
-        description="Category description",
-        max_length=500
-    )
+    pass
 
-    @field_validator('name')
-    @classmethod
-    def validate_name(cls, name: Optional[str]) -> Optional[str]:
-        """Validate and transform category name if provided"""
-        if name is None:
-            return None
-        name = name.strip()
-        if not name:
-            raise ValueError("Category name cannot be empty")
-        return name
 
-    @field_validator('description')
-    @classmethod
-    def validate_description(cls, description: Optional[str]) -> Optional[str]:
-        """Validate category description if provided"""
-        if description is None:
-            return None
-        return description.strip()
-
-class CategoryInDB(CategoryBase):
+class CategoryInDB(CategoryBase, AuditModel):
     """Category model as stored in database"""
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    created_by: Optional[str] = Field(None, description="Username who created")
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_by: Optional[str] = Field(None, description="Username who last updated")
+    pass
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
 
 class Category(CategoryInDB):
     """Category model for API responses"""
     pass
+
 
 class CategoryList(BaseModel):
     """API response model for list of categories"""

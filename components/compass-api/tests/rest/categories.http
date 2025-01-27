@@ -177,26 +177,22 @@ Authorization: Bearer {{token}}
 
 # Error responses examples:
 
-# Not found error
+# Not found error 404
 # {
-#     "success": false,
-#     "error": "Category not found"
+#     "detail": "Category not found"
 # }
 
-# Validation error
+# Validation error 400
 # {
-#     "success": false,
-#     "error": "Category name cannot be empty"
+#     "detail": "Category name cannot be empty"
 # }
 
-# Duplicate error
+# Duplicate error 400
 # {
-#     "success": false,
-#     "error": "Category with name 'Development' already exists"
+#     "detail": "Category with name 'Development' already exists"
 # }
 
-# Authentication error
+# Authentication error 401
 # {
-#     "success": false,
-#     "error": "Not authenticated"
+#     "detail": "Not authenticated"
 # } 
