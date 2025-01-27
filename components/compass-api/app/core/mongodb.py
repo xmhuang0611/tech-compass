@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, Any
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
@@ -12,12 +13,39 @@ class MongoDB:
 
 db = MongoDB()
 
+def get_mongodb_options() -> Dict[str, Any]:
+    """Get MongoDB connection options including TLS/SSL if certificates are provided."""
+    options = {
+        "serverSelectionTimeoutMS": 5000  # 5 second timeout
+    }
+    
+    # Add TLS/SSL options if certificates are provided
+    if any([settings.MONGODB_TLS_CERT_PATH, 
+            settings.MONGODB_TLS_CA_PATH, 
+            settings.MONGODB_TLS_KEY_PATH]):
+        options["tls"] = True
+        
+        if settings.MONGODB_TLS_CA_PATH:
+            options["tlsCAFile"] = settings.MONGODB_TLS_CA_PATH
+            
+        if settings.MONGODB_TLS_CERT_PATH:
+            options["tlsCertificateKeyFile"] = settings.MONGODB_TLS_CERT_PATH
+            
+        if settings.MONGODB_TLS_KEY_PATH:
+            # Only used if the private key is in a separate file from the certificate
+            options["tlsPrivateKeyFile"] = settings.MONGODB_TLS_KEY_PATH
+            
+        logger.info("TLS/SSL options enabled for MongoDB connection")
+    
+    return options
+
 async def connect_to_mongo():
     try:
         logger.info(f"Connecting to MongoDB at {settings.MONGODB_URL}")
+        options = get_mongodb_options()
         db.client = AsyncIOMotorClient(
             settings.MONGODB_URL,
-            serverSelectionTimeoutMS=5000  # 5 second timeout
+            **options
         )
         # Verify the connection
         await db.client.server_info()
