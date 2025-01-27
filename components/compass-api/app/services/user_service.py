@@ -16,7 +16,7 @@ class UserService:
 
     async def ensure_default_admin(self) -> None:
         """Ensure default admin user exists in the database."""
-        if not settings.ENABLE_DEFAULT_ADMIN:
+        if not settings.DEFAULT_ADMIN_USERNAME:
             raise ValueError("DEFAULT_ADMIN_USERNAME is not set")
         if not settings.DEFAULT_ADMIN_PASSWORD:
             raise ValueError("DEFAULT_ADMIN_PASSWORD is not set")

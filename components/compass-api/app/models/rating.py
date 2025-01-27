@@ -12,4 +12,5 @@ class RatingCreate(RatingBase):
     pass
 
 class RatingInDB(RatingBase, AuditModel):
-    pass
+    solution_slug: str
+    username: str

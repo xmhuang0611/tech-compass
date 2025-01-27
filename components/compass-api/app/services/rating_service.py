@@ -120,7 +120,6 @@ class RatingService:
         # If no existing rating was updated, create a new one
         if result.modified_count == 0:
             new_rating = {
-                "id": str(ObjectId()),
                 "solution_slug": solution_slug,
                 "username": username,
                 "score": rating_data["score"],
