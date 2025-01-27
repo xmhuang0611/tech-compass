@@ -171,7 +171,6 @@ class TestDataGenerator:
         for _ in range(num_solutions):
             solution = self.create_solution()
             self.solutions.append(solution)
-            time.sleep(0.5)  # Prevent rate limiting
 
         # Create comments and ratings for each solution
         for solution in self.solutions:
@@ -180,12 +179,10 @@ class TestDataGenerator:
             # Add comments
             for _ in range(num_comments_per_solution):
                 self.create_comment(solution['slug'])
-                time.sleep(0.5)
 
             # Add ratings
             for _ in range(num_ratings_per_solution):
                 self.create_rating(solution['slug'])
-                time.sleep(0.5)
 
         print("Test data generation completed successfully!")
 
