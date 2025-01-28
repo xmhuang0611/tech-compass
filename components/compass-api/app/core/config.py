@@ -1,5 +1,5 @@
 from pydantic_settings import BaseSettings
-from typing import Optional
+from typing import Optional, Literal
 
 
 class Settings(BaseSettings):
@@ -16,8 +16,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 5256000
     
     # Auth Server settings
-    AUTH_SERVER_URL: str = "http://localhost:8000/auth"
+    AUTH_SERVER_URL: str = "http://localhost:8000"
     AUTH_SERVER_ENABLED: bool = False
+    AUTH_SERVER_USERNAME_FIELD: str = "username"
+    AUTH_SERVER_PASSWORD_FIELD: str = "password"
+    AUTH_SERVER_CONTENT_TYPE: Literal["json", "form"] = "json"
     
     # Default Admin settings
     DEFAULT_ADMIN_USERNAME: str = "admin"

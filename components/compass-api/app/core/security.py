@@ -27,11 +27,26 @@ async def verify_credentials(username: str, password: str) -> bool:
     
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(
-                f"{settings.AUTH_SERVER_URL}/verify",
-                json={"username": username, "password": password},
-                timeout=5.0
-            )
+            data = {
+                settings.AUTH_SERVER_USERNAME_FIELD: username,
+                settings.AUTH_SERVER_PASSWORD_FIELD: password
+            }
+            headers = {"Content-Type": "application/json" if settings.AUTH_SERVER_CONTENT_TYPE == "json" else "application/x-www-form-urlencoded"}
+            
+            if settings.AUTH_SERVER_CONTENT_TYPE == "form":
+                response = await client.post(
+                    settings.AUTH_SERVER_URL,
+                    data=data,
+                    headers=headers,
+                    timeout=5.0
+                )
+            else:
+                response = await client.post(
+                    settings.AUTH_SERVER_URL,
+                    json=data,
+                    headers=headers,
+                    timeout=5.0
+                )
             return response.status_code == 200
     except httpx.RequestError:
         # If auth server is unreachable, fail closed for security
