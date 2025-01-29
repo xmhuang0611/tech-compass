@@ -75,7 +75,9 @@
                 <span><i class="pi pi-users"></i> {{solution.department}}</span>
                 <span class="maintainer">
                   <i class="pi pi-user"></i>
-                  <span class="maintainer-name">{{solution.maintainer_name}}</span>
+                  <a [href]="'mailto:' + solution.maintainer_email" class="maintainer-name">
+                    {{solution.maintainer_name}}
+                  </a>
                 </span>
               </div>
 
@@ -144,7 +146,9 @@
                 <span><i class="pi pi-users"></i> {{solution.department}}</span>
                 <span class="maintainer">
                   <i class="pi pi-user"></i>
-                  <span class="maintainer-name">{{solution.maintainer_name}}</span>
+                  <a [href]="'mailto:' + solution.maintainer_email" class="maintainer-name">
+                    {{solution.maintainer_name}}
+                  </a>
                 </span>
               </div>
 

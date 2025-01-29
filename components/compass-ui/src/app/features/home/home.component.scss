@@ -186,6 +186,14 @@
           
           .maintainer-name {
             margin-left: 0.25rem;
+            color: var(--text-color-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+            
+            &:hover {
+              color: var(--primary-color);
+              text-decoration: underline;
+            }
           }
         }
       }
