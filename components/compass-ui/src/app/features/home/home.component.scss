@@ -178,6 +178,16 @@
           font-size: 0.875rem;
           min-width: fit-content;
         }
+
+        .maintainer {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          
+          .maintainer-name {
+            margin-left: 0.25rem;
+          }
+        }
       }
 
       .card-footer {

@@ -73,6 +73,10 @@
               <div class="meta-info">
                 <span><i class="pi pi-th-large"></i> {{solution.category}}</span>
                 <span><i class="pi pi-users"></i> {{solution.department}}</span>
+                <span class="maintainer">
+                  <i class="pi pi-user"></i>
+                  <span class="maintainer-name">{{solution.maintainer_name}}</span>
+                </span>
               </div>
 
               <ng-template pTemplate="footer">
@@ -138,7 +142,10 @@
               <div class="meta-info">
                 <span><i class="pi pi-th-large"></i> {{solution.category}}</span>
                 <span><i class="pi pi-users"></i> {{solution.department}}</span>
-                <span><i class="pi pi-calendar"></i> {{solution.created_at | date:'mediumDate'}}</span>
+                <span class="maintainer">
+                  <i class="pi pi-user"></i>
+                  <span class="maintainer-name">{{solution.maintainer_name}}</span>
+                </span>
               </div>
 
               <ng-template pTemplate="footer">
