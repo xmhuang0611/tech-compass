@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <!-- Shapes with soft gradients -->
+  <defs>
+    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.05"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Scattered shapes -->
+  <g>
+    <!-- Large circle -->
+    <circle cx="200" cy="150" r="60" fill="url(#blueGradient)" />
+    
+    <!-- Square -->
+    <rect x="900" y="100" width="80" height="80" 
+          transform="rotate(15 940 140)" 
+          fill="url(#blueGradient)" />
+    
+    <!-- Rounded rectangle -->
+    <rect x="400" y="400" width="120" height="60" rx="30"
+          transform="rotate(-10 460 430)"
+          fill="url(#blueGradient)" />
+    
+    <!-- Small circles -->
+    <circle cx="800" cy="300" r="25" fill="url(#blueGradient)" />
+    <circle cx="300" cy="450" r="35" fill="url(#blueGradient)" />
+    
+    <!-- Pill shape -->
+    <rect x="700" y="150" width="140" height="50" rx="25"
+          transform="rotate(30 770 175)"
+          fill="url(#blueGradient)" />
+  </g>
+
+  <!-- Decorative dots -->
+  <g fill="#ffffff">
+    <circle cx="150" cy="300" r="4" opacity="0.2" />
+    <circle cx="600" cy="200" r="4" opacity="0.2" />
+    <circle cx="950" cy="400" r="4" opacity="0.2" />
+    <circle cx="450" cy="150" r="4" opacity="0.2" />
+    <circle cx="850" cy="250" r="4" opacity="0.2" />
+  </g>
+</svg> 
