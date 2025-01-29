@@ -1,0 +1,99 @@
+// Global styles
+:root {
+  // Aura theme colors
+  --primary-color: #3B82F6;
+  --surface-ground: #eff3f8;
+  --surface-section: #ffffff;
+  --surface-card: #ffffff;
+  --text-color: #1e293b;
+  --text-color-secondary: #64748b;
+  --border-radius: 12px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-family);
+  background-color: var(--surface-ground);
+  color: var(--text-color);
+}
+
+.layout-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--surface-card);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  z-index: 1000;
+}
+
+.header-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.layout-main {
+  margin-top: 64px;
+  flex: 1;
+  padding: 32px;
+  background-color: var(--surface-ground);
+}
+
+.main-container {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.layout-footer {
+  background-color: var(--surface-card);
+  color: var(--text-color);
+  padding: 48px 0 24px;
+  border-top: 1px solid var(--surface-border);
+}
+
+.footer-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+// Aura-specific component styles
+.p-button {
+  border-radius: var(--border-radius);
+}
+
+.p-card {
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.p-menubar {
+  background: transparent;
+  border: none;
+  padding: 0;
+
+  .p-menubar-root-list {
+    > .p-menuitem {
+      > .p-menuitem-link {
+        border-radius: var(--border-radius);
+        
+        &:not(.p-disabled):hover {
+          background: var(--surface-hover);
+        }
+      }
+    }
+  }
+} 
