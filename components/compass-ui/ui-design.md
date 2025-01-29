@@ -2,6 +2,16 @@
 
 The Tech Compass Library (TCL) is a desktop-first web application designed to help teams discover, evaluate, and share technology solutions. The UI design emphasizes professionalism, clarity, and efficiency, targeting technical professionals in enterprise environments.
 
+## Tech stacks
+
+- **[Angular](https://angular.dev)**
+
+  - A platform for building mobile and desktop web applications
+
+- **[PrimeNG](https://primeng.org)**
+  - A rich set of open-source UI components for Angular applications
+  - [Sakai Template](https://github.com/primefaces/sakai-ng) - Admin template
+
 ## Design Philosophy
 
 ### Look and Feel
