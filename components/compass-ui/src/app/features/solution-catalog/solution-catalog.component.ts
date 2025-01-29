@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SolutionService } from '../../../core/services/solution.service';
-import { SolutionCardComponent } from '../../../shared/components/solution-card/solution-card.component';
-import { Solution } from '../../../shared/interfaces/solution.interface';
+import { SolutionService } from '../../core/services/solution.service';
+import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
+import { Solution } from '../../shared/interfaces/solution.interface';
 
 // PrimeNG imports
 import { PaginatorModule } from 'primeng/paginator';
@@ -29,7 +29,7 @@ interface SolutionParams extends SolutionFilters {
 }
 
 @Component({
-  selector: 'app-solutions-catalog',
+  selector: 'app-solution-catalog',
   standalone: true,
   imports: [
     CommonModule,
@@ -41,10 +41,91 @@ interface SolutionParams extends SolutionFilters {
     ProgressSpinnerModule,
     MessageModule
   ],
-  templateUrl: './solutions-catalog.component.html',
-  styleUrls: ['./solutions-catalog.component.scss']
+  template: `
+<div class="solutions-container">
+  <div class="filters-sidebar">
+    <h3>Filters</h3>
+    
+    <div class="filter-section">
+      <label>Sort By</label>
+      <p-dropdown 
+        [options]="sortOptions" 
+        [(ngModel)]="filters.sort"
+        (onChange)="onFilterChange()"
+        [style]="{'width':'100%'}"
+        placeholder="Select Sort Order">
+      </p-dropdown>
+    </div>
+
+    <div class="filter-section">
+      <label>Recommend Status</label>
+      <p-dropdown 
+        [options]="recommendStatusOptions" 
+        [(ngModel)]="filters.recommend_status"
+        (onChange)="onFilterChange()"
+        [style]="{'width':'100%'}"
+        [showClear]="true"
+        placeholder="Select Status">
+      </p-dropdown>
+    </div>
+
+    <div class="filter-section">
+      <label>Radar Status</label>
+      <p-dropdown 
+        [options]="radarStatusOptions" 
+        [(ngModel)]="filters.radar_status"
+        (onChange)="onFilterChange()"
+        [style]="{'width':'100%'}"
+        [showClear]="true"
+        placeholder="Select Status">
+      </p-dropdown>
+    </div>
+
+    <div class="filter-section">
+      <label>Stage</label>
+      <p-dropdown 
+        [options]="stageOptions" 
+        [(ngModel)]="filters.stage"
+        (onChange)="onFilterChange()"
+        [style]="{'width':'100%'}"
+        [showClear]="true"
+        placeholder="Select Stage">
+      </p-dropdown>
+    </div>
+  </div>
+
+  <div class="solutions-content">
+    <div class="solutions-grid" *ngIf="!loading && !error">
+      <app-solution-card 
+        *ngFor="let solution of solutions" 
+        [solution]="solution">
+      </app-solution-card>
+    </div>
+
+    <div class="paginator-container" *ngIf="!loading && !error">
+      <p-paginator 
+        [rows]="pageSize"
+        [totalRecords]="totalRecords"
+        [rowsPerPageOptions]="[9, 18, 27]"
+        [first]="currentPage * pageSize"
+        (onPageChange)="onPageChange($event)">
+      </p-paginator>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading solutions...</p>
+    </div>
+
+    <div class="error-state" *ngIf="error">
+      <p-message severity="error" [text]="error"></p-message>
+    </div>
+  </div>
+</div>
+  `,
+  styleUrls: ['./solution-catalog.component.scss']
 })
-export class SolutionsCatalogComponent implements OnInit {
+export class SolutionCatalogComponent implements OnInit {
   solutions: Solution[] = [];
   loading = true;
   error: string | null = null;
@@ -88,12 +169,9 @@ export class SolutionsCatalogComponent implements OnInit {
     { label: 'Name Z-A', value: '-name' }
   ];
 
-  constructor(private solutionService: SolutionService) {
-    console.log('SolutionsCatalogComponent constructed');
-  }
+  constructor(private solutionService: SolutionService) {}
 
   ngOnInit(): void {
-    console.log('SolutionsCatalogComponent initialized');
     this.loadSolutions();
   }
 

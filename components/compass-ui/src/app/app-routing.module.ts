@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: 'solution-catalog',
-    loadChildren: () => import('./features/solutions/solutions.module').then(m => m.SolutionsModule)
+    loadComponent: () => import('./features/solution-catalog/solution-catalog.component').then(m => m.SolutionCatalogComponent)
   },
   {
     path: 'categories',
