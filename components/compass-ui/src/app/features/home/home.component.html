@@ -83,6 +83,10 @@
 
               <ng-template pTemplate="footer">
                 <div class="card-footer">
+                  <span class="update-time">
+                    <i class="pi pi-clock"></i>
+                    Updated {{solution.updated_at | date:'mediumDate'}}
+                  </span>
                   <p-button 
                     [routerLink]="['/solutions', solution.slug]"
                     label="Learn More" 
@@ -154,6 +158,10 @@
 
               <ng-template pTemplate="footer">
                 <div class="card-footer">
+                  <span class="update-time">
+                    <i class="pi pi-clock"></i>
+                    Updated {{solution.updated_at | date:'mediumDate'}}
+                  </span>
                   <p-button 
                     [routerLink]="['/solutions', solution.slug]"
                     label="Learn More" 

@@ -200,11 +200,24 @@
 
       .card-footer {
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
         align-items: center;
         padding-top: 1rem;
         border-top: 1px solid var(--surface-border);
         margin-top: auto;
+
+        .update-time {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.75rem;
+          color: var(--text-color-secondary);
+          opacity: 0.8;
+          
+          i {
+            font-size: 0.875rem;
+          }
+        }
 
         ::ng-deep .p-button {
           &.p-button-outlined:hover {
