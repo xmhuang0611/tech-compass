@@ -1,15 +1,7 @@
 import { NgModule } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { SharedModule } from '../../shared/shared.module';
-import { SolutionsComponent } from './solutions.component';
+import { SolutionsRoutingModule } from './solutions-routing.module';
 
 @NgModule({
-  declarations: [SolutionsComponent],
-  imports: [
-    SharedModule,
-    RouterModule.forChild([
-      { path: '', component: SolutionsComponent }
-    ])
-  ]
+  imports: [SolutionsRoutingModule],
 })
 export class SolutionsModule { } 

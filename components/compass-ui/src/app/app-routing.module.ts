@@ -7,7 +7,7 @@ const routes: Routes = [
     loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
   },
   {
-    path: 'solutions',
+    path: 'solution-catalog',
     loadChildren: () => import('./features/solutions/solutions.module').then(m => m.SolutionsModule)
   },
   {

@@ -1,19 +1,47 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { SolutionResponse } from '../../shared/interfaces/solution.interface';
+import { StandardResponse } from '../interfaces/standard-response.interface';
+import { Solution } from '../../shared/interfaces/solution.interface';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SolutionService {
-  private apiUrl = 'http://127.0.0.1:8000/api';
+  private apiUrl = `${environment.apiUrl}/solutions`;
 
   constructor(private http: HttpClient) {}
 
-  getRecommendedSolutions(skip = 0, limit = 10): Observable<SolutionResponse> {
-    return this.http.get<SolutionResponse>(
-      `${this.apiUrl}/solutions/`,
+  getSolutions(params: {
+    skip?: number;
+    limit?: number;
+    category?: string;
+    department?: string;
+    team?: string;
+    recommend_status?: 'BUY' | 'HOLD' | 'SELL';
+    radar_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+    stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
+    sort?: string;
+  }): Observable<StandardResponse<Solution[]>> {
+    let httpParams = new HttpParams()
+      .set('skip', params.skip?.toString() || '0')
+      .set('limit', params.limit?.toString() || '10');
+
+    if (params.category) httpParams = httpParams.set('category', params.category);
+    if (params.department) httpParams = httpParams.set('department', params.department);
+    if (params.team) httpParams = httpParams.set('team', params.team);
+    if (params.recommend_status) httpParams = httpParams.set('recommend_status', params.recommend_status);
+    if (params.radar_status) httpParams = httpParams.set('radar_status', params.radar_status);
+    if (params.stage) httpParams = httpParams.set('stage', params.stage);
+    if (params.sort) httpParams = httpParams.set('sort', params.sort);
+
+    return this.http.get<StandardResponse<Solution[]>>(this.apiUrl, { params: httpParams });
+  }
+
+  getRecommendedSolutions(skip = 0, limit = 10): Observable<StandardResponse<Solution[]>> {
+    return this.http.get<StandardResponse<Solution[]>>(
+      `${this.apiUrl}/`,
       {
         params: {
           skip: skip.toString(),
@@ -25,9 +53,9 @@ export class SolutionService {
     );
   }
 
-  getNewSolutions(skip = 0, limit = 10): Observable<SolutionResponse> {
-    return this.http.get<SolutionResponse>(
-      `${this.apiUrl}/solutions/`,
+  getNewSolutions(skip = 0, limit = 10): Observable<StandardResponse<Solution[]>> {
+    return this.http.get<StandardResponse<Solution[]>>(
+      `${this.apiUrl}/`,
       {
         params: {
           skip: skip.toString(),

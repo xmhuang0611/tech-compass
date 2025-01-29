@@ -7,7 +7,8 @@ import { Component } from '@angular/core';
 })
 export class LayoutComponent {
   menuItems = [
-    { label: 'Solutions', icon: 'pi pi-compass', routerLink: '/solutions' },
+    { label: 'Home', routerLink: '/' },
+    { label: 'Solution Catalog', routerLink: '/solution-catalog' },
     { label: 'Categories', icon: 'pi pi-tags', routerLink: '/categories' },
     { label: 'Departments', icon: 'pi pi-users', routerLink: '/departments' },
     { label: 'About', icon: 'pi pi-info-circle', routerLink: '/about' }
