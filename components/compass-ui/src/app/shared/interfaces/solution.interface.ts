@@ -3,16 +3,16 @@ export interface Solution {
   name: string;
   description: string;
   category: string;
-  radar_status: 'HOLD' | 'ASSESS' | 'TRIAL' | 'ADOPT';
   department: string;
   team: string;
   maintainer_name: string;
-  version: string;
+  maintainer_email: string;
   tags: string[];
-  pros: string[];
-  cons: string[];
-  stage: 'DEPRECATED' | 'PRODUCTION' | 'BETA' | 'ALPHA';
   recommend_status: 'BUY' | 'HOLD' | 'SELL';
+  radar_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+  stage: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
+  created_at: string;
+  updated_at: string;
   slug: string;
 }
 

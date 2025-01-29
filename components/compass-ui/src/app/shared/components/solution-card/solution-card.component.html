@@ -1,21 +1,22 @@
 <p-card class="solution-card">
   <ng-template pTemplate="header">
     <div class="card-header">
-      <div class="badges">
+      <div class="status-badge">
         <span class="new-badge" *ngIf="showNewBadge">NEW</span>
-        <span class="status-badge" [ngClass]="solution.recommend_status.toLowerCase()">
-          {{solution.recommend_status}}
-        </span>
+        <p-tag 
+          [value]="solution.recommend_status" 
+          [severity]="getRecommendStatusSeverity()">
+        </p-tag>
       </div>
+      <h3 class="title">{{ solution.name }}</h3>
     </div>
   </ng-template>
 
-  <h3>{{solution.name}}</h3>
-  <p class="description">{{solution.description}}</p>
+  <p class="description">{{ solution.description }}</p>
 
   <div class="tags">
-    <p-chip *ngFor="let tag of solution.tags.slice(0,3)" [label]="tag"></p-chip>
-    <p-chip *ngIf="solution.tags.length > 3" [label]="'+' + (solution.tags.length - 3)"></p-chip>
+    <p-chip *ngFor="let tag of solution.tags.slice(0,2)" [label]="tag"></p-chip>
+    <p-chip *ngIf="solution.tags.length > 2" [label]="solution.tags.length > 3 ? '+' + (solution.tags.length - 2) : solution.tags[2]"></p-chip>
   </div>
 
   <div class="meta-info">
