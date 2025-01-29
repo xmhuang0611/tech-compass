@@ -1,0 +1,246 @@
+<div class="home-container">
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Tech Compass</h1>
+      <p class="subtitle">Your guide to technology solutions</p>
+      <div class="search-container">
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText placeholder="Search solutions..." />
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <section class="intro-section">
+    <div class="intro-content">
+      <div class="intro-item">
+        <div class="icon-wrapper">
+          <i class="pi pi-compass"></i>
+        </div>
+        <h3>Technology Navigation</h3>
+        <p>Navigate through the complex technology landscape with confidence. Find the right solutions that match your team's needs.</p>
+      </div>
+      <div class="intro-item">
+        <div class="icon-wrapper">
+          <i class="pi pi-check-circle"></i>
+        </div>
+        <h3>Informed Decisions</h3>
+        <p>Make data-driven technology decisions with comprehensive evaluations, real user feedback, and expert recommendations.</p>
+      </div>
+      <div class="intro-item">
+        <div class="icon-wrapper">
+          <i class="pi pi-users"></i>
+        </div>
+        <h3>Team Alignment</h3>
+        <p>Keep your teams aligned on technology choices. Share knowledge and best practices across departments.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="recommended-section">
+    <div class="section-header">
+      <h2>Recommended Solutions</h2>
+      <p>Top-rated technology solutions for your needs</p>
+    </div>
+
+    <div class="carousel-container" *ngIf="!loading && !error">
+      <p-carousel [value]="recommendedSolutions" 
+                 [numVisible]="3" 
+                 [numScroll]="1" 
+                 [circular]="true"
+                 [autoplayInterval]="5000"
+                 [responsiveOptions]="responsiveOptions">
+        <ng-template let-solution pTemplate="item">
+          <div class="carousel-item">
+            <p-card class="solution-card">
+              <ng-template pTemplate="header">
+                <div class="card-header">
+                  <span class="status-badge" [ngClass]="solution.recommend_status.toLowerCase()">
+                    {{solution.recommend_status}}
+                  </span>
+                </div>
+              </ng-template>
+
+              <h3>{{solution.name}}</h3>
+              <p class="description">{{solution.description}}</p>
+
+              <div class="tags">
+                <p-chip *ngFor="let tag of solution.tags.slice(0,3)" [label]="tag"></p-chip>
+                <p-chip *ngIf="solution.tags.length > 3" [label]="'+' + (solution.tags.length - 3)"></p-chip>
+              </div>
+
+              <div class="meta-info">
+                <span><i class="pi pi-tag"></i> {{solution.category}}</span>
+                <span><i class="pi pi-users"></i> {{solution.department}}</span>
+              </div>
+
+              <ng-template pTemplate="footer">
+                <div class="card-footer">
+                  <p-button 
+                    [routerLink]="['/solutions', solution.slug]"
+                    label="Learn More" 
+                    styleClass="p-button-outlined">
+                  </p-button>
+                </div>
+              </ng-template>
+            </p-card>
+          </div>
+        </ng-template>
+      </p-carousel>
+    </div>
+
+    <div class="loading-state" *ngIf="loading">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading recommended solutions...</p>
+    </div>
+
+    <div class="error-state" *ngIf="error">
+      <p-message severity="error" [text]="error"></p-message>
+    </div>
+  </section>
+
+  <section class="new-solutions-section">
+    <div class="section-header">
+      <h2>New Additions</h2>
+      <p>Recently added technology solutions</p>
+    </div>
+
+    <div class="carousel-container" *ngIf="!loadingNew && !newSolutionsError">
+      <p-carousel [value]="newSolutions" 
+                 [numVisible]="3" 
+                 [numScroll]="1" 
+                 [circular]="true"
+                 [autoplayInterval]="5000"
+                 [responsiveOptions]="responsiveOptions">
+        <ng-template let-solution pTemplate="item">
+          <div class="carousel-item">
+            <p-card class="solution-card">
+              <ng-template pTemplate="header">
+                <div class="card-header">
+                  <div class="badges">
+                    <span class="new-badge">NEW</span>
+                    <span class="status-badge" [ngClass]="solution.recommend_status.toLowerCase()">
+                      {{solution.recommend_status}}
+                    </span>
+                  </div>
+                </div>
+              </ng-template>
+
+              <h3>{{solution.name}}</h3>
+              <p class="description">{{solution.description}}</p>
+
+              <div class="tags">
+                <p-chip *ngFor="let tag of solution.tags.slice(0,3)" [label]="tag"></p-chip>
+                <p-chip *ngIf="solution.tags.length > 3" [label]="'+' + (solution.tags.length - 3)"></p-chip>
+              </div>
+
+              <div class="meta-info">
+                <span><i class="pi pi-tag"></i> {{solution.category}}</span>
+                <span><i class="pi pi-users"></i> {{solution.department}}</span>
+                <span><i class="pi pi-calendar"></i> {{solution.created_at | date:'mediumDate'}}</span>
+              </div>
+
+              <ng-template pTemplate="footer">
+                <div class="card-footer">
+                  <p-button 
+                    [routerLink]="['/solutions', solution.slug]"
+                    label="Learn More" 
+                    styleClass="p-button-outlined">
+                  </p-button>
+                </div>
+              </ng-template>
+            </p-card>
+          </div>
+        </ng-template>
+      </p-carousel>
+    </div>
+
+    <div class="loading-state" *ngIf="loadingNew">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading new solutions...</p>
+    </div>
+
+    <div class="error-state" *ngIf="newSolutionsError">
+      <p-message severity="error" [text]="newSolutionsError"></p-message>
+    </div>
+  </section>
+
+  <section class="benefits-section">
+    <div class="benefits-content">
+      <div class="benefits-text">
+        <h2>Why Tech Compass?</h2>
+        <ul class="benefits-list">
+          <li>
+            <i class="pi pi-chart-line"></i>
+            <span>Track and evaluate technology trends in your organization</span>
+          </li>
+          <li>
+            <i class="pi pi-shield"></i>
+            <span>Make informed decisions about adopting or retiring technologies</span>
+          </li>
+          <li>
+            <i class="pi pi-sync"></i>
+            <span>Stay updated with recommendations and best practices</span>
+          </li>
+          <li>
+            <i class="pi pi-sitemap"></i>
+            <span>Understand technology dependencies and relationships</span>
+          </li>
+        </ul>
+      </div>
+      <div class="benefits-image">
+        <img src="assets/tech-radar.svg" alt="Tech Compass Visualization">
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section">
+    <div class="testimonials-content">
+      <h2>What Tech Leaders Say</h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <i class="pi pi-comments"></i>
+          </div>
+          <p class="quote">"Tech Compass has transformed how we make technology decisions. It's now easier to align our tech stack across different teams and projects."</p>
+          <div class="author">
+            <img src="assets/avatars/avatar1.svg" alt="Sarah Chen">
+            <div class="author-info">
+              <h4>Sarah Chen</h4>
+              <p>CTO, TechCorp Solutions</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <i class="pi pi-comments"></i>
+          </div>
+          <p class="quote">"The ability to track and evaluate technology trends has helped us make more informed decisions about our tech investments."</p>
+          <div class="author">
+            <img src="assets/avatars/avatar2.svg" alt="Michael Rodriguez">
+            <div class="author-info">
+              <h4>Michael Rodriguez</h4>
+              <p>VP of Engineering, InnovateTech</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="testimonial-card">
+          <div class="quote-icon">
+            <i class="pi pi-comments"></i>
+          </div>
+          <p class="quote">"Having a centralized platform for technology recommendations has significantly improved our development team's productivity."</p>
+          <div class="author">
+            <img src="assets/avatars/avatar3.svg" alt="Emily Watson">
+            <div class="author-info">
+              <h4>Emily Watson</h4>
+              <p>Head of Architecture, DataFlow Inc</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div> 

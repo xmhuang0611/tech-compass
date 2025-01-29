@@ -1,7 +1,7 @@
 // Global styles
 :root {
   // Aura theme colors
-  --primary-color: #3B82F6;
+  --primary-color: #265BE3;
   --surface-ground: #eff3f8;
   --surface-section: #ffffff;
   --surface-card: #ffffff;
@@ -68,6 +68,43 @@ body {
   max-width: 1440px;
   margin: 0 auto;
   padding: 0 32px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+
+  .about-text {
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .quick-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    li {
+      color: var(--text-color-secondary);
+      font-size: 0.95rem;
+
+      a {
+        color: var(--text-color-secondary);
+        text-decoration: none;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--primary-color);
+        }
+      }
+    }
+  }
 }
 
 // Aura-specific component styles
