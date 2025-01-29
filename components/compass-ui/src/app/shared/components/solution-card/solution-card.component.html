@@ -1,0 +1,45 @@
+<p-card class="solution-card">
+  <ng-template pTemplate="header">
+    <div class="card-header">
+      <div class="badges">
+        <span class="new-badge" *ngIf="showNewBadge">NEW</span>
+        <span class="status-badge" [ngClass]="solution.recommend_status.toLowerCase()">
+          {{solution.recommend_status}}
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+  <h3>{{solution.name}}</h3>
+  <p class="description">{{solution.description}}</p>
+
+  <div class="tags">
+    <p-chip *ngFor="let tag of solution.tags.slice(0,3)" [label]="tag"></p-chip>
+    <p-chip *ngIf="solution.tags.length > 3" [label]="'+' + (solution.tags.length - 3)"></p-chip>
+  </div>
+
+  <div class="meta-info">
+    <span><i class="pi pi-th-large"></i> {{solution.category}}</span>
+    <span><i class="pi pi-users"></i> {{solution.department}}</span>
+    <span class="maintainer">
+      <i class="pi pi-user"></i>
+      <a [href]="'mailto:' + solution.maintainer_email" class="maintainer-name">
+        {{solution.maintainer_name}}
+      </a>
+    </span>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="card-footer">
+      <span class="update-time">
+        <i class="pi pi-clock"></i>
+        Updated {{solution.updated_at | date:'mediumDate'}}
+      </span>
+      <p-button 
+        [routerLink]="['/solutions', solution.slug]"
+        label="Learn More" 
+        styleClass="p-button-outlined">
+      </p-button>
+    </div>
+  </ng-template>
+</p-card> 

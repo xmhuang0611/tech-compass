@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { CarouselModule } from 'primeng/carousel';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { MessageModule } from 'primeng/message';
 import { SolutionService } from '../../core/services/solution.service';
 import { Solution } from '../../shared/interfaces/solution.interface';
+import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 
 @Component({
   selector: 'tc-home',
+  standalone: true,
+  imports: [
+    CommonModule, 
+    RouterModule, 
+    CarouselModule, 
+    ProgressSpinnerModule, 
+    MessageModule, 
+    SolutionCardComponent
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
