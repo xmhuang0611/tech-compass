@@ -1,4 +1,11 @@
-<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="24" cy="24" r="24" fill="#265BE3" fill-opacity="0.1"/>
-  <text x="24" y="29" text-anchor="middle" fill="#265BE3" font-size="16" font-weight="bold">EW</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="avatarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6A1B9A"/>
+      <stop offset="100%" style="stop-color:#4A148C"/>
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="24" fill="url(#avatarGradient)"/>
+  <circle cx="24" cy="19" r="8" fill="#ffffff" opacity="0.9"/>
+  <path d="M24 29 C16 29 10 34 8 40 L40 40 C38 34 32 29 24 29Z" fill="#ffffff" opacity="0.9"/>
 </svg> 
