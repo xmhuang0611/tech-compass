@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { SolutionService } from '../../core/services/solution.service';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 import { Solution } from '../../shared/interfaces/solution.interface';
+import { CategoryService } from '../../core/services/category.service';
+import { DepartmentService } from '../../core/services/department.service';
 
 // PrimeNG imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -27,6 +29,16 @@ interface SolutionParams extends SolutionFilters {
   [key: string]: string | number | undefined;
 }
 
+interface CategoryOption {
+  label: string;
+  value: string | null;
+}
+
+interface DropdownOption {
+  label: string;
+  value: string | null;
+}
+
 @Component({
   selector: 'app-solution-catalog',
   standalone: true,
@@ -44,51 +56,79 @@ interface SolutionParams extends SolutionFilters {
   <div class="filters-header">
     <h2>Solution Catalog</h2>
     <div class="filters-row">
-      <div class="filter-item">
-        <label>Sort By</label>
-        <p-dropdown 
-          [options]="sortOptions" 
-          [(ngModel)]="filters.sort"
-          (onChange)="onFilterChange()"
-          [style]="{'width':'200px'}"
-          placeholder="Select Sort Order">
-        </p-dropdown>
+      <div class="left-group">
+        <div class="filter-item">
+          <label>Sort By</label>
+          <p-dropdown 
+            [options]="sortOptions" 
+            [(ngModel)]="filters.sort"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            placeholder="Select Sort Order">
+          </p-dropdown>
+        </div>
+
+        <div class="filter-item">
+          <label>Category</label>
+          <p-dropdown 
+            [options]="categoryOptions" 
+            [(ngModel)]="filters.category"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            [showClear]="true"
+            placeholder="Select Category">
+          </p-dropdown>
+        </div>
+
+        <div class="filter-item">
+          <label>Department</label>
+          <p-dropdown 
+            [options]="departmentOptions" 
+            [(ngModel)]="filters.department"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            [showClear]="true"
+            placeholder="Select Department">
+          </p-dropdown>
+        </div>
       </div>
 
-      <div class="filter-item">
-        <label>Recommend Status</label>
-        <p-dropdown 
-          [options]="recommendStatusOptions" 
-          [(ngModel)]="filters.recommend_status"
-          (onChange)="onFilterChange()"
-          [style]="{'width':'200px'}"
-          [showClear]="true"
-          placeholder="Select Status">
-        </p-dropdown>
-      </div>
+      <div class="right-group">
+        <div class="filter-item">
+          <label>Recommend Status</label>
+          <p-dropdown 
+            [options]="recommendStatusOptions" 
+            [(ngModel)]="filters.recommend_status"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            [showClear]="true"
+            placeholder="Select Status">
+          </p-dropdown>
+        </div>
 
-      <div class="filter-item">
-        <label>Radar Status</label>
-        <p-dropdown 
-          [options]="radarStatusOptions" 
-          [(ngModel)]="filters.radar_status"
-          (onChange)="onFilterChange()"
-          [style]="{'width':'200px'}"
-          [showClear]="true"
-          placeholder="Select Status">
-        </p-dropdown>
-      </div>
+        <div class="filter-item">
+          <label>Radar Status</label>
+          <p-dropdown 
+            [options]="radarStatusOptions" 
+            [(ngModel)]="filters.radar_status"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            [showClear]="true"
+            placeholder="Select Status">
+          </p-dropdown>
+        </div>
 
-      <div class="filter-item">
-        <label>Stage</label>
-        <p-dropdown 
-          [options]="stageOptions" 
-          [(ngModel)]="filters.stage"
-          (onChange)="onFilterChange()"
-          [style]="{'width':'200px'}"
-          [showClear]="true"
-          placeholder="Select Stage">
-        </p-dropdown>
+        <div class="filter-item">
+          <label>Stage</label>
+          <p-dropdown 
+            [options]="stageOptions" 
+            [(ngModel)]="filters.stage"
+            (onChange)="onFilterChange()"
+            [style]="{'width':'100%'}"
+            [showClear]="true"
+            placeholder="Select Stage">
+          </p-dropdown>
+        </div>
       </div>
     </div>
   </div>
@@ -117,7 +157,8 @@ interface SolutionParams extends SolutionFilters {
   </div>
 </div>
   `,
-  styleUrls: ['./solution-catalog.component.scss']
+  styleUrls: ['./solution-catalog.component.scss'],
+  providers: [CategoryService, DepartmentService]
 })
 export class SolutionCatalogComponent implements OnInit {
   solutions: Solution[] = [];
@@ -136,6 +177,14 @@ export class SolutionCatalogComponent implements OnInit {
   filters: SolutionFilters = {
     sort: 'name'
   };
+
+  categoryOptions: CategoryOption[] = [
+    { label: 'All', value: null }
+  ];
+
+  departmentOptions: DropdownOption[] = [
+    { label: 'All', value: null }
+  ];
 
   // Filter options
   recommendStatusOptions = [
@@ -166,9 +215,15 @@ export class SolutionCatalogComponent implements OnInit {
     { label: 'Name Z-A', value: '-name' }
   ];
 
-  constructor(private solutionService: SolutionService) {}
+  constructor(
+    private solutionService: SolutionService,
+    private categoryService: CategoryService,
+    private departmentService: DepartmentService
+  ) {}
 
   ngOnInit(): void {
+    this.loadCategories();
+    this.loadDepartments();
     this.loadSolutions();
   }
 
@@ -251,6 +306,44 @@ export class SolutionCatalogComponent implements OnInit {
         this.error = 'Failed to load solutions';
         this.loading = false;
         console.error('Error loading solutions:', error);
+      }
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getCategories().subscribe({
+      next: (response: { data: Array<{ name: string }> }) => {
+        const categories = response.data.map(category => ({
+          label: category.name,
+          value: category.name
+        }));
+        this.categoryOptions = [
+          { label: 'All', value: null },
+          ...categories.sort((a: CategoryOption, b: CategoryOption) => 
+            a.label.localeCompare(b.label)
+          )
+        ];
+      },
+      error: (error: Error) => {
+        console.error('Error loading categories:', error);
+      }
+    });
+  }
+
+  private loadDepartments(): void {
+    this.departmentService.getDepartments().subscribe({
+      next: (response) => {
+        const departments = response.data.map(dept => ({
+          label: dept,
+          value: dept
+        }));
+        this.departmentOptions = [
+          { label: 'All', value: null },
+          ...departments.sort((a, b) => a.label.localeCompare(b.label))
+        ];
+      },
+      error: (error: Error) => {
+        console.error('Error loading departments:', error);
       }
     });
   }
