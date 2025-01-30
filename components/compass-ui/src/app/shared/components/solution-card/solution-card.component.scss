@@ -1,6 +1,8 @@
 :host {
   display: block;
   height: 100%;
+  position: relative;
+  overflow: hidden;
 
   ::ng-deep .p-card {
     height: 100%;
@@ -9,6 +11,21 @@
     box-shadow: none;
     transition: box-shadow 0.2s;
     border: none;
+
+    .new-badge {
+      position: absolute;
+      top: 20px;
+      right: -35px;
+      padding: 5px 40px;
+      background: var(--primary-color);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transform: rotate(45deg);
+      transform-origin: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
 
     &:hover {
       box-shadow: none;

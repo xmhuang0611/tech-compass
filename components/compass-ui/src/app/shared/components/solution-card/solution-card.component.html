@@ -1,8 +1,8 @@
 <p-card class="solution-card">
   <ng-template pTemplate="header">
+    <span class="new-badge" *ngIf="showNewBadge">NEW</span>
     <div class="card-header">
       <div class="status-badge">
-        <span class="new-badge" *ngIf="showNewBadge">NEW</span>
         <p-tag 
           [value]="solution.recommend_status" 
           [severity]="getRecommendStatusSeverity()">
