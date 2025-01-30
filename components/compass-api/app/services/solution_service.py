@@ -7,9 +7,10 @@ from fastapi import logger
 from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
-from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB
+from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB, Solution
 from app.services.category_service import CategoryService
 from app.services.tag_service import TagService
+from app.services.rating_service import RatingService
 
 VALID_SORT_FIELDS = {'name', 'category', 'created_at', 'updated_at'}
 
@@ -30,6 +31,7 @@ class SolutionService:
         self.collection = self.db.solutions
         self.category_service = CategoryService()
         self.tag_service = TagService()
+        self.rating_service = RatingService()
 
     async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
@@ -282,3 +284,64 @@ class SolutionService:
         except Exception as e:
             logger.error(f"Error getting departments: {str(e)}")
             raise
+
+    async def get_solutions_with_ratings(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        category: Optional[str] = None,
+        department: Optional[str] = None,
+        team: Optional[str] = None,
+        recommend_status: Optional[str] = None,
+        radar_status: Optional[str] = None,
+        stage: Optional[str] = None,
+        sort: str = "name"
+    ) -> List[Solution]:
+        """Get all solutions with ratings"""
+        solutions = await self.get_solutions(
+            skip=skip,
+            limit=limit,
+            category=category,
+            department=department,
+            team=team,
+            recommend_status=recommend_status,
+            radar_status=radar_status,
+            stage=stage,
+            sort=sort
+        )
+        
+        # Convert to Solution model and add ratings
+        result = []
+        for solution_in_db in solutions:
+            # Convert to dict to allow adding rating fields
+            solution_dict = solution_in_db.model_dump()
+            rating_summary = await self.rating_service.get_rating_summary(solution_in_db.slug)
+            solution_dict["rating"] = rating_summary["average"]
+            solution_dict["rating_count"] = rating_summary["count"]
+            result.append(Solution(**solution_dict))
+            
+        return result
+
+    async def get_solution_by_id_with_rating(self, solution_id: str) -> Optional[Solution]:
+        """Get a solution by ID with rating"""
+        solution = await self.get_solution_by_id(solution_id)
+        if solution:
+            # Convert to dict to allow adding rating fields
+            solution_dict = solution.model_dump()
+            rating_summary = await self.rating_service.get_rating_summary(solution.slug)
+            solution_dict["rating"] = rating_summary["average"]
+            solution_dict["rating_count"] = rating_summary["count"]
+            return Solution(**solution_dict)
+        return None
+
+    async def get_solution_by_slug_with_rating(self, slug: str) -> Optional[Solution]:
+        """Get a solution by slug with rating"""
+        solution = await self.get_solution_by_slug(slug)
+        if solution:
+            # Convert to dict to allow adding rating fields
+            solution_dict = solution.model_dump()
+            rating_summary = await self.rating_service.get_rating_summary(solution.slug)
+            solution_dict["rating"] = rating_summary["average"]
+            solution_dict["rating_count"] = rating_summary["count"]
+            return Solution(**solution_dict)
+        return None

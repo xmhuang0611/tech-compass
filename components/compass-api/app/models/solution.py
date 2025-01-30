@@ -54,11 +54,11 @@ class SolutionBase(BaseModel):
     recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (BUY/HOLD/SELL)")
 
 class SolutionCreate(SolutionBase):
-    """Solution creation model"""
+    """Solution creation model - inherits all fields from SolutionBase"""
     pass
 
 class SolutionUpdate(BaseModel):
-    """Solution update model"""
+    """Solution update model - all fields are optional"""
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
@@ -79,11 +79,12 @@ class SolutionUpdate(BaseModel):
     stage: Optional[StageEnum] = None
     recommend_status: Optional[RecommendStatusEnum] = None
 
-class SolutionInDB(SolutionBase,AuditModel):
+class SolutionInDB(SolutionBase, AuditModel):
     """Solution model as stored in database"""
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
 
 class Solution(SolutionInDB):
-    """Solution model for API responses"""
-    pass
+    """Solution model for API responses, including rating information"""
+    rating: float = Field(default=0.0, description="Average rating score")
+    rating_count: int = Field(default=0, description="Total number of ratings")

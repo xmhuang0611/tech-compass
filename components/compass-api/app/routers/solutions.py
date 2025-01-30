@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user
-from app.models.solution import Solution, SolutionCreate, SolutionUpdate
+from app.models.solution import Solution, SolutionCreate, SolutionUpdate, SolutionInDB
 from app.models.user import User
 from app.models.response import StandardResponse
 from app.services.solution_service import SolutionService
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-@router.post("/", response_model=StandardResponse[Solution], status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=StandardResponse[SolutionInDB], status_code=status.HTTP_201_CREATED)
 async def create_solution(
     solution: SolutionCreate,
     current_user: User = Depends(get_current_active_user),
@@ -22,8 +22,8 @@ async def create_solution(
 ) -> Any:
     """Create a new solution."""
     try:
-        result = await solution_service.create_solution(solution, current_user.username)
-        return StandardResponse.of(result)
+        solution_in_db = await solution_service.create_solution(solution, current_user.username)
+        return StandardResponse.of(solution_in_db)
     except Exception as e:
         logger.error(f"Error creating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error creating solution: {str(e)}")
@@ -70,7 +70,7 @@ async def get_solutions(
                 detail="Invalid stage. Must be one of: DEVELOPING, UAT, PRODUCTION, DEPRECATED, RETIRED"
             )
 
-        solutions = await solution_service.get_solutions(
+        solutions = await solution_service.get_solutions_with_ratings(
             skip=skip,
             limit=limit,
             category=category,
@@ -118,7 +118,7 @@ async def get_solution(
     solution_service: SolutionService = Depends()
 ) -> Any:
     """Get a specific solution by slug."""
-    solution = await solution_service.get_solution_by_slug(slug)
+    solution = await solution_service.get_solution_by_slug_with_rating(slug)
     if not solution:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -126,7 +126,7 @@ async def get_solution(
         )
     return StandardResponse.of(solution)
 
-@router.put("/{slug}", response_model=StandardResponse[Solution])
+@router.put("/{slug}", response_model=StandardResponse[SolutionInDB])
 async def update_solution(
     slug: str,
     solution_update: SolutionUpdate,
@@ -135,13 +135,13 @@ async def update_solution(
 ) -> Any:
     """Update a solution by slug."""
     try:
-        solution = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
-        if not solution:
+        solution_in_db = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
+        if not solution_in_db:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Solution not found"
             )
-        return StandardResponse.of(solution)
+        return StandardResponse.of(solution_in_db)
     except Exception as e:
         logger.error(f"Error updating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating solution: {str(e)}")
