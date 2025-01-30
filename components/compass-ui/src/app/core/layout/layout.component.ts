@@ -9,13 +9,11 @@ import { siteConfig } from '../config/site.config';
 export class LayoutComponent {
   config = siteConfig;
   
-  menuItems = [
-    { label: 'Home', routerLink: '/' },
-    { label: 'Solution Catalog', routerLink: '/solution-catalog' },
-    { label: 'Categories', icon: 'pi pi-tags', routerLink: '/categories' },
-    { label: 'Departments', icon: 'pi pi-users', routerLink: '/departments' },
-    { label: 'About', icon: 'pi pi-info-circle', routerLink: '/about' }
-  ];
+  menuItems = this.config.navigation.map(item => ({
+    label: item.label,
+    icon: item.icon,
+    routerLink: item.path
+  }));
 
   showSearch() {
     // TODO: Implement search functionality

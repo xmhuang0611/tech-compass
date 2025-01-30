@@ -105,5 +105,34 @@ export const siteConfig = {
       { label: 'About', path: '/about' }
     ],
     copyright: '© 2024 Tech Compass'
-  }
+  },
+
+  // Navigation menu
+  navigation: [
+    { 
+      label: 'Home',
+      icon: 'pi pi-home',
+      path: '/' 
+    },
+    { 
+      label: 'Solution Catalog',
+      icon: 'pi pi-th-large',
+      path: '/solution-catalog'
+    },
+    { 
+      label: 'Categories',
+      icon: 'pi pi-tags',
+      path: '/categories'
+    },
+    { 
+      label: 'Departments',
+      icon: 'pi pi-users',
+      path: '/departments'
+    },
+    { 
+      label: 'About',
+      icon: 'pi pi-info-circle',
+      path: '/about'
+    }
+  ]
 }; 
