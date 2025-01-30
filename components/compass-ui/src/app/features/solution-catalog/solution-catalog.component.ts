@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SolutionService } from '../../core/services/solution.service';
@@ -6,7 +6,6 @@ import { SolutionCardComponent } from '../../shared/components/solution-card/sol
 import { Solution } from '../../shared/interfaces/solution.interface';
 
 // PrimeNG imports
-import { PaginatorModule } from 'primeng/paginator';
 import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -35,7 +34,6 @@ interface SolutionParams extends SolutionFilters {
     CommonModule,
     FormsModule,
     SolutionCardComponent,
-    PaginatorModule,
     DropdownModule,
     MultiSelectModule,
     ProgressSpinnerModule,
@@ -43,76 +41,72 @@ interface SolutionParams extends SolutionFilters {
   ],
   template: `
 <div class="solutions-container">
-  <div class="filters-sidebar">
-    <h3>Filters</h3>
-    
-    <div class="filter-section">
-      <label>Sort By</label>
-      <p-dropdown 
-        [options]="sortOptions" 
-        [(ngModel)]="filters.sort"
-        (onChange)="onFilterChange()"
-        [style]="{'width':'100%'}"
-        placeholder="Select Sort Order">
-      </p-dropdown>
-    </div>
+  <div class="filters-header">
+    <h2>Solution Catalog</h2>
+    <div class="filters-row">
+      <div class="filter-item">
+        <label>Sort By</label>
+        <p-dropdown 
+          [options]="sortOptions" 
+          [(ngModel)]="filters.sort"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'200px'}"
+          placeholder="Select Sort Order">
+        </p-dropdown>
+      </div>
 
-    <div class="filter-section">
-      <label>Recommend Status</label>
-      <p-dropdown 
-        [options]="recommendStatusOptions" 
-        [(ngModel)]="filters.recommend_status"
-        (onChange)="onFilterChange()"
-        [style]="{'width':'100%'}"
-        [showClear]="true"
-        placeholder="Select Status">
-      </p-dropdown>
-    </div>
+      <div class="filter-item">
+        <label>Recommend Status</label>
+        <p-dropdown 
+          [options]="recommendStatusOptions" 
+          [(ngModel)]="filters.recommend_status"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'200px'}"
+          [showClear]="true"
+          placeholder="Select Status">
+        </p-dropdown>
+      </div>
 
-    <div class="filter-section">
-      <label>Radar Status</label>
-      <p-dropdown 
-        [options]="radarStatusOptions" 
-        [(ngModel)]="filters.radar_status"
-        (onChange)="onFilterChange()"
-        [style]="{'width':'100%'}"
-        [showClear]="true"
-        placeholder="Select Status">
-      </p-dropdown>
-    </div>
+      <div class="filter-item">
+        <label>Radar Status</label>
+        <p-dropdown 
+          [options]="radarStatusOptions" 
+          [(ngModel)]="filters.radar_status"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'200px'}"
+          [showClear]="true"
+          placeholder="Select Status">
+        </p-dropdown>
+      </div>
 
-    <div class="filter-section">
-      <label>Stage</label>
-      <p-dropdown 
-        [options]="stageOptions" 
-        [(ngModel)]="filters.stage"
-        (onChange)="onFilterChange()"
-        [style]="{'width':'100%'}"
-        [showClear]="true"
-        placeholder="Select Stage">
-      </p-dropdown>
+      <div class="filter-item">
+        <label>Stage</label>
+        <p-dropdown 
+          [options]="stageOptions" 
+          [(ngModel)]="filters.stage"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'200px'}"
+          [showClear]="true"
+          placeholder="Select Stage">
+        </p-dropdown>
+      </div>
     </div>
   </div>
 
   <div class="solutions-content">
-    <div class="solutions-grid" *ngIf="!loading && !error">
+    <div class="solutions-grid" *ngIf="!loading || solutions.length > 0">
       <app-solution-card 
         *ngFor="let solution of solutions" 
         [solution]="solution">
       </app-solution-card>
     </div>
 
-    <div class="paginator-container" *ngIf="!loading && !error">
-      <p-paginator 
-        [rows]="pageSize"
-        [totalRecords]="totalRecords"
-        [rowsPerPageOptions]="[9, 18, 27]"
-        [first]="currentPage * pageSize"
-        (onPageChange)="onPageChange($event)">
-      </p-paginator>
+    <div class="loading-more" *ngIf="loadingMore">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading more solutions...</p>
     </div>
 
-    <div class="loading-state" *ngIf="loading">
+    <div class="loading-state" *ngIf="loading && solutions.length === 0">
       <p-progressSpinner></p-progressSpinner>
       <p>Loading solutions...</p>
     </div>
@@ -128,12 +122,15 @@ interface SolutionParams extends SolutionFilters {
 export class SolutionCatalogComponent implements OnInit {
   solutions: Solution[] = [];
   loading = true;
+  loadingMore = false;
   error: string | null = null;
   totalRecords = 0;
   
   // Pagination
   currentPage = 0;
-  pageSize = 9;
+  initialPageSize = 9;
+  loadMoreSize = 6;
+  hasMore = true;
 
   // Filters
   filters: SolutionFilters = {
@@ -175,22 +172,64 @@ export class SolutionCatalogComponent implements OnInit {
     this.loadSolutions();
   }
 
-  onPageChange(event: any): void {
-    this.currentPage = event.page;
-    this.pageSize = event.rows;
-    this.loadSolutions();
+  @HostListener('window:scroll', ['$event'])
+  onScroll(): void {
+    if (this.isNearBottom() && !this.loadingMore && this.hasMore) {
+      this.loadMore();
+    }
+  }
+
+  private isNearBottom(): boolean {
+    const threshold = 200;
+    const position = window.scrollY + window.innerHeight;
+    const height = document.documentElement.scrollHeight;
+    return position > height - threshold;
   }
 
   onFilterChange(): void {
+    this.solutions = [];
     this.currentPage = 0;
+    this.hasMore = true;
     this.loadSolutions();
+  }
+
+  private loadMore(): void {
+    this.loadingMore = true;
+    this.currentPage++;
+    
+    const params: SolutionParams = {
+      skip: this.currentPage * this.loadMoreSize,
+      limit: this.loadMoreSize,
+      ...this.filters
+    };
+
+    // Remove any null or undefined values
+    Object.keys(params).forEach(key => {
+      if (params[key] === null || params[key] === undefined) {
+        delete params[key];
+      }
+    });
+
+    this.solutionService.getSolutions(params).subscribe({
+      next: (response) => {
+        this.solutions = [...this.solutions, ...response.data];
+        this.totalRecords = response.total;
+        this.hasMore = this.solutions.length < this.totalRecords;
+        this.loadingMore = false;
+      },
+      error: (error) => {
+        this.error = 'Failed to load more solutions';
+        this.loadingMore = false;
+        console.error('Error loading solutions:', error);
+      }
+    });
   }
 
   private loadSolutions(): void {
     this.loading = true;
     const params: SolutionParams = {
-      skip: this.currentPage * this.pageSize,
-      limit: this.pageSize,
+      skip: 0,
+      limit: this.initialPageSize,
       ...this.filters
     };
 
@@ -205,6 +244,7 @@ export class SolutionCatalogComponent implements OnInit {
       next: (response) => {
         this.solutions = response.data;
         this.totalRecords = response.total;
+        this.hasMore = this.solutions.length < this.totalRecords;
         this.loading = false;
       },
       error: (error) => {
