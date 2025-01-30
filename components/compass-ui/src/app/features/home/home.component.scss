@@ -374,6 +374,7 @@
 .intro-section {
   padding: 4rem 0;
   background: var(--surface-card);
+  border-radius: var(--border-radius);
 
   .intro-content {
     max-width: 1200px;
@@ -480,6 +481,7 @@
 .testimonials-section {
   padding: 4rem 0;
   background: var(--surface-card);
+  border-radius: var(--border-radius);
 
   .testimonials-content {
     max-width: 1200px;
@@ -611,6 +613,7 @@
 .new-solutions-section {
   padding: 2rem 0;
   background: var(--surface-card);
+  border-radius: var(--border-radius);
 
   .section-header {
     text-align: center;
