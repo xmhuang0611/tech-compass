@@ -7,6 +7,7 @@ import { MessageModule } from 'primeng/message';
 import { SolutionService } from '../../core/services/solution.service';
 import { Solution } from '../../shared/interfaces/solution.interface';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
+import { siteConfig } from '../../core/config/site.config';
 
 @Component({
   selector: 'tc-home',
@@ -23,6 +24,7 @@ import { SolutionCardComponent } from '../../shared/components/solution-card/sol
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  config = siteConfig;
   recommendedSolutions: Solution[] = [];
   newSolutions: Solution[] = [];
   loading = true;

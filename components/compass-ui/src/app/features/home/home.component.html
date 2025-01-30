@@ -1,12 +1,12 @@
 <div class="home-container">
   <section class="hero-section">
     <div class="hero-content">
-      <h1>Tech Compass</h1>
-      <p class="subtitle">Your guide to technology solutions</p>
+      <h1>{{ config.hero.title }}</h1>
+      <p class="subtitle">{{ config.hero.subtitle }}</p>
       <div class="search-container">
         <span class="p-input-icon-left">
           <i class="pi pi-search"></i>
-          <input type="text" pInputText placeholder="Search solutions..." />
+          <input type="text" pInputText [placeholder]="config.hero.searchPlaceholder" />
         </span>
       </div>
     </div>
@@ -14,26 +14,12 @@
 
   <section class="intro-section">
     <div class="intro-content">
-      <div class="intro-item">
+      <div class="intro-item" *ngFor="let item of config.intro.items">
         <div class="icon-wrapper">
-          <i class="pi pi-compass"></i>
+          <i [class]="item.icon"></i>
         </div>
-        <h3>Technology Navigation</h3>
-        <p>Navigate through the complex technology landscape with confidence. Find the right solutions that match your team's needs.</p>
-      </div>
-      <div class="intro-item">
-        <div class="icon-wrapper">
-          <i class="pi pi-check-circle"></i>
-        </div>
-        <h3>Informed Decisions</h3>
-        <p>Make data-driven technology decisions with comprehensive evaluations, real user feedback, and expert recommendations.</p>
-      </div>
-      <div class="intro-item">
-        <div class="icon-wrapper">
-          <i class="pi pi-users"></i>
-        </div>
-        <h3>Team Alignment</h3>
-        <p>Keep your teams aligned on technology choices. Share knowledge and best practices across departments.</p>
+        <h3>{{ item.title }}</h3>
+        <p>{{ item.description }}</p>
       </div>
     </div>
   </section>
@@ -103,77 +89,35 @@
   <section class="benefits-section">
     <div class="benefits-content">
       <div class="benefits-text">
-        <h2>Why Tech Compass?</h2>
+        <h2>{{ config.benefits.title }}</h2>
         <ul class="benefits-list">
-          <li>
-            <i class="pi pi-chart-line"></i>
-            <span>Track and evaluate technology trends in your organization</span>
-          </li>
-          <li>
-            <i class="pi pi-shield"></i>
-            <span>Make informed decisions about adopting or retiring technologies</span>
-          </li>
-          <li>
-            <i class="pi pi-sync"></i>
-            <span>Stay updated with recommendations and best practices</span>
-          </li>
-          <li>
-            <i class="pi pi-sitemap"></i>
-            <span>Understand technology dependencies and relationships</span>
+          <li *ngFor="let item of config.benefits.items">
+            <i [class]="item.icon"></i>
+            <span>{{ item.text }}</span>
           </li>
         </ul>
       </div>
       <div class="benefits-image">
-        <img src="assets/tech-radar.svg" alt="Tech Compass Visualization">
+        <img [src]="config.benefits.image" alt="Tech Compass Visualization">
       </div>
     </div>
   </section>
 
   <section class="testimonials-section">
     <div class="testimonials-content">
-      <h2>Trusted by Tech Leaders</h2>
+      <h2>{{ config.testimonials.title }}</h2>
       <div class="testimonials-grid">
-        <div class="testimonial-card">
+        <div class="testimonial-card" *ngFor="let item of config.testimonials.items">
           <div class="quote-icon">
             <i class="pi pi-comments"></i>
           </div>
-          <p class="quote">"Tech Compass has transformed how we make technology decisions. It's now easier to align our tech stack across different teams and projects."</p>
+          <p class="quote">{{ item.quote }}</p>
           <div class="author">
-            <img src="assets/avatars/avatar1.svg" alt="Tech Leader Avatar">
+            <img [src]="item.author.avatar" [alt]="item.author.name + ' Avatar'">
             <div class="author-info">
-              <h4>Sarah Chen</h4>
-              <p>Chief Technology Officer</p>
-              <p class="company">Enterprise Software Company</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="testimonial-card">
-          <div class="quote-icon">
-            <i class="pi pi-comments"></i>
-          </div>
-          <p class="quote">"The ability to track and evaluate technology trends has helped us make more informed decisions about our tech investments."</p>
-          <div class="author">
-            <img src="assets/avatars/avatar2.svg" alt="Tech Leader Avatar">
-            <div class="author-info">
-              <h4>Michael Rodriguez</h4>
-              <p>VP of Engineering</p>
-              <p class="company">Cloud Services Provider</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="testimonial-card">
-          <div class="quote-icon">
-            <i class="pi pi-comments"></i>
-          </div>
-          <p class="quote">"Having a centralized platform for technology recommendations has significantly improved our development team's productivity."</p>
-          <div class="author">
-            <img src="assets/avatars/avatar3.svg" alt="Tech Leader Avatar">
-            <div class="author-info">
-              <h4>Emily Watson</h4>
-              <p>Head of Architecture</p>
-              <p class="company">Financial Technology Firm</p>
+              <h4>{{ item.author.name }}</h4>
+              <p>{{ item.author.title }}</p>
+              <p class="company">{{ item.author.company }}</p>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { siteConfig } from '../config/site.config';
 
 @Component({
   selector: 'tc-layout',
@@ -6,6 +7,8 @@ import { Component } from '@angular/core';
   styleUrls: ['./layout.component.scss']
 })
 export class LayoutComponent {
+  config = siteConfig;
+  
   menuItems = [
     { label: 'Home', routerLink: '/' },
     { label: 'Solution Catalog', routerLink: '/solution-catalog' },

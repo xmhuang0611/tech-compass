@@ -3,8 +3,8 @@
     <div class="header-container">
       <div class="header-left">
         <a routerLink="/" class="logo">
-          <img src="assets/logo.svg" alt="Tech Compass Logo" class="logo-icon">
-          <span>Tech Compass</span>
+          <img [src]="config.logo.path" [alt]="config.logo.alt" class="logo-icon">
+          <span>{{ config.name }}</span>
         </a>
         <p-menubar [model]="menuItems"></p-menubar>
       </div>
@@ -24,12 +24,12 @@
   <footer class="layout-footer">
     <div class="footer-container">
       <div class="footer-content">
-        <p class="about-text">Tech Compass - Your Technology Solutions Library</p>
+        <p class="about-text">{{ config.footer.aboutText }}</p>
         <ul class="quick-links">
-          <li><a routerLink="/">Home</a></li>
-          <li><a routerLink="/solution-catalog">Solution Catalog</a></li>
-          <li><a routerLink="/about">About</a></li>
-          <li>&copy; 2024 Tech Compass</li>
+          <li *ngFor="let link of config.footer.quickLinks">
+            <a [routerLink]="link.path">{{ link.label }}</a>
+          </li>
+          <li>{{ config.footer.copyright }}</li>
         </ul>
       </div>
     </div>
