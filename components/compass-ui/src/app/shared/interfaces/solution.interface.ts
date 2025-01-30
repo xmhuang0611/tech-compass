@@ -14,6 +14,8 @@ export interface Solution {
   created_at: string;
   updated_at: string;
   slug: string;
+  rating: number;
+  rating_count: number;
 }
 
 export interface SolutionResponse {
