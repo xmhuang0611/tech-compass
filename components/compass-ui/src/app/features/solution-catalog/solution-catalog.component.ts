@@ -134,7 +134,7 @@ export class SolutionCatalogComponent implements OnInit {
 
   // Filters
   filters: SolutionFilters = {
-    sort: '-created_at'
+    sort: 'name'
   };
 
   // Filter options
