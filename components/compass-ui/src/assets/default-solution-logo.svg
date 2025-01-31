@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="60" cy="60" r="60" fill="#F8F9FA"/>
+  
+  <!-- 主图形 - 抽象的六边形网格 -->
+  <g transform="translate(20, 20)">
+    <!-- 中心六边形 -->
+    <path d="M40 25L55 33.66V51L40 59.66L25 51V33.66L40 25Z" 
+          fill="#2563EB" 
+          stroke="#2563EB" 
+          stroke-width="2"/>
+    
+    <!-- 周围的六边形 -->
+    <path d="M40 5L55 13.66V31L40 39.66L25 31V13.66L40 5Z" 
+          fill="#93C5FD" 
+          fill-opacity="0.6" 
+          stroke="#2563EB" 
+          stroke-width="2"/>
+    
+    <path d="M70 25L85 33.66V51L70 59.66L55 51V33.66L70 25Z" 
+          fill="#93C5FD" 
+          fill-opacity="0.6" 
+          stroke="#2563EB" 
+          stroke-width="2"/>
+    
+    <path d="M40 45L55 53.66V71L40 79.66L25 71V53.66L40 45Z" 
+          fill="#93C5FD" 
+          fill-opacity="0.6" 
+          stroke="#2563EB" 
+          stroke-width="2"/>
+    
+    <path d="M10 25L25 33.66V51L10 59.66L-5 51V33.66L10 25Z" 
+          fill="#93C5FD" 
+          fill-opacity="0.6" 
+          stroke="#2563EB" 
+          stroke-width="2"/>
+  </g>
+
+  <!-- 装饰性连接线 -->
+  <g stroke="#2563EB" stroke-width="1" stroke-opacity="0.3">
+    <line x1="60" y1="45" x2="60" y2="25" />
+    <line x1="60" y1="75" x2="60" y2="95" />
+    <line x1="45" y1="60" x2="25" y2="60" />
+    <line x1="75" y1="60" x2="95" y2="60" />
+  </g>
+
+  <!-- 装饰性圆点 -->
+  <circle cx="60" cy="25" r="2" fill="#2563EB"/>
+  <circle cx="60" cy="95" r="2" fill="#2563EB"/>
+  <circle cx="25" cy="60" r="2" fill="#2563EB"/>
+  <circle cx="95" cy="60" r="2" fill="#2563EB"/>
+</svg> 
