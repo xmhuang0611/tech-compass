@@ -75,14 +75,29 @@
     gap: 2rem;
 
     .content-main {
-      :host ::ng-deep .p-tabview {
-        .p-tabview-panels {
-          padding: 1.5rem;
-          background: var(--surface-card);
-          border-radius: 0 0 var(--border-radius) var(--border-radius);
-        }
+      background: var(--surface-card);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    
+    :host ::ng-deep .content-main .p-tabview {
+      .p-tabview-nav {
+        background: transparent;
+        border: none;
       }
+      
+      .p-tabview-nav-container {
+        border-radius: var(--border-radius) var(--border-radius) 0 0;
+        overflow: hidden;
+      }
+      
+      .p-tabview-panels {
+        padding: 1.5rem;
+        border: none;
+      }
+    }
 
+    .content-main {
       .overview-content {
         .pros-cons {
           display: grid;
