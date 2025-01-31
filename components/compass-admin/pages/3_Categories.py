@@ -40,6 +40,7 @@ if not st.session_state.authenticated:
 COLUMN_DEFS = {
     "name": {"width": 150, "headerName": "Name"},
     "description": {"width": 300, "headerName": "Description"},
+    "usage_count": {"width": 120, "headerName": "Usage Count"},
     "created_at": {"width": 140, "headerName": "Created At"},
     "created_by": {"width": 100, "headerName": "Created By"},
     "updated_at": {"width": 140, "headerName": "Updated At"},
