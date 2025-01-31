@@ -133,19 +133,14 @@ export const siteConfig = {
       path: '/' 
     },
     { 
-      label: 'Solution Catalog',
-      icon: 'pi pi-th-large',
-      path: '/solution-catalog'
-    },
-    { 
-      label: 'Categories',
-      icon: 'pi pi-tags',
+      label: 'Solution Categories',
+      icon: 'pi pi-folder',
       path: '/categories'
     },
     { 
-      label: 'Departments',
-      icon: 'pi pi-users',
-      path: '/departments'
+      label: 'Solution Catalog',
+      icon: 'pi pi-th-large',
+      path: '/solution-catalog'
     },
     { 
       label: 'About',
