@@ -11,7 +11,7 @@
   
   /* System font stack */
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
-  font-family: var(--font-family);
+  font-family: var(--font-family), sans-serif;
   
   /* Font smoothing */
   -webkit-font-smoothing: antialiased;
