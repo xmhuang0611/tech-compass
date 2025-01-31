@@ -1,9 +1,9 @@
-<nav class="breadcrumb" aria-label="breadcrumb">
-  <ol>
-    <li><a routerLink="/">Home</a></li>
-    <li class="active">Solution Categories</li>
-  </ol>
-</nav>
+<div class="breadcrumb">
+  <p-breadcrumb [model]="[
+    { label: 'Home', routerLink: '/' },
+    { label: 'Solution Categories' }
+  ]"></p-breadcrumb>
+</div>
 
 <div class="categories-container">
   <h1>Solution Categories</h1>
@@ -50,4 +50,4 @@
     <span class="spinner"></span>
     Loading more categories...
   </div>
-</div> 
+</div>

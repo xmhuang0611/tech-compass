@@ -1,12 +1,17 @@
 import { Component, OnInit, HostListener } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { TooltipModule } from 'primeng/tooltip';
 import { CategoryService } from './category.service';
 import { Category } from './category.interface';
 
 @Component({
   selector: 'tc-categories',
   templateUrl: 'categories.component.html',
-  styleUrls: ['categories.component.scss']
+  styleUrls: ['categories.component.scss'],
+  imports: [CommonModule, BreadcrumbModule, TooltipModule],
+  standalone: true
 })
 export class CategoriesComponent implements OnInit {
   categories: Category[] = [];
@@ -70,4 +75,4 @@ export class CategoriesComponent implements OnInit {
       queryParams: { category: category.name }
     });
   }
-} 
+}

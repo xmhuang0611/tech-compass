@@ -10,9 +10,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    CategoriesComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -20,4 +18,4 @@ const routes: Routes = [
   ],
   providers: [CategoryService]
 })
-export class CategoriesModule { } 
+export class CategoriesModule { }
