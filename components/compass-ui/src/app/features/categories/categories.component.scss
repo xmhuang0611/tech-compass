@@ -1,0 +1,121 @@
+.breadcrumb {
+  padding: 1rem 2rem;
+  background-color: #f8f9fa;
+  margin-bottom: 2rem;
+
+  ol {
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+
+    li {
+      &:not(:last-child)::after {
+        content: '/';
+        margin: 0 0.5rem;
+        color: #6c757d;
+      }
+
+      a {
+        color: #007bff;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+
+      &.active {
+        color: #6c757d;
+      }
+    }
+  }
+}
+
+.categories-container {
+  padding: 0 2rem 2rem;
+
+  h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: #6c757d;
+    margin-bottom: 2rem;
+  }
+}
+
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.category-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  h3 {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+    color: #2c3e50;
+  }
+
+  .description {
+    color: #6c757d;
+    margin-bottom: 1rem;
+    min-height: 3em;
+    font-size: 0.9rem;
+  }
+
+  .usage-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .count {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #007bff;
+    }
+
+    .label {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  color: #6c757d;
+
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+} 
