@@ -1,4 +1,5 @@
 import { Component, OnInit, HostListener } from '@angular/core';
+import { Router } from '@angular/router';
 import { CategoryService } from './category.service';
 import { Category } from './category.interface';
 
@@ -14,7 +15,10 @@ export class CategoriesComponent implements OnInit {
   private skip = 0;
   private readonly limit = 20;
 
-  constructor(private categoryService: CategoryService) {}
+  constructor(
+    private categoryService: CategoryService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadCategories();
@@ -51,6 +55,12 @@ export class CategoriesComponent implements OnInit {
       complete: () => {
         this.loading = false;
       }
+    });
+  }
+
+  navigateToSolutions(category: Category): void {
+    this.router.navigate(['/solution-catalog'], {
+      queryParams: { category: category.name }
     });
   }
 } 

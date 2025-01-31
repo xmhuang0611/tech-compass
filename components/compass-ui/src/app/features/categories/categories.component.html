@@ -10,7 +10,13 @@
   <p class="subtitle">Browse solutions by category</p>
 
   <div class="categories-grid">
-    <div class="category-card" *ngFor="let category of categories">
+    <div class="category-card" 
+         *ngFor="let category of categories"
+         (click)="navigateToSolutions(category)"
+         [attr.aria-label]="'View solutions in ' + category.name + ' category'"
+         role="button"
+         tabindex="0"
+         (keydown.enter)="navigateToSolutions(category)">
       <h3>{{ category.name }}</h3>
       <p class="description">{{ category.description || 'No description available' }}</p>
       <div class="usage-count">
