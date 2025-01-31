@@ -54,4 +54,4 @@ class CategoryInDB(CategoryBase, AuditModel):
 
 class Category(CategoryInDB):
     """Category model for API responses"""
-    pass
+    usage_count: int = Field(default=0, description="Number of solutions using this category")

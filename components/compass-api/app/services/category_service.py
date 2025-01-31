@@ -4,7 +4,7 @@ from typing import Optional
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB
+from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, Category
 
 
 class CategoryService:
@@ -131,3 +131,13 @@ class CategoryService:
     async def count_categories(self) -> int:
         """Get total number of categories"""
         return await self.collection.count_documents({})
+
+    async def get_category_usage_count(self, name: str) -> int:
+        """Get the number of solutions using this category"""
+        return await self.db.solutions.count_documents({"category": name})
+
+    async def get_category_with_usage(self, category: CategoryInDB) -> Category:
+        """Convert CategoryInDB to Category with usage count"""
+        category_dict = category.model_dump()
+        usage_count = await self.get_category_usage_count(category.name)
+        return Category(**category_dict, usage_count=usage_count)
