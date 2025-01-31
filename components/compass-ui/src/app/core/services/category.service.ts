@@ -11,6 +11,7 @@ export interface Category {
   created_by: string;
   updated_at: string;
   updated_by: string;
+  usage_count: number;
 }
 
 export interface CategoryResponse {

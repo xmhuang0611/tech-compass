@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { SolutionService } from '../../core/services/solution.service';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 import { Solution } from '../../shared/interfaces/solution.interface';
-import { CategoryService } from '../../core/services/category.service';
+import { CategoryService, Category } from '../../core/services/category.service';
 import { DepartmentService } from '../../core/services/department.service';
 
 // PrimeNG imports
@@ -12,6 +12,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface SolutionFilters {
   category?: string;
@@ -32,6 +33,7 @@ interface SolutionParams extends SolutionFilters {
 interface CategoryOption {
   label: string;
   value: string | null;
+  title?: string; // For tooltip
 }
 
 interface DropdownOption {
@@ -49,7 +51,8 @@ interface DropdownOption {
     DropdownModule,
     MultiSelectModule,
     ProgressSpinnerModule,
-    MessageModule
+    MessageModule,
+    TooltipModule
   ],
   template: `
 <div class="solutions-container">
@@ -76,7 +79,12 @@ interface DropdownOption {
             (onChange)="onFilterChange()"
             [style]="{'width':'100%'}"
             [showClear]="true"
+            [tooltip]="getSelectedCategoryTooltip()"
+            tooltipPosition="bottom"
             placeholder="Select Category">
+            <ng-template pTemplate="item" let-option>
+              <div [attr.title]="option.title">{{ option.label }}</div>
+            </ng-template>
           </p-dropdown>
         </div>
 
@@ -312,16 +320,15 @@ export class SolutionCatalogComponent implements OnInit {
 
   private loadCategories(): void {
     this.categoryService.getCategories().subscribe({
-      next: (response: { data: Array<{ name: string }> }) => {
+      next: (response) => {
         const categories = response.data.map(category => ({
-          label: category.name,
-          value: category.name
+          label: `${category.name} (${category.usage_count})`,
+          value: category.name,
+          title: `${category.name} - Used in ${category.usage_count} solution${category.usage_count !== 1 ? 's' : ''}`
         }));
         this.categoryOptions = [
           { label: 'All', value: null },
-          ...categories.sort((a: CategoryOption, b: CategoryOption) => 
-            a.label.localeCompare(b.label)
-          )
+          ...categories.sort((a, b) => a.label.localeCompare(b.label))
         ];
       },
       error: (error: Error) => {
@@ -346,5 +353,11 @@ export class SolutionCatalogComponent implements OnInit {
         console.error('Error loading departments:', error);
       }
     });
+  }
+
+  getSelectedCategoryTooltip(): string {
+    if (!this.filters.category) return '';
+    const selectedOption = this.categoryOptions.find(opt => opt.value === this.filters.category);
+    return selectedOption?.title || '';
   }
 } 
