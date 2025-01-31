@@ -1,11 +1,13 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router, ActivatedRoute } from '@angular/router';
 import { SolutionService } from '../../core/services/solution.service';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 import { Solution } from '../../shared/interfaces/solution.interface';
 import { CategoryService, Category } from '../../core/services/category.service';
 import { DepartmentService } from '../../core/services/department.service';
+import { Subscription } from 'rxjs';
 
 // PrimeNG imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -177,7 +179,7 @@ interface DropdownOption {
   styleUrls: ['./solution-catalog.component.scss'],
   providers: [CategoryService, DepartmentService]
 })
-export class SolutionCatalogComponent implements OnInit {
+export class SolutionCatalogComponent implements OnInit, OnDestroy {
   solutions: Solution[] = [];
   loading = true;
   loadingMore = false;
@@ -232,16 +234,50 @@ export class SolutionCatalogComponent implements OnInit {
     { label: 'Name Z-A', value: '-name' }
   ];
 
+  private queryParamSubscription: Subscription | null = null;
+
   constructor(
     private solutionService: SolutionService,
     private categoryService: CategoryService,
-    private departmentService: DepartmentService
+    private departmentService: DepartmentService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
     this.loadCategories();
     this.loadDepartments();
-    this.loadSolutions();
+    
+    // Subscribe to URL query parameters
+    this.queryParamSubscription = this.route.queryParams.subscribe(params => {
+      // Reset filters to default
+      this.filters = {
+        sort: 'name'
+      };
+
+      // Update filters from URL parameters
+      if (params['category']) this.filters.category = params['category'];
+      if (params['department']) this.filters.department = params['department'];
+      if (params['team']) this.filters.team = params['team'];
+      if (params['recommend_status']) this.filters.recommend_status = params['recommend_status'] as any;
+      if (params['radar_status']) this.filters.radar_status = params['radar_status'] as any;
+      if (params['stage']) this.filters.stage = params['stage'] as any;
+      if (params['sort']) this.filters.sort = params['sort'];
+
+      // Reset pagination
+      this.currentPage = 0;
+      this.solutions = [];
+      this.hasMore = true;
+
+      // Load solutions with new filters
+      this.loadSolutions();
+    });
+  }
+
+  ngOnDestroy(): void {
+    if (this.queryParamSubscription) {
+      this.queryParamSubscription.unsubscribe();
+    }
   }
 
   @HostListener('window:scroll', ['$event'])
@@ -259,13 +295,36 @@ export class SolutionCatalogComponent implements OnInit {
   }
 
   onFilterChange(): void {
-    this.solutions = [];
+    // Reset pagination
     this.currentPage = 0;
+    this.solutions = [];
     this.hasMore = true;
+
+    // Update URL with current filters
+    const queryParams: { [key: string]: string } = {};
+    Object.entries(this.filters).forEach(([key, value]) => {
+      // Only include non-null, non-undefined, non-empty values, and non-default values
+      if (value !== null && value !== undefined && value !== '' && 
+          !(key === 'sort' && value === 'name')) { // Don't include default sort
+        queryParams[key] = value;
+      }
+    });
+
+    // Update URL without reloading the page
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      // Remove queryParamsHandling: 'merge' to ensure old params are removed
+      replaceUrl: true
+    });
+
+    // Load solutions immediately instead of waiting for queryParams subscription
     this.loadSolutions();
   }
 
   private loadMore(): void {
+    if (this.loadingMore) return;
+    
     this.loadingMore = true;
     this.currentPage++;
     
@@ -275,9 +334,9 @@ export class SolutionCatalogComponent implements OnInit {
       ...this.filters
     };
 
-    // Remove any null or undefined values
+    // Remove any null, undefined, or empty string values
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === undefined) {
+      if (params[key] === null || params[key] === undefined || params[key] === '') {
         delete params[key];
       }
     });
@@ -299,15 +358,17 @@ export class SolutionCatalogComponent implements OnInit {
 
   private loadSolutions(): void {
     this.loading = true;
+    this.error = null; // Reset error state
+    
     const params: SolutionParams = {
       skip: 0,
       limit: this.initialPageSize,
       ...this.filters
     };
 
-    // Remove any null or undefined values
+    // Remove any null, undefined, or empty string values
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === undefined) {
+      if (params[key] === null || params[key] === undefined || params[key] === '') {
         delete params[key];
       }
     });
