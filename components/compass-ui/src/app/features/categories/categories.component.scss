@@ -1,40 +1,8 @@
 .breadcrumb {
-  padding: 1rem 2rem;
-  background-color: #f8f9fa;
-  margin-bottom: 2rem;
-
-  ol {
-    list-style: none;
-    display: flex;
-    margin: 0;
-    padding: 0;
-
-    li {
-      &:not(:last-child)::after {
-        content: '/';
-        margin: 0 0.5rem;
-        color: #6c757d;
-      }
-
-      a {
-        color: #007bff;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
-      &.active {
-        color: #6c757d;
-      }
-    }
-  }
+  margin-bottom: 1.5rem;
 }
 
 .categories-container {
-  padding: 0 2rem 2rem;
-
   h1 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
