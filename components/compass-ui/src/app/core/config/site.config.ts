@@ -10,6 +10,24 @@ export const siteConfig = {
     png: 'assets/favicon.png'
   },
 
+  // Auth related
+  auth: {
+    signIn: {
+      title: 'Welcome Back!',
+      subtitle: 'Sign in to continue to Tech Compass',
+      usernameLabel: 'Username',
+      usernamePlaceholder: 'Enter your username',
+      passwordLabel: 'Password',
+      passwordPlaceholder: 'Enter your password',
+      signInButton: 'Sign In',
+      cancelButton: 'Cancel',
+      errors: {
+        emptyFields: 'Please enter both username and password',
+        defaultError: 'Authentication failed. Please try again.'
+      }
+    }
+  },
+
   // Home page hero section
   hero: {
     title: 'Tech Compass',

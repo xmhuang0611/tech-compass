@@ -50,28 +50,27 @@
         <p-tabPanel header="Comments">
           <div class="comments-section">
             <div class="new-comment">
-              <p-card>
-                <textarea pInputTextarea [(ngModel)]="newComment" 
-                  placeholder="Add your comment..." [rows]="3"></textarea>
-                <button pButton label="Submit" 
-                  (click)="submitComment(solution.slug)"
-                  [disabled]="!newComment.trim()"></button>
-              </p-card>
+              <h3>Add a Comment</h3>
+              <div *ngIf="isLoggedIn; else loginToComment">
+                <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
+                <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
+              </div>
+              <ng-template #loginToComment>
+                <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
+              </ng-template>
             </div>
-
-            <div class="comments-list" (scroll)="onCommentsScroll($event)">
-              <p-card *ngFor="let comment of (comments$ | async)" class="comment-card">
-                <div class="comment-header">
-                  <span class="username">{{ comment.username }}</span>
-                  <span class="date">{{ comment.created_at | date:'medium' }}</span>
+            
+            <div class="comments-list">
+              <h3>Comments ({{ totalComments }})</h3>
+              <div class="comments-container" (scroll)="onCommentsScroll($event)">
+                <div *ngFor="let comment of comments$.value" class="comment">
+                  <div class="comment-header">
+                    <span class="username">{{ comment.username }}</span>
+                    <span class="date">{{ comment.created_at | date }}</span>
+                  </div>
+                  <div class="comment-content">{{ comment.content }}</div>
                 </div>
-                <div class="comment-content">
-                  {{ comment.content }}
-                </div>
-              </p-card>
-
-              <div class="load-more" *ngIf="loadingComments">
-                <p-progressSpinner></p-progressSpinner>
+                <p-progressSpinner *ngIf="loadingComments"></p-progressSpinner>
               </div>
             </div>
           </div>
@@ -80,37 +79,33 @@
         <p-tabPanel header="Ratings">
           <div class="ratings-section">
             <div class="new-rating">
-              <p-card>
+              <h3>Add Your Rating</h3>
+              <div *ngIf="isLoggedIn; else loginToRate">
                 <div class="rating-input">
-                  <label>Your Rating</label>
                   <p-rating [(ngModel)]="newRating.score" [cancel]="false"></p-rating>
+                  <textarea pInputTextarea [(ngModel)]="newRating.comment" rows="3" placeholder="Add a comment (optional)"></textarea>
                 </div>
-                <div class="rating-comment">
-                  <textarea pInputTextarea [(ngModel)]="newRating.comment" 
-                    placeholder="Add a comment (optional)" [rows]="3"></textarea>
-                </div>
-                <button pButton label="Submit" 
-                  (click)="submitRating(solution.slug)"
-                  [disabled]="newRating.score === 0"></button>
-              </p-card>
+                <p-button label="Submit" (click)="submitRating(solution$.value?.slug || '')" [disabled]="newRating.score === 0"></p-button>
+              </div>
+              <ng-template #loginToRate>
+                <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a rating.</p>
+              </ng-template>
             </div>
-
-            <div class="ratings-list" (scroll)="onRatingsScroll($event)">
-              <p-card *ngFor="let rating of (ratings$ | async)" class="rating-card">
-                <div class="rating-header">
-                  <span class="username">{{ rating.username }}</span>
-                  <span class="date">{{ rating.created_at | date:'medium' }}</span>
+            
+            <div class="ratings-list">
+              <h3>Ratings ({{ totalRatings }})</h3>
+              <div class="ratings-container" (scroll)="onRatingsScroll($event)">
+                <div *ngFor="let rating of ratings$.value" class="rating">
+                  <div class="rating-header">
+                    <span class="username">{{ rating.username }}</span>
+                    <span class="date">{{ rating.created_at | date }}</span>
+                  </div>
+                  <div class="rating-score">
+                    <p-rating [ngModel]="rating.score" [readonly]="true" [cancel]="false"></p-rating>
+                  </div>
+                  <div *ngIf="rating.comment" class="rating-comment">{{ rating.comment }}</div>
                 </div>
-                <div class="rating-score">
-                  <p-rating [ngModel]="rating.score" [readonly]="true" [cancel]="false"></p-rating>
-                </div>
-                <div class="rating-comment" *ngIf="rating.comment">
-                  {{ rating.comment }}
-                </div>
-              </p-card>
-
-              <div class="load-more" *ngIf="loadingRatings">
-                <p-progressSpinner></p-progressSpinner>
+                <p-progressSpinner *ngIf="loadingRatings"></p-progressSpinner>
               </div>
             </div>
           </div>

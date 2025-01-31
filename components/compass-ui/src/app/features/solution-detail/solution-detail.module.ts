@@ -12,6 +12,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { RatingModule } from 'primeng/rating';
 import { TabViewModule } from 'primeng/tabview';
 import { TagModule } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { MessageModule } from 'primeng/message';
 
 import { SolutionDetailComponent } from './solution-detail.component';
@@ -34,6 +36,8 @@ import { MarkdownModule } from 'ngx-markdown';
     RatingModule,
     TabViewModule,
     TagModule,
+    ToastModule,
+    DynamicDialogModule,
     MessageModule,
     MarkdownModule.forChild()
   ],

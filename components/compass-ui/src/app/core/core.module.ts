@@ -1,10 +1,14 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { MenubarModule } from 'primeng/menubar';
 import { ButtonModule } from 'primeng/button';
+import { MenuModule } from 'primeng/menu';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 
 import { LayoutComponent } from './layout/layout.component';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
 
 @NgModule({
   declarations: [
@@ -14,10 +18,19 @@ import { LayoutComponent } from './layout/layout.component';
     CommonModule,
     RouterModule,
     MenubarModule,
-    ButtonModule
+    ButtonModule,
+    MenuModule,
+    DynamicDialogModule
   ],
   exports: [
     LayoutComponent
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ]
 })
 export class CoreModule { } 

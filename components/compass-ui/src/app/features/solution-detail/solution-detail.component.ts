@@ -6,6 +6,9 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Subject, finalize, takeUntil } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { environment } from '../../../environments/environment';
+import { AuthService } from '../../core/services/auth.service';
+import { DialogService } from 'primeng/dynamicdialog';
+import { LoginDialogComponent } from '../../core/components/login-dialog/login-dialog.component';
 
 // PrimeNG Components
 import { BreadcrumbModule } from 'primeng/breadcrumb';
@@ -87,7 +90,8 @@ interface Rating {
     TagModule,
     ToastModule,
     MarkdownModule
-  ]
+  ],
+  providers: [DialogService]
 })
 export class SolutionDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -111,11 +115,14 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     score: 0,
     comment: ''
   };
+  isLoggedIn = false;
 
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService,
+    private dialogService: DialogService
   ) {
     console.log('SolutionDetailComponent constructed');
   }
@@ -130,6 +137,10 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
       this.loadSolution(slug);
       this.loadComments(slug);
       this.loadRatings(slug);
+    });
+
+    this.authService.currentUser$.subscribe(user => {
+      this.isLoggedIn = !!user;
     });
   }
 
@@ -291,6 +302,15 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   }
 
   submitComment(slug: string) {
+    if (!this.isLoggedIn) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please login to add a comment'
+      });
+      return;
+    }
+
     if (!this.newComment.trim()) {
       return;
     }
@@ -316,13 +336,22 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to add comment'
+          detail: error.error?.detail || 'Failed to add comment'
         });
       }
     });
   }
 
   submitRating(slug: string) {
+    if (!this.isLoggedIn) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Warning',
+        detail: 'Please login to submit a rating'
+      });
+      return;
+    }
+
     if (this.newRating.score === 0) {
       this.messageService.add({
         severity: 'warn',
@@ -352,7 +381,24 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
-          detail: 'Failed to submit rating'
+          detail: error.error?.detail || 'Failed to submit rating'
+        });
+      }
+    });
+  }
+
+  showLoginDialog(): void {
+    const ref = this.dialogService.open(LoginDialogComponent, {
+      header: 'Login',
+      width: '400px'
+    });
+
+    ref.onClose.subscribe((success: boolean) => {
+      if (success) {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Logged in successfully'
         });
       }
     });
