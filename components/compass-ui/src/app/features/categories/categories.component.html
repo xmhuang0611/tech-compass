@@ -12,16 +12,36 @@
   <div class="categories-grid">
     <div class="category-card" 
          *ngFor="let category of categories"
-         (click)="navigateToSolutions(category)"
          [attr.aria-label]="'View solutions in ' + category.name + ' category'"
          role="button"
-         tabindex="0"
-         (keydown.enter)="navigateToSolutions(category)">
-      <h3>{{ category.name }}</h3>
+         tabindex="0">
+      <div class="card-header">
+        <div class="icon-wrapper">
+          <i class="pi pi-folder"></i>
+        </div>
+        <h3>{{ category.name }}</h3>
+      </div>
       <p class="description">{{ category.description || 'No description available' }}</p>
-      <div class="usage-count">
-        <span class="count">{{ category.usage_count }}</span>
-        <span class="label">Solutions</span>
+      <div class="card-footer">
+        <div class="usage-count">
+          <i class="pi pi-box"></i>
+          <span class="count">{{ category.usage_count }}</span>
+          <span class="label">Solutions</span>
+        </div>
+        <div class="actions">
+          <button class="btn-add" 
+                  (click)="addSolution(category); $event.stopPropagation()"
+                  [pTooltip]="'Add new solution to ' + category.name">
+            <i class="pi pi-plus"></i>
+            <span>Add Solution</span>
+          </button>
+          <button class="btn-view" 
+                  (click)="navigateToSolutions(category)"
+                  [pTooltip]="'View all solutions in ' + category.name">
+            <span>View All</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>

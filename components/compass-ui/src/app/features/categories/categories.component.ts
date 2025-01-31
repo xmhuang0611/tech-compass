@@ -63,4 +63,11 @@ export class CategoriesComponent implements OnInit {
       queryParams: { category: category.name }
     });
   }
+
+  addSolution(category: Category): void {
+    // Navigate to solution creation page with pre-selected category
+    this.router.navigate(['/solutions/new'], {
+      queryParams: { category: category.name }
+    });
+  }
 } 
