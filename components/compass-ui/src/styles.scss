@@ -1,4 +1,3 @@
-// Global styles
 :root {
   // Aura theme colors
   --primary-color: #255BE3;
@@ -32,119 +31,45 @@ body {
   color: var(--text-color);
 }
 
-.layout-wrapper {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.layout-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 64px;
-  background-color: var(--surface-card);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  z-index: 1000;
-}
-
-.header-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 32px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.layout-main {
-  margin-top: 64px;
-  flex: 1;
-  padding: 32px;
-  background-color: var(--surface-ground);
-}
-
-.main-container {
-  max-width: 1440px;
-  margin: 0 auto;
-}
-
-.layout-footer {
-  background-color: var(--surface-card);
-  color: var(--text-color);
-  padding: 48px 0 24px;
-  border-top: 1px solid var(--surface-border);
-}
-
-.footer-container {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 2rem;
-
-  .about-text {
-    color: var(--text-color-secondary);
-    font-size: 0.95rem;
-    margin: 0;
-  }
-
-  .quick-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-
-    li {
-      color: var(--text-color-secondary);
-      font-size: 0.95rem;
-
-      a {
-        color: var(--text-color-secondary);
-        text-decoration: none;
-        transition: color 0.2s;
-
-        &:hover {
-          color: var(--primary-color);
-        }
-      }
-    }
-  }
-}
-
-// Aura-specific component styles
-.p-button {
-  border-radius: var(--border-radius);
-}
-
-.p-card {
-  border-radius: var(--border-radius);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
+/* Global component styles */
 .p-menubar {
   background: transparent;
   border: none;
   padding: 0;
 
-  .p-menubar-root-list {
-    > .p-menuitem {
-      > .p-menuitem-link {
-        border-radius: var(--border-radius);
-        
-        &:not(.p-disabled):hover {
-          background: var(--surface-hover);
-        }
+  .p-menubar-root-list > .p-menuitem > .p-menuitem-link {
+    padding: 0.75rem 1rem;
+  }
+}
+
+.p-menu {
+  min-width: 200px;
+
+  .p-menuitem {
+    &:not(:last-child) {
+      margin-bottom: 0.25rem;
+    }
+
+    .p-menuitem-link {
+      padding: 0.75rem 1rem;
+
+      .p-menuitem-text {
+        color: var(--text-color);
+      }
+
+      .p-menuitem-icon {
+        color: var(--text-color-secondary);
+      }
+
+      &:hover {
+        background: var(--surface-hover);
       }
     }
   }
-} 
+}
+
+.p-button.p-button-text {
+  &:enabled:hover {
+    background: var(--surface-hover);
+  }
+}

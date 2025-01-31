@@ -76,6 +76,10 @@
       padding: 0 1rem;
 
       .footer-content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+
         .about-text {
           color: var(--text-color-secondary);
           margin-bottom: 1rem;
@@ -106,89 +110,3 @@
     }
   }
 }
-
-:host ::ng-deep {
-  .p-menubar {
-    background: transparent;
-    border: none;
-    padding: 0;
-
-    .p-menubar-root-list > .p-menuitem > .p-menuitem-link {
-      padding: 0.75rem 1rem;
-    }
-  }
-
-  .p-menu {
-    min-width: 200px;
-
-    .p-menuitem {
-      &:not(:last-child) {
-        margin-bottom: 0.25rem;
-      }
-
-      .p-menuitem-link {
-        padding: 0.75rem 1rem;
-
-        .p-menuitem-text {
-          color: var(--text-color);
-        }
-
-        .p-menuitem-icon {
-          color: var(--text-color-secondary);
-        }
-
-        &:hover {
-          background: var(--surface-hover);
-        }
-      }
-    }
-  }
-
-  .p-button.p-button-text {
-    &:enabled:hover {
-      background: var(--surface-hover);
-    }
-  }
-}
-
-.footer-content {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  .footer-section {
-    h3 {
-      color: var(--text-color);
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-
-      li {
-        margin-bottom: 0.5rem;
-
-        a {
-          color: var(--text-color-secondary);
-          text-decoration: none;
-          transition: color 0.2s;
-
-          &:hover {
-            color: var(--primary-color);
-          }
-        }
-      }
-    }
-  }
-}
-
-.footer-bottom {
-  border-top: 1px solid var(--surface-border);
-  padding-top: 1rem;
-  text-align: center;
-  color: var(--text-color-secondary);
-} 
