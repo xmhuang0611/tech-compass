@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import {
   HttpRequest,
   HttpHandler,
@@ -6,23 +6,49 @@ import {
   HttpInterceptor
 } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  constructor(private authService: AuthService) {}
+  private apiUrl = environment.apiUrl;
+  private tokenKey = 'auth_token';
+
+  constructor() {}
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
-    const token = this.authService.getAuthToken();
-    
-    if (token) {
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+    // Only add token for specific APIs
+    if (this.shouldAddToken(request)) {
+      const token = this.getAuthToken();
+      if (token) {
+        request = request.clone({
+          setHeaders: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+      }
     }
     
     return next.handle(request);
+  }
+
+  private getAuthToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  private shouldAddToken(request: HttpRequest<unknown>): boolean {
+    const url = request.url;
+    const method = request.method.toLowerCase();
+
+    // Always add token for /api/users/me
+    if (url === `${this.apiUrl}/users/me`) {
+      return true;
+    }
+
+    // Add token for all POST and PUT requests
+    if (url.startsWith(this.apiUrl) && (method === 'post' || method === 'put')) {
+      return true;
+    }
+
+    return false;
   }
 } 

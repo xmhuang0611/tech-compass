@@ -18,7 +18,6 @@ export class LayoutComponent implements OnInit {
   config = siteConfig;
   menuItems: MenuItem[] = [];
   userMenuItems: MenuItem[] = [];
-  isLoggedIn = false;
   
   constructor(
     private dialogService: DialogService,
@@ -28,7 +27,6 @@ export class LayoutComponent implements OnInit {
   ngOnInit() {
     this.initializeMenus();
     this.authService.currentUser$.subscribe(user => {
-      this.isLoggedIn = !!user;
       if (user) {
         this.userMenuItems = [
           {
@@ -58,11 +56,10 @@ export class LayoutComponent implements OnInit {
 
   showSearch() {
     // TODO: Implement search functionality
-    console.log('Search clicked');
   }
 
   onUserIconClick(event: Event) {
-    if (!this.isLoggedIn) {
+    if (!this.authService.isLoggedIn()) {
       this.showLoginDialog();
     } else if (this.userMenu) {
       this.userMenu.toggle(event);
@@ -81,9 +78,7 @@ export class LayoutComponent implements OnInit {
     });
 
     ref.onClose.subscribe((success: boolean) => {
-      if (success) {
-        // Handle successful login if needed
-      }
+      // Handle successful login if needed
     });
   }
 

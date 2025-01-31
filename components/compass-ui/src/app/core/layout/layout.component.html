@@ -10,8 +10,10 @@
       </div>
       <div class="header-right">
         <p-button icon="pi pi-search" (click)="showSearch()" styleClass="p-button-text p-button-rounded"></p-button>
-        <p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
-        <p-button icon="pi pi-user" (click)="onUserIconClick($event)" styleClass="p-button-text p-button-rounded"></p-button>
+        <div class="user-menu-wrapper">
+          <p-button icon="pi pi-user" (click)="onUserIconClick($event)" styleClass="p-button-text p-button-rounded"></p-button>
+          <p-menu #userMenu [model]="userMenuItems" [popup]="true" [appendTo]="'body'" [baseZIndex]="1000"></p-menu>
+        </div>
       </div>
     </div>
   </header>

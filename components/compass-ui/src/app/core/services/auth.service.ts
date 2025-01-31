@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { Injectable, Inject } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface User {
@@ -34,12 +34,24 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
   private tokenKey = 'auth_token';
+  private http: HttpClient;
 
-  constructor(private http: HttpClient) {
-    // Check if there's a stored token and fetch user info if exists
-    const token = localStorage.getItem(this.tokenKey);
+  constructor(@Inject(HttpClient) http: HttpClient) {
+    this.http = http;
+    setTimeout(() => this.initializeAuth(), 0);
+  }
+
+  private initializeAuth(): void {
+    const token = this.getAuthToken();
     if (token) {
-      this.fetchCurrentUser().subscribe();
+      this.fetchCurrentUser().pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 401) {
+            this.clearAuth();
+          }
+          return of(null);
+        })
+      ).subscribe();
     }
   }
 
@@ -59,6 +71,10 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearAuth();
+  }
+
+  private clearAuth(): void {
     localStorage.removeItem(this.tokenKey);
     this.currentUserSubject.next(null);
   }
@@ -69,6 +85,12 @@ export class AuthService {
         if (response.success) {
           this.currentUserSubject.next(response.data);
         }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 401) {
+          this.clearAuth();
+        }
+        throw error;
       })
     );
   }
@@ -78,6 +100,6 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getAuthToken();
+    return !!this.getAuthToken() && !!this.currentUserSubject.value;
   }
 } 
