@@ -207,6 +207,13 @@
             margin: 0.5rem 0;
           }
         }
+
+        .load-more-container {
+          display: flex;
+          justify-content: center;
+          padding: 1rem 0;
+          margin-top: 1rem;
+        }
       }
     }
 
@@ -340,5 +347,9 @@
         color: var(--primary-color);
       }
     }
+  }
+
+  .load-more-container .p-button {
+    // The button will now use PrimeNG's default theme color
   }
 } 

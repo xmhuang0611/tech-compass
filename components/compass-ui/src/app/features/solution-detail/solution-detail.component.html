@@ -62,14 +62,21 @@
               
             <div class="comments-list">
               <h3>Comments ({{ totalComments }})</h3>
-              <div class="comments-container" (scroll)="onCommentsScroll($event)">
+              <div class="comments-container">
                 <div *ngFor="let comment of comments$.value" class="comment">
                   <div class="comment-header">
                     <span class="username">{{ comment.username }}</span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
-
+                </div>
+                <div class="load-more-container" *ngIf="hasMoreComments">
+                  <p-button 
+                    label="Load More Comments" 
+                    [loading]="loadingComments"
+                    styleClass="p-button-secondary"
+                    (onClick)="loadComments(solution$.value?.slug || '', true)">
+                  </p-button>
                 </div>
                 <p-progressSpinner *ngIf="loadingComments"></p-progressSpinner>
               </div>
@@ -95,7 +102,7 @@
             
             <div class="ratings-list">
               <h3>Ratings ({{ totalRatings }})</h3>
-              <div class="ratings-container" (scroll)="onRatingsScroll($event)">
+              <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
                     <span class="username">{{ rating.username }}</span>
@@ -105,6 +112,14 @@
                     <p-rating [ngModel]="rating.score" [readonly]="true" [cancel]="false"></p-rating>
                   </div>
                   <div *ngIf="rating.comment" class="rating-comment">{{ rating.comment }}</div>
+                </div>
+                <div class="load-more-container" *ngIf="hasMoreRatings">
+                  <p-button 
+                    label="Load More Ratings" 
+                    [loading]="loadingRatings"
+                    styleClass="p-button-secondary"
+                    (onClick)="loadRatings(solution$.value?.slug || '', true)">
+                  </p-button>
                 </div>
                 <p-progressSpinner *ngIf="loadingRatings"></p-progressSpinner>
               </div>

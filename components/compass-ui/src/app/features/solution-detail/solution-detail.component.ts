@@ -246,13 +246,6 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCommentsScroll(event: any) {
-    const element = event.target;
-    if (element.scrollHeight - element.scrollTop - element.clientHeight < 50 && this.hasMoreComments && !this.loadingComments) {
-      this.loadComments(this.solution$.value?.slug || '', true);
-    }
-  }
-
   loadRatings(slug: string, loadMore = false) {
     if (!loadMore) {
       this.ratingsPage = 1;
@@ -292,13 +285,6 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
         });
       }
     });
-  }
-
-  onRatingsScroll(event: any) {
-    const element = event.target;
-    if (element.scrollHeight - element.scrollTop - element.clientHeight < 50 && this.hasMoreRatings && !this.loadingRatings) {
-      this.loadRatings(this.solution$.value?.slug || '', true);
-    }
   }
 
   submitComment(slug: string) {
