@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --proxy-config src/proxy.conf.json",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -11,6 +11,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^17.x",
+    "@angular/cdk": "^17.x",
     "@angular/common": "^17.x",
     "@angular/compiler": "^17.x",
     "@angular/core": "^17.x",
@@ -18,9 +19,11 @@
     "@angular/platform-browser": "^17.x",
     "@angular/platform-browser-dynamic": "^17.x",
     "@angular/router": "^17.x",
-    "primeng": "^17.x",
+    "marked": "^9.1.6",
+    "ngx-markdown": "^17.2.1",
     "primeicons": "^7.x",
-    "@angular/cdk": "^17.x",
+    "primeng": "^17.x",
+    "prismjs": "^1.29.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.0"
@@ -38,4 +41,4 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.2.2"
   }
-} 
+}

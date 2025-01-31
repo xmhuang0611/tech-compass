@@ -1,0 +1,199 @@
+<div class="solution-detail-container" *ngIf="solution$ | async as solution">
+  <div class="breadcrumb">
+    <p-breadcrumb [model]="[
+      { label: 'Home', routerLink: '/' },
+      { label: 'Solution Catalog', routerLink: '/solution-catalog' },
+      { label: solution.name }
+    ]"></p-breadcrumb>
+  </div>
+
+  <div class="solution-header">
+    <div class="solution-logo">
+      <img [src]="solution.logo || '/assets/default-solution-logo.svg'" [alt]="solution.name">
+    </div>
+    <div class="solution-info">
+      <h1>{{ solution.name }}</h1>
+      <div class="tags">
+        <p-tag *ngFor="let tag of solution.tags" [value]="tag" severity="contrast"></p-tag>
+      </div>
+      <div class="rating-summary">
+        <p-rating [ngModel]="solution.rating" [readonly]="true" [cancel]="false"></p-rating>
+        <span class="rating-count">({{ solution.rating_count }} ratings)</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="solution-content">
+    <div class="content-main">
+      <p-tabView [(activeIndex)]="activeTab">
+        <p-tabPanel header="Overview">
+          <div class="overview-content">
+            <markdown [data]="solution.description"></markdown>
+            
+            <div class="pros-cons">
+              <div class="pros">
+                <h3>Pros</h3>
+                <ul>
+                  <li *ngFor="let pro of solution.pros">{{ pro }}</li>
+                </ul>
+              </div>
+              <div class="cons">
+                <h3>Cons</h3>
+                <ul>
+                  <li *ngFor="let con of solution.cons">{{ con }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Comments">
+          <div class="comments-section">
+            <div class="new-comment">
+              <p-card>
+                <textarea pInputTextarea [(ngModel)]="newComment" 
+                  placeholder="Add your comment..." [rows]="3"></textarea>
+                <button pButton label="Submit" 
+                  (click)="submitComment(solution.slug)"
+                  [disabled]="!newComment.trim()"></button>
+              </p-card>
+            </div>
+
+            <div class="comments-list" (scroll)="onCommentsScroll($event)">
+              <p-card *ngFor="let comment of (comments$ | async)" class="comment-card">
+                <div class="comment-header">
+                  <span class="username">{{ comment.username }}</span>
+                  <span class="date">{{ comment.created_at | date:'medium' }}</span>
+                </div>
+                <div class="comment-content">
+                  {{ comment.content }}
+                </div>
+              </p-card>
+
+              <div class="load-more" *ngIf="loadingComments">
+                <p-progressSpinner></p-progressSpinner>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Ratings">
+          <div class="ratings-section">
+            <div class="new-rating">
+              <p-card>
+                <div class="rating-input">
+                  <label>Your Rating</label>
+                  <p-rating [(ngModel)]="newRating.score" [cancel]="false"></p-rating>
+                </div>
+                <div class="rating-comment">
+                  <textarea pInputTextarea [(ngModel)]="newRating.comment" 
+                    placeholder="Add a comment (optional)" [rows]="3"></textarea>
+                </div>
+                <button pButton label="Submit" 
+                  (click)="submitRating(solution.slug)"
+                  [disabled]="newRating.score === 0"></button>
+              </p-card>
+            </div>
+
+            <div class="ratings-list" (scroll)="onRatingsScroll($event)">
+              <p-card *ngFor="let rating of (ratings$ | async)" class="rating-card">
+                <div class="rating-header">
+                  <span class="username">{{ rating.username }}</span>
+                  <span class="date">{{ rating.created_at | date:'medium' }}</span>
+                </div>
+                <div class="rating-score">
+                  <p-rating [ngModel]="rating.score" [readonly]="true" [cancel]="false"></p-rating>
+                </div>
+                <div class="rating-comment" *ngIf="rating.comment">
+                  {{ rating.comment }}
+                </div>
+              </p-card>
+
+              <div class="load-more" *ngIf="loadingRatings">
+                <p-progressSpinner></p-progressSpinner>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+
+    <div class="content-sidebar">
+      <p-card>
+        <div class="info-section">
+          <h3>Basic Information</h3>
+          <div class="info-item">
+            <label>Stage</label>
+            <p-tag [value]="solution.stage" [severity]="getStageSeverity(solution.stage)"></p-tag>
+          </div>
+          <div class="info-item">
+            <label>Radar Status</label>
+            <p-tag [value]="solution.radar_status" [severity]="getRadarStatusSeverity(solution.radar_status)"></p-tag>
+          </div>
+          <div class="info-item">
+            <label>Recommend Status</label>
+            <p-tag [value]="solution.recommend_status" [severity]="getRecommendStatusSeverity(solution.recommend_status)"></p-tag>
+          </div>
+          <div class="info-item" *ngIf="solution.version">
+            <label>Version</label>
+            <span>v{{ solution.version }}</span>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Team Information</h3>
+          <div class="info-item">
+            <label>Department</label>
+            <span>{{ solution.department }}</span>
+          </div>
+          <div class="info-item">
+            <label>Team</label>
+            <span>{{ solution.team }}</span>
+          </div>
+          <div class="info-item">
+            <label>Team Email</label>
+            <a [href]="'mailto:' + solution.team_email">{{ solution.team_email }}</a>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Maintainer</h3>
+          <div class="info-item">
+            <label>Name</label>
+            <span>{{ solution.maintainer_name }} <span class="text-color-secondary">({{ solution.maintainer_id }})</span></span>
+          </div>
+          <div class="info-item">
+            <label>Email</label>
+            <a [href]="'mailto:' + solution.maintainer_email">{{ solution.maintainer_email }}</a>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Links</h3>
+          <div class="info-item" *ngIf="solution.official_website">
+            <a [href]="solution.official_website" target="_blank">
+              <i class="pi pi-external-link"></i> Official Website
+            </a>
+          </div>
+          <div class="info-item" *ngIf="solution.documentation_url">
+            <a [href]="solution.documentation_url" target="_blank">
+              <i class="pi pi-file"></i> Documentation
+            </a>
+          </div>
+          <div class="info-item" *ngIf="solution.demo_url">
+            <a [href]="solution.demo_url" target="_blank">
+              <i class="pi pi-play"></i> Demo
+            </a>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="loading">
+  <p-progressSpinner></p-progressSpinner>
+  <p>Loading solution details...</p>
+</div>
+
+<p-toast></p-toast> 

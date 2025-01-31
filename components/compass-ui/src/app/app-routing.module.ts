@@ -11,6 +11,10 @@ const routes: Routes = [
     loadComponent: () => import('./features/solution-catalog/solution-catalog.component').then(m => m.SolutionCatalogComponent)
   },
   {
+    path: 'solutions/:slug',
+    loadComponent: () => import('./features/solution-detail/solution-detail.component').then(m => m.SolutionDetailComponent)
+  },
+  {
     path: 'categories',
     loadChildren: () => import('./features/categories/categories.module').then(m => m.CategoriesModule)
   },
