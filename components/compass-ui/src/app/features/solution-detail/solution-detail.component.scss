@@ -73,14 +73,18 @@
     display: grid;
     grid-template-columns: 1fr 300px;
     gap: 2rem;
+    align-items: start;
 
     .content-main {
       background: var(--surface-card);
       border-radius: var(--border-radius);
       overflow: hidden;
+      min-height: 600px;
     }
-    
+
     :host ::ng-deep .content-main .p-tabview {
+      height: 100%;
+      
       .p-tabview-nav {
         background: transparent;
         border: none;
@@ -90,12 +94,12 @@
         border-radius: var(--border-radius) var(--border-radius) 0 0;
         overflow: hidden;
       }
-      
-      .p-tabview-panels {
-        padding: 1.5rem;
+        
+        .p-tabview-panels {
+          padding: 1.5rem;
         border: none;
+        }
       }
-    }
 
     .content-main {
       .overview-content {
@@ -109,96 +113,96 @@
             margin: 0 0 1rem 0;
             color: var(--text-color);
           }
-
+          
           ul {
             margin: 0;
             padding-left: 1.5rem;
-
+            
             li {
               margin-bottom: 0.5rem;
               color: var(--text-color-secondary);
             }
           }
         }
-      }
+              }
 
       .comments-section,
       .ratings-section {
         margin-top: 2rem;
-        
-        h3 {
-          margin-bottom: 1rem;
-          font-size: 1.25rem;
-          font-weight: 600;
-        }
-        
+                
+          h3 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+                  font-weight: 600;
+                }
+                
         .new-comment,
         .new-rating {
           margin-bottom: 2rem;
-          
-          textarea {
-            width: 100%;
-            margin-bottom: 1rem;
-          }
-          
+            
+            textarea {
+              width: 100%;
+              margin-bottom: 1rem;
+              }
+
           a {
             color: var(--primary-color);
             text-decoration: none;
-            
+
             &:hover {
               text-decoration: underline;
-            }
-          }
-        }
-        
-        .rating-input {
-          margin-bottom: 1rem;
-          
-          p-rating {
-            display: block;
-            margin-bottom: 1rem;
-          }
         }
       }
+          }
+
+          .rating-input {
+            margin-bottom: 1rem;
+
+          p-rating {
+            display: block;
+              margin-bottom: 1rem;
+            }
+          }
+        }
 
       .comments-container,
-      .ratings-container {
-        max-height: 500px;
-        overflow-y: auto;
+        .ratings-container {
         padding-right: 1rem;
-        
+
         .comment,
-        .rating {
-          background: var(--surface-card);
-          border-radius: var(--border-radius);
-          padding: 1rem;
-          margin-bottom: 1rem;
-          box-shadow: var(--card-shadow);
-          
+          .rating {
+            background: var(--surface-card);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--card-shadow);
+
           .comment-header,
-          .rating-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.5rem;
-            
-            .username {
-              font-weight: 600;
+            .rating-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 0.5rem;
+
+              .username {
+                font-weight: 600;
               color: var(--text-color-secondary);
+              }
+
+              .date {
+                font-size: 0.875rem;
+                color: var(--text-color-secondary);
+
+              }
+
             }
-            
-            .date {
-              font-size: 0.875rem;
-              color: var(--text-color-secondary);
-            }
-          }
-          
+
           .comment-content,
-          .rating-comment {
-            color: var(--text-color);
-            line-height: 1.5;
+            .rating-comment {
+              color: var(--text-color);
+              line-height: 1.5;
           }
-          
+
           .rating-score {
             margin: 0.5rem 0;
           }
@@ -207,6 +211,8 @@
     }
 
     .content-sidebar {
+      position: sticky;
+      top: 2rem;
       .info-section {
         margin-bottom: 2rem;
 

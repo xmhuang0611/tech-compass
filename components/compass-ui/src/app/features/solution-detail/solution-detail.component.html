@@ -49,17 +49,17 @@
 
         <p-tabPanel header="Comments">
           <div class="comments-section">
-            <div class="new-comment">
+              <div class="new-comment">
               <h3>Add a Comment</h3>
-              <div *ngIf="isLoggedIn; else loginToComment">
-                <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
-                <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
+                <div *ngIf="isLoggedIn; else loginToComment">
+                  <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
+                  <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
+                </div>
+                <ng-template #loginToComment>
+                  <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
+                </ng-template>
               </div>
-              <ng-template #loginToComment>
-                <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
-              </ng-template>
-            </div>
-            
+              
             <div class="comments-list">
               <h3>Comments ({{ totalComments }})</h3>
               <div class="comments-container" (scroll)="onCommentsScroll($event)">
@@ -69,6 +69,7 @@
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
+
                 </div>
                 <p-progressSpinner *ngIf="loadingComments"></p-progressSpinner>
               </div>
