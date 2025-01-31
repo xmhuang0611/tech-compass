@@ -68,7 +68,6 @@
 
   &:hover {
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    border-color: #007bff;
   }
 
   &:focus-visible {
@@ -225,4 +224,4 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-} 
+}
