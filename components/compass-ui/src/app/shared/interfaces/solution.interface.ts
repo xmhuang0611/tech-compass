@@ -5,9 +5,17 @@ export interface Solution {
   category: string;
   department: string;
   team: string;
+  team_email: string;
   maintainer_name: string;
   maintainer_email: string;
+  official_website?: string;
+  documentation_url?: string;
+  demo_url?: string;
+  logo?: string;
+  version?: string;
   tags: string[];
+  pros?: string[];
+  cons?: string[];
   recommend_status: 'BUY' | 'HOLD' | 'SELL';
   radar_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   stage: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
