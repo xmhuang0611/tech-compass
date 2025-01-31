@@ -92,6 +92,7 @@
           display: flex;
           gap: 1rem;
           flex-wrap: wrap;
+          justify-content: flex-end;
 
           li {
             color: var(--text-color-secondary);
