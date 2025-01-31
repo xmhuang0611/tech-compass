@@ -2,7 +2,9 @@
   display: block;
   height: 100%;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  padding: 4px;
+  margin: -4px;
 
   ::ng-deep .p-card {
     height: 100%;
@@ -14,25 +16,29 @@
     border-radius: var(--border-radius);
     background: var(--surface-card);
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
 
     &:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
     }
 
     .new-badge {
       position: absolute;
-      top: 20px;
+      top: 15px;
       right: -35px;
-      padding: 5px 40px;
-      background: var(--primary-color);
+      padding: 6px 50px;
+      background: var(--orange-400);
       color: white;
       font-size: 0.75rem;
       font-weight: 600;
       transform: rotate(45deg);
       transform-origin: center;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 4px rgba(var(--orange-400-rgb), 0.25);
       z-index: 1;
+      text-align: center;
+      min-width: 120px;
     }
 
     .p-card-body {
