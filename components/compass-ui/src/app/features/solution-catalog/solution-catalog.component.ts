@@ -13,6 +13,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { TooltipModule } from 'primeng/tooltip';
+import { BreadcrumbModule } from 'primeng/breadcrumb';
 
 interface SolutionFilters {
   category?: string;
@@ -52,10 +53,18 @@ interface DropdownOption {
     MultiSelectModule,
     ProgressSpinnerModule,
     MessageModule,
-    TooltipModule
+    TooltipModule,
+    BreadcrumbModule
   ],
   template: `
 <div class="solutions-container">
+  <div class="breadcrumb">
+    <p-breadcrumb [model]="[
+      { label: 'Home', routerLink: '/' },
+      { label: 'Solution Catalog' }
+    ]"></p-breadcrumb>
+  </div>
+
   <div class="filters-header">
     <h2>Solution Catalog</h2>
     <div class="filters-row">
