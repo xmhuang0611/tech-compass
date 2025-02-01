@@ -9,7 +9,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SolutionService {
-  private apiUrl = `${environment.apiUrl}/solutions`;
+  private apiUrl = `${environment.apiUrl}/solutions/`;
 
   constructor(private http: HttpClient) {}
 
@@ -41,7 +41,7 @@ export class SolutionService {
 
   getRecommendedSolutions(skip = 0, limit = 10): Observable<StandardResponse<Solution[]>> {
     return this.http.get<StandardResponse<Solution[]>>(
-      `${this.apiUrl}/`,
+      `${this.apiUrl}`,
       {
         params: {
           skip: skip.toString(),
@@ -55,7 +55,7 @@ export class SolutionService {
 
   getNewSolutions(skip = 0, limit = 10): Observable<StandardResponse<Solution[]>> {
     return this.http.get<StandardResponse<Solution[]>>(
-      `${this.apiUrl}/`,
+      `${this.apiUrl}`,
       {
         params: {
           skip: skip.toString(),
