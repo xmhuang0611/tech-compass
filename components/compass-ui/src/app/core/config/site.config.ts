@@ -126,6 +126,122 @@ export const siteConfig = {
     copyright: ' 2024 Tech Compass'
   },
 
+  // About page configuration
+  about: {
+    hero: {
+      title: 'About Tech Compass',
+      subtitle: 'Your guide to technology solutions'
+    },
+    team: {
+      title: 'Our Sponsors',
+      members: [
+        {
+          name: 'John Smith',
+          role: 'Gold Sponsor',
+          avatar: 'assets/avatars/avatar1.svg',
+          bio: 'Supporting innovation and technological advancement.'
+        },
+        {
+          name: 'Sarah Chen',
+          role: 'Platinum Sponsor',
+          avatar: 'assets/avatars/avatar2.svg',
+          bio: 'Empowering next-generation technology solutions.'
+        },
+        {
+          name: 'Michael Johnson',
+          role: 'Gold Sponsor',
+          avatar: 'assets/avatars/avatar3.svg',
+          bio: 'Fostering technological growth and innovation.'
+        },
+        {
+          name: 'Emily Davis',
+          role: 'Silver Sponsor',
+          avatar: 'assets/avatars/avatar1.svg',
+          bio: 'Driving digital transformation initiatives.'
+        },
+        {
+          name: 'David Wilson',
+          role: 'Gold Sponsor',
+          avatar: 'assets/avatars/avatar2.svg',
+          bio: 'Accelerating technology adoption and growth.'
+        },
+        {
+          name: 'Lisa Zhang',
+          role: 'Platinum Sponsor',
+          avatar: 'assets/avatars/avatar3.svg',
+          bio: 'Supporting sustainable technology development.'
+        },
+        {
+          name: 'Robert Taylor',
+          role: 'Gold Sponsor',
+          avatar: 'assets/avatars/avatar1.svg',
+          bio: 'Enabling digital innovation and transformation.'
+        },
+        {
+          name: 'Anna Martinez',
+          role: 'Platinum Sponsor',
+          avatar: 'assets/avatars/avatar2.svg',
+          bio: 'Advancing technology solutions for the future.'
+        }
+      ]
+    },
+    features: {
+      title: 'Our Mission',
+      items: [
+        {
+          icon: 'pi pi-check-square',
+          title: 'Standardization',
+          description: 'Establish and promote standardized software development processes and practices to ensure consistency and quality across development teams.'
+        },
+        {
+          icon: 'pi pi-sync',
+          title: 'Modernization',
+          description: 'Guide teams in adopting modern development tools and methodologies to enhance productivity and maintain competitive advantage.'
+        },
+        {
+          icon: 'pi pi-cog',
+          title: 'Automation',
+          description: 'Empower development teams with automated solutions and tools to streamline workflows and improve development efficiency.'
+        }
+      ]
+    },
+    engagement: {
+      title: 'Get Involved',
+      cards: [
+        {
+          icon: 'pi pi-check-circle',
+          title: 'Adopt to Standards',
+          description: 'Implement standardized practices and methodologies in your development process.'
+        },
+        {
+          icon: 'pi pi-cog',
+          title: 'Automate Delivery',
+          description: 'Streamline your development workflow with automated tools and processes.'
+        },
+        {
+          icon: 'pi pi-shield',
+          title: 'Apply Best Practices',
+          description: 'Follow industry-proven best practices to enhance code quality and maintainability.'
+        },
+        {
+          icon: 'pi pi-plus',
+          title: 'Submit Solutions',
+          description: 'Share your technology solutions and contribute to our growing knowledge base.'
+        },
+        {
+          icon: 'pi pi-star',
+          title: 'Rate Solutions',
+          description: 'Help others by rating solutions based on your experience and implementation.'
+        },
+        {
+          icon: 'pi pi-comments',
+          title: 'Provide Feedback',
+          description: 'Comment on solutions and share your experiences with the community.'
+        }
+      ]
+    }
+  },
+
   // Navigation menu
   navigation: [
     { 
@@ -149,4 +265,4 @@ export const siteConfig = {
       path: '/about'
     }
   ]
-}; 
+};
