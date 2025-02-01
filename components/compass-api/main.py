@@ -62,7 +62,7 @@ def run_debug_server():
     """Run the debug server with hot reload"""
     uvicorn.run(
         "main:app",
-        host="127.0.0.1",
+        host="0.0.0.0",
         port=8000,
         reload=True,
         reload_dirs=["app"],
