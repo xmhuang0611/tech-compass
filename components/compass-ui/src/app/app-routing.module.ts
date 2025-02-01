@@ -10,6 +10,10 @@ const routes: Routes = [
         loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
+        path: 'tech-radar',
+        loadComponent: () => import('./features/tech-radar/tech-radar.component').then(m => m.TechRadarComponent)
+      },
+      {
         path: 'submit-solution',
         loadChildren: () => import('./features/submit-solution/submit-solution.module')
           .then(m => m.SubmitSolutionModule)

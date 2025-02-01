@@ -260,6 +260,11 @@ export const siteConfig = {
       path: '/solution-catalog'
     },
     { 
+      label: 'Tech Radar',
+      icon: 'pi pi-wave-pulse',
+      path: '/tech-radar'
+    },
+    { 
       label: 'About',
       icon: 'pi pi-info-circle',
       path: '/about'
