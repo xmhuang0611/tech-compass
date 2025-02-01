@@ -1,5 +1,24 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, TitleStrategy } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { Injectable } from '@angular/core';
+import { siteConfig } from './core/config/site.config';
+
+@Injectable()
+class CustomTitleStrategy extends TitleStrategy {
+  constructor(private readonly title: Title) {
+    super();
+  }
+
+  override updateTitle(routerState: any) {
+    const title = this.buildTitle(routerState);
+    if (title) {
+      this.title.setTitle(`${title} - ${siteConfig.name}`);
+    } else {
+      this.title.setTitle(siteConfig.name);
+    }
+  }
+}
 
 const routes: Routes = [
   {
@@ -7,35 +26,41 @@ const routes: Routes = [
     children: [
       {
         path: '',
+        title: 'Home',
         loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
       },
       {
         path: 'tech-radar',
+        title: 'Tech Radar',
         loadComponent: () => import('./features/tech-radar/tech-radar.component').then(m => m.TechRadarComponent)
       },
       {
         path: 'submit-solution',
+        title: 'Submit Solution',
         loadChildren: () => import('./features/submit-solution/submit-solution.module')
           .then(m => m.SubmitSolutionModule)
       },
       {
         path: 'solution-catalog',
+        title: 'Solution Catalog',
         loadComponent: () => import('./features/solution-catalog/solution-catalog.component')
           .then(m => m.SolutionCatalogComponent)
       },
       {
         path: 'solutions/:slug',
+        title: 'Solution Details',
         loadComponent: () => import('./features/solution-detail/solution-detail.component')
           .then(m => m.SolutionDetailComponent)
       },
       {
         path: 'categories',
+        title: 'Categories',
         loadChildren: () => import('./features/categories/categories.module')
           .then(m => m.CategoriesModule)
       },
-
       {
         path: 'about',
+        title: 'About',
         loadChildren: () => import('./features/about/about.module')
           .then(m => m.AboutModule)
       }
@@ -45,6 +70,9 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [
+    { provide: TitleStrategy, useClass: CustomTitleStrategy }
+  ]
 })
 export class AppRoutingModule { }
