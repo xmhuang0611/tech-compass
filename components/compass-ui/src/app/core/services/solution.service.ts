@@ -53,6 +53,10 @@ export class SolutionService {
     );
   }
 
+  createSolution(solution: Partial<Solution>): Observable<StandardResponse<Solution>> {
+    return this.http.post<StandardResponse<Solution>>(this.apiUrl, solution);
+  }
+
   getNewSolutions(skip = 0, limit = 10): Observable<StandardResponse<Solution[]>> {
     return this.http.get<StandardResponse<Solution[]>>(
       `${this.apiUrl}`,

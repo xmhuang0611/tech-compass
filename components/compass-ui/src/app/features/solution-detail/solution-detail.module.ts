@@ -15,14 +15,9 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { MessageModule } from 'primeng/message';
-
-import { SolutionDetailComponent } from './solution-detail.component';
 import { MarkdownModule } from 'ngx-markdown';
 
 @NgModule({
-  declarations: [
-    SolutionDetailComponent
-  ],
   imports: [
     CommonModule,
     FormsModule,
@@ -40,9 +35,6 @@ import { MarkdownModule } from 'ngx-markdown';
     DynamicDialogModule,
     MessageModule,
     MarkdownModule.forChild()
-  ],
-  exports: [
-    SolutionDetailComponent
   ]
 })
-export class SolutionDetailModule { } 
+export class SolutionDetailModule { }

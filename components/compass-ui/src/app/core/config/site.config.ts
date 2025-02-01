@@ -120,9 +120,10 @@ export const siteConfig = {
     quickLinks: [
       { label: 'Home', path: '/' },
       { label: 'Solution Catalog', path: '/solution-catalog' },
+      { label: 'Submit Solution', path: '/submit-solution' },
       { label: 'About', path: '/about' }
     ],
-    copyright: '© 2024 Tech Compass'
+    copyright: ' 2024 Tech Compass'
   },
 
   // Navigation menu

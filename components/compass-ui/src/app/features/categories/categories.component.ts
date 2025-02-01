@@ -70,8 +70,7 @@ export class CategoriesComponent implements OnInit {
   }
 
   addSolution(category: Category): void {
-    // Navigate to solution creation page with pre-selected category
-    this.router.navigate(['/solutions/new'], {
+    this.router.navigate(['/submit-solution'], {
       queryParams: { category: category.name }
     });
   }
