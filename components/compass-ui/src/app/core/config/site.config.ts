@@ -250,7 +250,7 @@ export const siteConfig = {
       path: '/' 
     },
     { 
-      label: 'Solution Categories',
+      label: 'Tech Categories',
       icon: 'pi pi-folder',
       path: '/categories'
     },
