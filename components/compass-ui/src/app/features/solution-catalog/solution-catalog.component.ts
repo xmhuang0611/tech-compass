@@ -1,7 +1,7 @@
 import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { SolutionService } from '../../core/services/solution.service';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 import { Solution } from '../../shared/interfaces/solution.interface';
@@ -16,6 +16,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { TooltipModule } from 'primeng/tooltip';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
+import { ButtonModule } from 'primeng/button';
 
 interface SolutionFilters {
   category?: string;
@@ -56,7 +57,9 @@ interface DropdownOption {
     ProgressSpinnerModule,
     MessageModule,
     TooltipModule,
-    BreadcrumbModule
+    BreadcrumbModule,
+    ButtonModule,
+    RouterModule
   ],
   templateUrl: './solution-catalog.component.html',
   styleUrls: ['./solution-catalog.component.scss'],

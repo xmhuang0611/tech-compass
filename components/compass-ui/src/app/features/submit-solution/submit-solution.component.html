@@ -139,7 +139,14 @@
       </div>
 
       <div class="form-actions">
-        <button pButton type="submit" label="Submit Solution" [disabled]="!solutionForm.valid || submitting"></button>
+        <p-button 
+          type="submit"
+          label="Submit Solution"
+          icon="pi pi-check"
+          [loading]="submitting"
+          [disabled]="!solutionForm.valid || submitting"
+          styleClass="p-button-primary">
+        </p-button>
       </div>
     </form>
   </div>

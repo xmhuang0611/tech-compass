@@ -9,6 +9,38 @@
     border-radius: var(--border-radius);
     margin-bottom: 2rem;
 
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+
+      h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+      }
+
+      ::ng-deep .p-button {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        
+        &:hover {
+          background: var(--primary-600);
+          border-color: var(--primary-600);
+        }
+
+        &:focus {
+          box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 4px var(--primary-300);
+        }
+
+        .p-button-icon {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
     h2 {
       margin: 0 0 1.5rem 0;
       color: var(--text-color);
