@@ -117,73 +117,48 @@
   .features-section {
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 2rem;
-
+      margin-top: 2rem;
+    
       .feature-card {
-        background: var(--surface-card);
         border-radius: var(--border-radius);
         padding: 2rem;
         text-align: center;
-        transition: transform 0.2s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        background: var(--primary-color);
+        color: var(--primary-color-text);
+
+        .icon-wrapper i {
+          color: var(--primary-color-text);
+        }
 
         &:hover {
           transform: translateY(-5px);
-
-          .icon-wrapper i {
-            transform: scale(1.1);
-          }
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
-
+    
         .icon-wrapper {
-          width: 64px;
-          height: 64px;
-          border-radius: 50%;
-          background: var(--primary-color-50);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin: 0 auto 1.5rem;
-
-          i {
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            transition: transform 0.2s ease;
-          }
-        }
-
-        h3 {
-          font-size: 1.25rem;
-          color: var(--text-color);
-          margin-bottom: 1rem;
-        }
-
-        p {
-          color: var(--text-color-secondary);
-          font-size: 0.875rem;
-          line-height: 1.6;
           margin-bottom: 1.5rem;
-        }
-
-        .feature-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: var(--primary-color);
-          text-decoration: none;
-          font-weight: 500;
-
+          
           i {
-            transition: transform 0.2s ease;
+            font-size: 2.5rem;
+            opacity: 0.9;
           }
-
-          &:hover {
-            text-decoration: underline;
-            
-            i {
-              transform: translateX(4px);
-            }
-          }
+        }
+    
+        h3 {
+          font-size: 1.5rem;
+          margin-bottom: 1rem;
+          font-weight: 600;
+        }
+    
+        p {
+          font-size: 1rem;
+          line-height: 1.6;
+          opacity: 0.9;
         }
       }
     }
@@ -192,14 +167,28 @@
   .engagement-section {
     .engagement-cards {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 2rem;
+      
+      @media (max-width: 992px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+      }
 
       .engagement-card {
         background: var(--surface-card);
         border-radius: var(--border-radius);
         padding: 2rem;
         text-align: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
 
         .icon-wrapper {
           width: 48px;
