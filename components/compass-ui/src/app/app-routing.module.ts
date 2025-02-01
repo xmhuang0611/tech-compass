@@ -33,11 +33,7 @@ const routes: Routes = [
         loadChildren: () => import('./features/categories/categories.module')
           .then(m => m.CategoriesModule)
       },
-      {
-        path: 'departments',
-        loadChildren: () => import('./features/departments/departments.module')
-          .then(m => m.DepartmentsModule)
-      },
+
       {
         path: 'about',
         loadChildren: () => import('./features/about/about.module')
