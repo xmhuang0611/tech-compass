@@ -71,8 +71,8 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   
   // Pagination
   currentPage = 0;
-  initialPageSize = 9;
-  loadMoreSize = 6;
+  initialPageSize = 15;
+  loadMoreSize = 15;
   hasMore = true;
 
   // Filters
@@ -313,4 +313,4 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     const selectedOption = this.categoryOptions.find(opt => opt.value === this.filters.category);
     return selectedOption?.title || '';
   }
-} 
+}
