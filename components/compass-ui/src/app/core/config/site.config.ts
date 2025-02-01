@@ -140,7 +140,7 @@ export const siteConfig = {
     },
     { 
       label: 'Solution Catalog',
-      icon: 'pi pi-th-large',
+      icon: 'pi pi-list',
       path: '/solution-catalog'
     },
     { 
