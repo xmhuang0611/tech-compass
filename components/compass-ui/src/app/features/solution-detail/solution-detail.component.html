@@ -65,7 +65,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of comments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.username }}</span>
+                    <span class="username">{{ comment.full_name }}</span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -105,7 +105,7 @@
               <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
-                    <span class="username">{{ rating.username }}</span>
+                    <span class="username">{{ rating.full_name }}</span>
                     <span class="date">{{ rating.created_at | date }}</span>
                   </div>
                   <div class="rating-score">
@@ -207,4 +207,4 @@
   <p>Loading solution details...</p>
 </div>
 
-<p-toast></p-toast> 
+<p-toast></p-toast>

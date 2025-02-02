@@ -58,6 +58,7 @@ interface Comment {
   _id: string;
   content: string;
   username: string;
+  full_name: string;
   created_at: string;
 }
 
@@ -66,6 +67,7 @@ interface Rating {
   score: number;
   comment?: string;
   username: string;
+  full_name: string;
   created_at: string;
 }
 
@@ -389,4 +391,4 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
       }
     });
   }
-} 
+}
