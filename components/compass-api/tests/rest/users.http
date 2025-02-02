@@ -20,11 +20,10 @@ POST {{baseUrl}}/users
 Content-Type: application/json
 
 {
-    "username": "newuser",
-    "email": "newuser@example.com",
-    "password": "strongpassword123",
-    "full_name": "New User",
-    "role": "USER"
+    "username": "test",
+    "email": "test@example.com",
+    "password": "test",
+    "full_name": "Test User"
 }
 
 ### Update user (requires auth, can only update own profile)

@@ -28,7 +28,7 @@ class UserService:
                 username=admin_username,
                 email=getattr(settings, "DEFAULT_ADMIN_EMAIL", "admin@techcompass.com"),
                 password=getattr(settings, "DEFAULT_ADMIN_PASSWORD"),
-                full_name="Default Admin",
+                full_name="System Admin",
                 is_active=True,
                 is_superuser=True
             )
