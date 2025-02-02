@@ -6,11 +6,11 @@ from app.core.auth import get_current_active_user
 from app.models.response import StandardResponse
 from app.models.user import User
 from app.services.comment_service import CommentService
-from app.models.comment import CommentCreate, CommentInDB
+from app.models.comment import CommentCreate, Comment
 
 router = APIRouter()
 
-@router.get("/solution/{solution_slug}", response_model=StandardResponse[list[CommentInDB]], tags=["comments"])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[list[Comment]], tags=["comments"])
 async def get_solution_comments(
     solution_slug: str,
     page: int = Query(1, ge=1),
@@ -36,7 +36,7 @@ async def get_solution_comments(
     )
     return StandardResponse.paginated(comments, total, skip, page_size)
 
-@router.post("/solution/{solution_slug}", response_model=StandardResponse[CommentInDB], status_code=status.HTTP_201_CREATED, tags=["comments"])
+@router.post("/solution/{solution_slug}", response_model=StandardResponse[Comment], status_code=status.HTTP_201_CREATED, tags=["comments"])
 async def create_comment(
     solution_slug: str,
     comment: CommentCreate,
@@ -63,7 +63,7 @@ async def create_comment(
         )
 
 @router.put("/{comment_id}",
-            response_model=StandardResponse[CommentInDB], 
+            response_model=StandardResponse[Comment], 
             tags=["comments"])
 async def update_comment(
     comment_id: str,
@@ -111,7 +111,7 @@ async def delete_comment(
             detail="Comment not found or you don't have permission to delete it"
         )
     return StandardResponse.of(None)
-@router.get("/", response_model=StandardResponse[list[CommentInDB]], tags=["comments"])
+@router.get("/", response_model=StandardResponse[list[Comment]], tags=["comments"])
 async def get_all_comments(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -137,4 +137,4 @@ async def get_all_comments(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting comments: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error getting comments: {str(e)}")
