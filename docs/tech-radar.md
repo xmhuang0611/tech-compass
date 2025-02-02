@@ -40,14 +40,14 @@ The radar is structured into two main dimensions:
 - Distributed Caching: Redis, Memcached, Hazelcast
 
 ### 4. Techniques & Patterns
-**Definition**: Strategic approaches and architectural methodologies that guide software design, development, and delivery practices.
+**Definition**: Strategic methodologies and best practices that establish the foundation for software engineering excellence and team collaboration.
 
 **Key Areas**:
-- Engineering Practices: Agile, Scrum, DevOps
-- System Architecture: Microservices, DDD, CQRS
-- Implementation Patterns: Factory, Observer, Strategy
-- Engineering Standards: Clean Code, SOLID Principles
-- Quality Practices: TDD, BDD, Integration Testing
+- Development Methodologies: Agile, Scrum, SAFe
+- Engineering Practices: TDD, BDD, Clean Code
+- Architecture Patterns: Microservices, DDD, CQRS
+- Quality Standards: Code Review, Documentation, Testing
+- Team Practices: DevOps, Collaboration Models, Knowledge Sharing
 
 ## Adoption Lifecycle
 
