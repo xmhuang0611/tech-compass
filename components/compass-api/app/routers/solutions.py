@@ -120,6 +120,22 @@ async def get_departments(
         logger.error(f"Error getting departments: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting departments: {str(e)}")
 
+@router.get("/search/", response_model=StandardResponse[List[Solution]])
+async def search_solutions(
+    keyword: str = Query(..., description="Search keyword to match against solution fields"),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Search solutions by keyword using text similarity.
+    Searches across name, category, description, team, maintainer name, pros and cons.
+    Returns top 5 matches sorted by relevance.
+    """
+    try:
+        solutions = await solution_service.search_solutions(keyword)
+        return StandardResponse.of(solutions)
+    except Exception as e:
+        logger.error(f"Error searching solutions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error searching solutions: {str(e)}")
+
 @router.get("/{slug}", response_model=StandardResponse[Solution])
 async def get_solution(
     slug: str,

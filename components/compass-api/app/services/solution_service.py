@@ -351,3 +351,45 @@ class SolutionService:
             solution_dict["rating_count"] = rating_summary["count"]
             return Solution(**solution_dict)
         return None
+
+    async def search_solutions(self, keyword: str, limit: int = 5) -> List[Solution]:
+        """Search solutions by keyword using text similarity
+        Searches across name, category, description, team, maintainer_name, pros and cons
+        Returns top 5 matches by default
+        """
+        # Create text index if it doesn't exist
+        await self.collection.create_index([
+            ("name", "text"),
+            ("description", "text"),
+            ("team", "text"),
+            ("department", "text"),
+            ("maintainer_name", "text"),
+            ("pros", "text"),
+            ("cons", "text")
+        ])
+
+        # Perform text search
+        cursor = self.collection.find(
+            {"$text": {"$search": keyword}},
+            {"score": {"$meta": "textScore"}}
+        ).sort([("score", {"$meta": "textScore"})]).limit(limit)
+
+        solutions = await cursor.to_list(length=limit)
+        
+        # Convert to Solution model with ratings
+        result = []
+        for solution in solutions:
+            # Get category name if category_id exists
+            if solution.get("category_id"):
+                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
+                if category:
+                    solution["category"] = category.name
+            
+            # Add rating information
+            solution_model = SolutionInDB(**solution)
+            rating_summary = await self.rating_service.get_rating_summary(solution_model.slug)
+            solution["rating"] = rating_summary["average"]
+            solution["rating_count"] = rating_summary["count"]
+            result.append(Solution(**solution))
+            
+        return result
