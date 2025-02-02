@@ -134,6 +134,10 @@
         <div class="info-section">
           <h3>Basic Information</h3>
           <div class="info-item">
+            <label>Category</label>
+            <span>{{ solution.category }}</span>
+          </div>
+          <div class="info-item">
             <label>Stage</label>
             <p-tag [value]="solution.stage" [severity]="getStageSeverity(solution.stage)"></p-tag>
           </div>
