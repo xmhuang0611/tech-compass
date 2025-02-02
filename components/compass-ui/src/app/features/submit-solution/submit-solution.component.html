@@ -32,9 +32,13 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-field">
+          <div class="form-field one-third">
+            <label for="version">Version *</label>
+            <input id="version" type="text" pInputText formControlName="version" />
+          </div>
+          <div class="form-field two-thirds">
             <label for="tags">Tags</label>
-            <p-chips id="tags" formControlName="tags" [style]="{'width':'100%'}" placeholder="Add tags"></p-chips>
+            <p-chips id="tags" formControlName="tags" [style]="{'width':'100%'}" placeholder="Enter multiple tags separated by comma"></p-chips>
           </div>
         </div>
         <div class="form-row">
@@ -85,10 +89,6 @@
           <h3><i class="pi pi-link"></i> Links & Resources</h3>
         </div>
         <div class="form-row">
-          <div class="form-field">
-            <label for="version">Version *</label>
-            <input id="version" type="text" pInputText formControlName="version" />
-          </div>
           <div class="form-field">
             <label for="official_website">Official Website</label>
             <input id="official_website" type="url" pInputText formControlName="official_website" placeholder="https://" />

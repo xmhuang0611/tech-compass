@@ -141,15 +141,19 @@ export class SubmitSolutionComponent implements OnInit {
     if (this.solutionForm.valid) {
       this.submitting = true;
       
-      // Convert multiline text to arrays
+      // Convert multiline text to arrays and process tags
       const formValue = this.solutionForm.value;
       const pros = formValue.pros?.split('\n').filter((line: string) => line.trim()) || [];
       const cons = formValue.cons?.split('\n').filter((line: string) => line.trim()) || [];
+      const tags = formValue.tags?.length
+        ? formValue.tags.join(',').split(',').map((tag: string) => tag.trim()).filter(Boolean)
+        : [];
       
       const solution = {
         ...formValue,
         pros,
-        cons
+        cons,
+        tags
       };
 
       this.solutionService.createSolution(solution).subscribe({
