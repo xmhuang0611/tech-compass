@@ -14,3 +14,7 @@ class RatingCreate(RatingBase):
 class RatingInDB(RatingBase, AuditModel):
     solution_slug: str
     username: str
+
+class Rating(RatingInDB):
+    """Rating model for API responses with user's full name"""
+    full_name: Optional[str] = Field(None, description="Full name of the rating author")

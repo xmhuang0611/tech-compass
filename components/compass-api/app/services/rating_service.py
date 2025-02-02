@@ -1,12 +1,11 @@
+from typing import List, Optional, Tuple, Dict
 from datetime import datetime
-from typing import List, Tuple, Dict
-
 from bson import ObjectId
-from fastapi import HTTPException, status
 from pymongo import DESCENDING, ASCENDING
+from fastapi import HTTPException, status
 
 from app.core.database import get_database
-from app.models.rating import RatingCreate, RatingInDB
+from app.models.rating import RatingCreate, RatingInDB, Rating
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
 
@@ -14,12 +13,20 @@ class RatingService:
     def __init__(self):
         self.db = get_database()
 
+    async def _convert_to_rating(self, rating_data: dict) -> Rating:
+        """Private helper method to convert rating data to Rating model with full name"""
+        # Get user's full name from users collection
+        user = await self.db.users.find_one({"username": rating_data["username"]}, {"full_name": 1})
+        if user:
+            rating_data["full_name"] = user["full_name"]
+        return Rating(**rating_data)
+
     async def get_ratings(
         self,
         skip: int = 0,
         limit: int = 20,
         sort: str = "-created_at"  # Default sort by created_at desc
-    ) -> Tuple[List[RatingInDB], int]:
+    ) -> Tuple[List[Rating], int]:
         """Get all ratings with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
         
@@ -40,23 +47,23 @@ class RatingService:
 
         # Execute query with sort
         cursor = self.db.ratings.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
-        ratings = [RatingInDB(**rating) async for rating in cursor]
+        ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents({})
         
         return ratings, total
 
-    async def get_solution_ratings(self, solution_slug: str, skip: int, limit: int, sort_by: str) -> Tuple[List[RatingInDB], int]:
+    async def get_solution_ratings(self, solution_slug: str, skip: int, limit: int, sort_by: str) -> Tuple[List[Rating], int]:
         query = {"solution_slug": solution_slug}
         sort_field = "created_at" if sort_by == "created_at" else "score"
         cursor = self.db.ratings.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
-        ratings = [RatingInDB(**rating) async for rating in cursor]
+        ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
         return ratings, total
 
-    async def get_user_rating(self, solution_slug: str, username: str) -> RatingInDB:
+    async def get_user_rating(self, solution_slug: str, username: str) -> Optional[Rating]:
         rating = await self.db.ratings.find_one({"solution_slug": solution_slug, "username": username})
         if rating:
-            return RatingInDB(**rating)
+            return await self._convert_to_rating(rating)
         return None
 
     async def get_rating_summary(self, solution_slug: str) -> Dict:
@@ -131,4 +138,4 @@ class RatingService:
             return RatingInDB(**new_rating)
         
         # Return the updated rating
-        return await self.get_user_rating(solution_slug, username) 
+        return await self.get_user_rating(solution_slug, username)

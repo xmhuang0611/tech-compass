@@ -5,12 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.core.auth import get_current_active_user
 from app.models.user import User
 from app.services.rating_service import RatingService
-from app.models.rating import RatingCreate, RatingInDB
+from app.models.rating import RatingCreate, Rating
 from app.models.response import StandardResponse
 
 router = APIRouter()
 
-@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[RatingInDB]], tags=["ratings"])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[Rating]], tags=["ratings"])
 async def get_solution_ratings(
     solution_slug: str,
     page: int = Query(1, ge=1),
@@ -40,7 +40,7 @@ async def get_solution_ratings(
         limit=page_size
     )
 
-@router.get("/solution/{solution_slug}/me", response_model=StandardResponse[RatingInDB], tags=["ratings"])
+@router.get("/solution/{solution_slug}/me", response_model=StandardResponse[Rating], tags=["ratings"])
 async def get_user_rating(
     solution_slug: str,
     current_user: User = Depends(get_current_active_user)
@@ -59,7 +59,7 @@ async def get_user_rating(
         )
     return StandardResponse.of(rating)
 
-@router.post("/solution/{solution_slug}", response_model=StandardResponse[RatingInDB], status_code=status.HTTP_201_CREATED, tags=["ratings"])
+@router.post("/solution/{solution_slug}", response_model=StandardResponse[Rating], status_code=status.HTTP_201_CREATED, tags=["ratings"])
 async def create_or_update_rating(
     solution_slug: str,
     rating: RatingCreate,
@@ -103,7 +103,7 @@ async def get_solution_rating_summary(
     summary = await rating_service.get_rating_summary(solution_slug)
     return StandardResponse.of(summary)
 
-@router.get("/", response_model=StandardResponse[List[RatingInDB]], tags=["ratings"])
+@router.get("/", response_model=StandardResponse[List[Rating]], tags=["ratings"])
 async def get_all_ratings(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -134,4 +134,4 @@ async def get_all_ratings(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error getting ratings: {str(e)}") 
+        raise HTTPException(status_code=500, detail=f"Error getting ratings: {str(e)}")
