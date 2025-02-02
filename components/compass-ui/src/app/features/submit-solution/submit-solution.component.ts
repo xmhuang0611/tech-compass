@@ -145,9 +145,7 @@ export class SubmitSolutionComponent implements OnInit {
       const formValue = this.solutionForm.value;
       const pros = formValue.pros?.split('\n').filter((line: string) => line.trim()) || [];
       const cons = formValue.cons?.split('\n').filter((line: string) => line.trim()) || [];
-      const tags = formValue.tags?.length
-        ? formValue.tags.join(',').split(',').map((tag: string) => tag.trim()).filter(Boolean)
-        : [];
+      const tags = formValue.tags?.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) || [];
       
       const solution = {
         ...formValue,
