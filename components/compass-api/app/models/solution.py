@@ -42,6 +42,7 @@ class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., min_length=1, description="Solution name")
     description: str = Field(..., description="Detailed description")
+    logo: str = Field("", description="Logo URL or path")
     category: Optional[str] = Field(None, description="Primary category")
     radar_status: RadarStatusEnum = Field(..., description="Tech Radar status (ADOPT/TRIAL/ASSESS/HOLD)")
     department: str = Field(..., description="Department name")
