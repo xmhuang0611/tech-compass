@@ -86,6 +86,7 @@ export class SubmitSolutionComponent implements OnInit {
       name: ['', Validators.required],
       description: ['', Validators.required],
       category: ['', Validators.required],
+      logo: [''],
       department: ['', Validators.required],
       team: ['', Validators.required],
       team_email: ['', [Validators.required, Validators.email]],
