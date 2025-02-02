@@ -111,6 +111,7 @@ class SolutionService:
         recommend_status: Optional[str] = None,
         radar_status: Optional[str] = None,
         stage: Optional[str] = None,
+        review_status: Optional[str] = None,
         sort: str = "name"
     ) -> List[SolutionInDB]:
         """Get all solutions with filtering and pagination"""
@@ -132,6 +133,8 @@ class SolutionService:
             query["radar_status"] = radar_status
         if stage:
             query["stage"] = stage
+        if review_status:
+            query["review_status"] = review_status
 
         # Parse sort parameter
         sort_field = "name"
@@ -295,6 +298,7 @@ class SolutionService:
         recommend_status: Optional[str] = None,
         radar_status: Optional[str] = None,
         stage: Optional[str] = None,
+        review_status: Optional[str] = None,
         sort: str = "name"
     ) -> List[Solution]:
         """Get all solutions with ratings"""
@@ -307,6 +311,7 @@ class SolutionService:
             recommend_status=recommend_status,
             radar_status=radar_status,
             stage=stage,
+            review_status=review_status,
             sort=sort
         )
         

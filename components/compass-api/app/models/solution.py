@@ -31,6 +31,13 @@ RadarStatusEnum = Literal[
     "HOLD"     # Proceed with caution
 ]
 
+# Review status values
+ReviewStatusEnum = Literal[
+    "PENDING",   # Awaiting review
+    "APPROVED",  # Approved by admin
+    "REJECTED"   # Rejected by admin
+]
+
 class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., min_length=1, description="Solution name")
@@ -54,8 +61,12 @@ class SolutionBase(BaseModel):
     recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (BUY/HOLD/SELL)")
 
 class SolutionCreate(SolutionBase):
-    """Solution creation model - inherits all fields from SolutionBase"""
+    """Solution creation model - excludes review_status field"""
     pass
+
+class SolutionInDBBase(SolutionBase):
+    """Base model for database solutions with review status"""
+    review_status: ReviewStatusEnum = Field(default="PENDING", description="Review status (PENDING/APPROVED/REJECTED)")
 
 class SolutionUpdate(BaseModel):
     """Solution update model - all fields are optional"""
@@ -78,8 +89,9 @@ class SolutionUpdate(BaseModel):
     cons: Optional[List[str]] = None
     stage: Optional[StageEnum] = None
     recommend_status: Optional[RecommendStatusEnum] = None
+    review_status: Optional[ReviewStatusEnum] = None
 
-class SolutionInDB(SolutionBase, AuditModel):
+class SolutionInDB(SolutionInDBBase, AuditModel):
     """Solution model as stored in database"""
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
     category_id: Optional[PyObjectId] = Field(None, description="Reference to category")

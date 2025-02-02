@@ -38,6 +38,7 @@ async def get_solutions(
     recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (BUY/HOLD/SELL)"),
     radar_status: Optional[str] = Query(None, description="Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)"),
     stage: Optional[str] = Query(None, description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)"),
+    review_status: Optional[str] = Query(None, description="Filter by review status (PENDING/APPROVED/REJECTED)"),
     sort: str = Query("name", description="Sort field (prefix with - for descending order)"),
     solution_service: SolutionService = Depends()
 ) -> Any:
@@ -50,6 +51,7 @@ async def get_solutions(
     - recommend_status: Filter by recommendation status (BUY/HOLD/SELL)
     - radar_status: Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
     - stage: Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
+    - review_status: Filter by review status (PENDING/APPROVED/REJECTED)
     - sort: Sort field (name, category, created_at, updated_at). Prefix with - for descending order
     """
     try:
@@ -69,6 +71,11 @@ async def get_solutions(
                 status_code=400,
                 detail="Invalid stage. Must be one of: DEVELOPING, UAT, PRODUCTION, DEPRECATED, RETIRED"
             )
+        if review_status and review_status not in ["PENDING", "APPROVED", "REJECTED"]:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid review_status. Must be one of: PENDING, APPROVED, REJECTED"
+            )
 
         solutions = await solution_service.get_solutions_with_ratings(
             skip=skip,
@@ -79,6 +86,7 @@ async def get_solutions(
             recommend_status=recommend_status,
             radar_status=radar_status,
             stage=stage,
+            review_status=review_status,
             sort=sort
         )
         total = await solution_service.count_solutions()
@@ -135,6 +143,13 @@ async def update_solution(
 ) -> Any:
     """Update a solution by slug."""
     try:
+        # Check if review_status is being updated and user is not a superuser
+        if solution_update.review_status is not None and not current_user.is_superuser:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only superusers can modify the review status"
+            )
+
         solution_in_db = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
         if not solution_in_db:
             raise HTTPException(
@@ -142,6 +157,8 @@ async def update_solution(
                 detail="Solution not found"
             )
         return StandardResponse.of(solution_in_db)
+    except HTTPException as e:
+        raise e
     except Exception as e:
         logger.error(f"Error updating solution: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating solution: {str(e)}")
