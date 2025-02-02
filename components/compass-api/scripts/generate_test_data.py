@@ -43,16 +43,16 @@ class TestDataGenerator:
     def create_test_user(self) -> Optional[Dict]:
         """Create test user if not exists."""
         user_data = {
-            'username': 'test',
-            'email': 'test@example.com',
-            'password': 'test',
-            'full_name': 'Test User',
+            'username': 'admin',
+            'email': 'admin@example.com',
+            'password': 'admin123',
+            'full_name': 'Admin User',
             'is_active': True,
-            'is_superuser': False
+            'is_superuser': True
         }
         
         try:
-            self.login_user('test', 'test')
+            self.login_user(user_data['username'], user_data['password'])
             print("Test user already exists, skipping creation")
             return None
         except requests.exceptions.RequestException:
@@ -95,6 +95,9 @@ class TestDataGenerator:
         radar_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
         recommend_statuses = ['BUY', 'HOLD', 'SELL']
+        review_statuses = ['APPROVED', 'REJECTED', 'PENDING']
+        # Weight distribution for review status (70% approved, 20% rejected, 10% pending)
+        review_weights = [0.7, 0.2, 0.1]
         
         solution_data = {
             'name': fake.catch_phrase(),
@@ -137,6 +140,19 @@ class TestDataGenerator:
         response.raise_for_status()
         return response.json()
 
+    def update_solution_review_status(self, solution_slug: str, review_status: str) -> Dict:
+        """Update the review status of a solution."""
+        update_data = {
+            'review_status': review_status
+        }
+        
+        headers = {'Authorization': f'Bearer {self.token}'}
+        url = f'{BASE_URL}/api/solutions/{solution_slug}'
+        debug_request('PUT', url, headers=headers, json=update_data)
+        response = self.session.put(url, json=update_data, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
     def create_rating(self, solution_slug: str) -> Dict:
         """Create a new rating for a solution."""
         rating_data = {
@@ -153,8 +169,8 @@ class TestDataGenerator:
 
     def generate_test_data(
         self,
-        num_solutions: int = 5,
-        num_comments_per_solution: int = 4,
+        num_solutions: int = 10,
+        num_comments_per_solution: int = 3,
         num_ratings_per_solution: int = 1
     ):
         """Generate complete test dataset."""
@@ -182,6 +198,9 @@ class TestDataGenerator:
             # Add ratings
             for _ in range(num_ratings_per_solution):
                 self.create_rating(solution['slug'])
+            
+            # Update review status
+            self.update_solution_review_status(solution['slug'], solution['review_status'])
 
         print("Test data generation completed successfully!")
 
