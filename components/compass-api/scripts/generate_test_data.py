@@ -94,10 +94,43 @@ class TestDataGenerator:
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
         recommend_statuses = ['BUY', 'HOLD', 'SELL']
         
+        # Define technology quadrants and their key areas
+        tech_quadrants = {
+            'Tools & Infrastructure': [
+                'Development Environments', 'Quality Assurance Tools',
+                'Continuous Integration', 'Observability Stack', 'Cloud Infrastructure'
+            ],
+            'Languages & Development Frameworks': [
+                'Core Languages', 'Frontend Technologies', 'Backend Solutions',
+                'Utility Libraries', 'Interface Components'
+            ],
+            'Platforms & Middleware': [
+                'Data Persistence', 'Message Brokers', 'API Management',
+                'Service Mesh', 'Distributed Caching'
+            ],
+            'Techniques & Patterns': [
+                'Development Methodologies', 'Engineering Practices', 'Architecture Patterns',
+                'Quality Standards', 'Team Practices'
+            ]
+        }
+        
+        # Select a random category and its key areas
+        category = random.choice(list(tech_quadrants.keys()))
+        key_areas = tech_quadrants[category]
+        
+        # Generate tags from key areas and some common tech terms
+        selected_areas = random.sample(key_areas, k=random.randint(1, 3))
+        tech_terms = [
+            'Cloud Native', 'DevOps', 'Automation', 'Scalability',
+            'High Availability', 'Security', 'Performance', 'Open Source',
+            'Enterprise', 'Integration', 'Monitoring', 'Analytics'
+        ]
+        tags = selected_areas + random.sample(tech_terms, k=random.randint(1, 3))
+        
         solution_data = {
             'name': fake.catch_phrase(),
             'description': fake.text(max_nb_chars=200),
-            'category': fake.word(),  # Primary category
+            'category': category,
             'radar_status': random.choice(radar_statuses),
             'department': fake.company_suffix(),
             'team': fake.job(),
@@ -108,7 +141,7 @@ class TestDataGenerator:
             'documentation_url': fake.url(),
             'demo_url': fake.url(),
             'version': f"{random.randint(1,5)}.{random.randint(0,9)}.{random.randint(0,9)}",
-            'tags': [fake.word() for _ in range(random.randint(2, 5))],
+            'tags': tags,
             'pros': [fake.sentence() for _ in range(random.randint(2, 4))],
             'cons': [fake.sentence() for _ in range(random.randint(1, 3))],
             'stage': random.choice(stages),
