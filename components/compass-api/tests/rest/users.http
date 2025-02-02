@@ -15,7 +15,7 @@ GET {{baseUrl}}/users/newuser
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
-### Create new user
+### Create test user
 POST {{baseUrl}}/users
 Content-Type: application/json
 
@@ -24,6 +24,18 @@ Content-Type: application/json
     "email": "test@example.com",
     "password": "test",
     "full_name": "Test User"
+}
+
+### Create new user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "newuser",
+    "email": "newuser@example.com",
+    "password": "password123",
+    "full_name": "New User",
+    "role": "USER"
 }
 
 ### Update user (requires auth, can only update own profile)
