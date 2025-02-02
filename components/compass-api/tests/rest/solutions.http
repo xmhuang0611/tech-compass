@@ -10,7 +10,7 @@ GET {{baseUrl}}/solutions?skip=0&limit=5
 Content-Type: application/json
 
 ### Get solutions with filters
-GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&radar_status=ADOPT&recommend_status=BUY&stage=PRODUCTION&sort=-created_at
+GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&radar_status=ADOPT&recommend_status=BUY&stage=PRODUCTION&review_status=APPROVED&sort=-created_at
 Content-Type: application/json
 
 ### Get all departments
@@ -105,6 +105,15 @@ Authorization: Bearer {{token}}
 GET {{baseUrl}}/solutions/non-existent-solution
 Content-Type: application/json
 
+### Try to update review status as non-superuser (should fail)
+PUT {{baseUrl}}/solutions/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "review_status": "APPROVED"
+}
+
 ### Try to update without auth token
 PUT {{baseUrl}}/solutions/my-solution
 Content-Type: application/json
@@ -140,6 +149,7 @@ Authorization: Bearer {{token}}
 #             "department": "Engineering",
 #             "team": "Platform",
 #             "team_email": "platform@company.com",
+#             "maintainer_id": "johndoe",
 #             "maintainer_name": "John Doe",
 #             "maintainer_email": "john@company.com",
 #             "official_website": "https://solution.com",
@@ -151,6 +161,7 @@ Authorization: Bearer {{token}}
 #             "cons": ["Learning curve"],
 #             "stage": "DEVELOPING",
 #             "recommend_status": "BUY",
+#             "review_status": "PENDING",
 #             "id": "...",
 #             "slug": "my-solution",
 #             "created_at": "2024-01-22T00:00:00",
@@ -167,4 +178,4 @@ Authorization: Bearer {{token}}
 # Error response example
 # {
 #     "detail": "Solution not found"
-# } 
+# }
