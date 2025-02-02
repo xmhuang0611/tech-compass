@@ -1,7 +1,7 @@
 """
 Script to generate test data using the Compass API endpoints.
 This script will:
-1. Create a test user (test/test) if not exists
+1. Create admin user (admin/admin123) if not exists
 2. Create solutions with categories and tags
 3. Add comments to solutions
 4. Add ratings to solutions
@@ -23,7 +23,14 @@ load_dotenv()
 # Configuration
 BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
 fake = faker.Faker()
-
+user_data = {
+            'username': 'admin',
+            'email': 'admin@example.com',
+            'password': 'admin123',
+            'full_name': 'Admin User',
+            'is_active': True,
+            'is_superuser': True
+        }
 def debug_request(method: str, url: str, **kwargs):
     """Print request details for debugging."""
     print(f"\n=== {method} {url} ===")
@@ -42,15 +49,6 @@ class TestDataGenerator:
 
     def create_test_user(self) -> Optional[Dict]:
         """Create test user if not exists."""
-        user_data = {
-            'username': 'admin',
-            'email': 'admin@example.com',
-            'password': 'admin123',
-            'full_name': 'Admin User',
-            'is_active': True,
-            'is_superuser': True
-        }
-        
         try:
             self.login_user(user_data['username'], user_data['password'])
             print("Test user already exists, skipping creation")
@@ -95,9 +93,6 @@ class TestDataGenerator:
         radar_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
         recommend_statuses = ['BUY', 'HOLD', 'SELL']
-        review_statuses = ['APPROVED', 'REJECTED', 'PENDING']
-        # Weight distribution for review status (70% approved, 20% rejected, 10% pending)
-        review_weights = [0.7, 0.2, 0.1]
         
         solution_data = {
             'name': fake.catch_phrase(),
@@ -140,8 +135,12 @@ class TestDataGenerator:
         response.raise_for_status()
         return response.json()
 
-    def update_solution_review_status(self, solution_slug: str, review_status: str) -> Dict:
+    def update_solution_review_status(self, solution_slug: str) -> Dict:
         """Update the review status of a solution."""
+        review_statuses = ['APPROVED', 'REJECTED', 'PENDING']
+        # Weight distribution for review status (70% approved, 20% rejected, 10% pending)
+        review_weights = [0.7, 0.2, 0.1]
+        review_status = random.choices(review_statuses, weights=review_weights)[0]
         update_data = {
             'review_status': review_status
         }
@@ -179,7 +178,7 @@ class TestDataGenerator:
         # Create/login test user
         self.create_test_user()
         if not self.token:
-            self.login_user('test', 'test')
+            self.login_user(user_data['username'], user_data['password'])
 
         # Create solutions
         print(f"Creating {num_solutions} solutions...")
@@ -199,8 +198,8 @@ class TestDataGenerator:
             for _ in range(num_ratings_per_solution):
                 self.create_rating(solution['slug'])
             
-            # Update review status
-            self.update_solution_review_status(solution['slug'], solution['review_status'])
+            # Update review status from weighted distribution
+            self.update_solution_review_status(solution['slug'])
 
         print("Test data generation completed successfully!")
 

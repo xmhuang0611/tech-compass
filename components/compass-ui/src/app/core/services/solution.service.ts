@@ -26,7 +26,8 @@ export class SolutionService {
   }): Observable<StandardResponse<Solution[]>> {
     let httpParams = new HttpParams()
       .set('skip', params.skip?.toString() || '0')
-      .set('limit', params.limit?.toString() || '10');
+      .set('limit', params.limit?.toString() || '10')
+      .set('review_status', 'APPROVED');
 
     if (params.category) httpParams = httpParams.set('category', params.category);
     if (params.department) httpParams = httpParams.set('department', params.department);
@@ -47,7 +48,8 @@ export class SolutionService {
           skip: skip.toString(),
           limit: limit.toString(),
           recommend_status: 'BUY',
-          sort: 'name'
+          sort: 'name',
+          review_status: 'APPROVED'
         }
       }
     );
@@ -64,7 +66,8 @@ export class SolutionService {
         params: {
           skip: skip.toString(),
           limit: limit.toString(),
-          sort: '-created_at'
+          sort: '-created_at',
+          review_status: 'APPROVED'
         }
       }
     );

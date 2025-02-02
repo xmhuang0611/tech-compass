@@ -36,6 +36,7 @@ class SolutionService:
     async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
         solution_dict = solution.model_dump(exclude_unset=True)
+        solution_dict["review_status"] = "PENDING"
         
         # Handle category creation if provided
         if solution_dict.get("category"):
