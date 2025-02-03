@@ -91,7 +91,7 @@ def render_solution_form(solution_data):
         st.subheader("Edit Solution")
 
         # Basic Information
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             name = st.text_input(
                 "Name", value=solution_data.get("name", ""), help="Solution name"
@@ -114,6 +114,12 @@ def render_solution_form(solution_data):
                 options=category_names,
                 index=selected_index,
                 help="Solution category",
+            )
+        with col3:
+            logo = st.text_input(
+                "Logo URL",
+                value=solution_data.get("logo", ""),
+                help="URL to the solution's logo image"
             )
 
         description = st.text_area(
@@ -272,7 +278,7 @@ def render_solution_form(solution_data):
         if submitted:
             update_data = {
                 "name": name,
-                "description": description,
+
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
@@ -287,6 +293,8 @@ def render_solution_form(solution_data):
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
                 "version": version if version else None,
+                "logo": logo if logo else None,
+                "description": description,
                 "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
                 "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()],
@@ -314,7 +322,7 @@ def render_add_solution_form():
         st.subheader("Add New Solution")
 
         # Basic Information
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             name = st.text_input("Name", help="Solution name")
         with col2:
@@ -322,6 +330,11 @@ def render_add_solution_form():
             category_names = [""] + [cat["name"] for cat in categories]
             category = st.selectbox(
                 "Category", options=category_names, help="Solution category"
+            )
+        with col3:
+            logo = st.text_input(
+                "Logo URL",
+                help="URL to the solution's logo image"
             )
 
         description = st.text_area("Description", help="Solution description")
@@ -426,6 +439,7 @@ def render_add_solution_form():
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
                 "version": version if version else None,
+                "logo": logo if logo else None,
                 "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
                 "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()],
@@ -503,10 +517,9 @@ def main():
         if solutions:
             # Create DataFrame with explicit column order
             columns = [
-                "slug",
                 "name",
-                "description",
                 "category",
+                "review_status",
                 "stage",
                 "recommend_status",
                 "radar_status",
@@ -518,9 +531,12 @@ def main():
                 "maintainer_email",
                 "version",
                 "tags",
+                "slug",
+                "logo",
                 "official_website",
                 "documentation_url",
                 "demo_url",
+                "description",
                 "pros",
                 "cons",
                 "created_at",
