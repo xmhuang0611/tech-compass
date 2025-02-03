@@ -61,8 +61,7 @@ Get a paginated list of solutions with optional filtering.
 - `category` (string, optional): Filter by category
 - `department` (string, optional): Filter by department
 - `team` (string, optional): Filter by team
-- `recommend_status` (string, optional): Filter by recommendation status (BUY/HOLD/SELL)
-- `radar_status` (string, optional): Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
+- `recommend_status` (string, optional): Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)
 - `stage` (string, optional): Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
 
 ### Get Solution
@@ -91,7 +90,6 @@ Create a new solution. Requires authentication.
   "department": "string",
   "team": "string",
   "recommend_status": "string",
-  "radar_status": "string",
   "stage": "string",
   "maintainer_id": "string",
   "maintainer_name": "string",

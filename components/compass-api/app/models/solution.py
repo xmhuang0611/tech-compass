@@ -18,13 +18,6 @@ StageEnum = Literal[
 
 # Recommend status values as defined in db-design.md
 RecommendStatusEnum = Literal[
-    "BUY",    # Recommended for new projects and expansion
-    "HOLD",   # Maintain existing usage, but don't expand
-    "SELL"    # Plan for replacement/retirement
-]
-
-# Tech Radar status values
-RadarStatusEnum = Literal[
     "ADOPT",   # Proven technology, safe to use
     "TRIAL",   # Worth pursuing, understand how it fits
     "ASSESS",  # Worth exploring with the goal of understanding how it will affect your enterprise
@@ -44,7 +37,6 @@ class SolutionBase(BaseModel):
     description: str = Field(..., description="Detailed description")
     logo: str = Field("", description="Logo URL or path")
     category: Optional[str] = Field(None, description="Primary category")
-    radar_status: RadarStatusEnum = Field(..., description="Tech Radar status (ADOPT/TRIAL/ASSESS/HOLD)")
     department: str = Field(..., description="Department name")
     team: str = Field(..., description="Team name")
     team_email: Optional[str] = Field(None, description="Team contact email")
@@ -59,7 +51,7 @@ class SolutionBase(BaseModel):
     pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
     stage: Optional[StageEnum] = Field(None, description="Development stage status")
-    recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (BUY/HOLD/SELL)")
+    recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (ADOPT/TRIAL/ASSESS/HOLD)")
 
 class SolutionCreate(SolutionBase):
     """Solution creation model - excludes review_status field"""
@@ -75,7 +67,6 @@ class SolutionUpdate(BaseModel):
     description: Optional[str] = None
     logo: Optional[str] = None
     category: Optional[str] = None
-    radar_status: Optional[RadarStatusEnum] = None
     department: Optional[str] = None
     team: Optional[str] = None
     team_email: Optional[str] = None

@@ -110,7 +110,6 @@ class SolutionService:
         department: Optional[str] = None,
         team: Optional[str] = None,
         recommend_status: Optional[str] = None,
-        radar_status: Optional[str] = None,
         stage: Optional[str] = None,
         review_status: Optional[str] = None,
         sort: str = "name"
@@ -130,8 +129,6 @@ class SolutionService:
             query["team"] = team
         if recommend_status:
             query["recommend_status"] = recommend_status
-        if radar_status:
-            query["radar_status"] = radar_status
         if stage:
             query["stage"] = stage
         if review_status:
@@ -297,12 +294,11 @@ class SolutionService:
         department: Optional[str] = None,
         team: Optional[str] = None,
         recommend_status: Optional[str] = None,
-        radar_status: Optional[str] = None,
         stage: Optional[str] = None,
         review_status: Optional[str] = None,
         sort: str = "name"
     ) -> List[Solution]:
-        """Get all solutions with ratings"""
+        """Get solutions with ratings"""
         solutions = await self.get_solutions(
             skip=skip,
             limit=limit,
@@ -310,7 +306,6 @@ class SolutionService:
             department=department,
             team=team,
             recommend_status=recommend_status,
-            radar_status=radar_status,
             stage=stage,
             review_status=review_status,
             sort=sort

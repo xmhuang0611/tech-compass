@@ -10,7 +10,7 @@ GET {{baseUrl}}/solutions?skip=0&limit=5
 Content-Type: application/json
 
 ### Get solutions with filters
-GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&radar_status=ADOPT&recommend_status=BUY&stage=PRODUCTION&review_status=APPROVED&sort=-created_at
+GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&recommend_status=ADOPT&stage=PRODUCTION&review_status=APPROVED&sort=-created_at
 Content-Type: application/json
 
 ### Get all departments
@@ -30,7 +30,6 @@ Authorization: Bearer {{token}}
     "name": "My Solution",
     "description": "A comprehensive solution for testing",
     "category": "Development",
-    "radar_status": "ADOPT",
     "department": "Engineering",
     "team": "Platform",
     "team_email": "platform@company.com",
@@ -44,7 +43,7 @@ Authorization: Bearer {{token}}
     "pros": ["Easy to use", "Well documented"],
     "cons": ["Learning curve"],
     "stage": "DEVELOPING",
-    "recommend_status": "BUY"
+    "recommend_status": "ADOPT"
 }
 
 ### Update solution (requires auth)
@@ -54,7 +53,7 @@ Authorization: Bearer {{token}}
 
 {
     "description": "Updated description",
-    "radar_status": "TRIAL",
+    "recommend_status": "TRIAL",
     "stage": "UAT",
     "tags": ["testing", "development", "updated"]
 }
@@ -74,15 +73,15 @@ Authorization: Bearer {{token}}
     "name": "Invalid Solution"
 }
 
-### Try to create solution with invalid radar status
+### Try to create solution with invalid recommend status
 POST {{baseUrl}}/solutions
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
     "name": "Invalid Solution",
-    "description": "Testing invalid radar status",
-    "radar_status": "INVALID",
+    "description": "Testing invalid recommend status",
+    "recommend_status": "INVALID",
     "department": "Engineering",
     "team": "Platform"
 }
@@ -95,7 +94,7 @@ Authorization: Bearer {{token}}
 {
     "name": "Invalid Solution",
     "description": "Testing invalid stage",
-    "radar_status": "ADOPT",
+    "recommend_status": "ADOPT",
     "department": "Engineering",
     "team": "Platform",
     "stage": "INVALID"
@@ -145,7 +144,6 @@ Authorization: Bearer {{token}}
 #             "name": "My Solution",
 #             "description": "A comprehensive solution for testing",
 #             "category": "Development",
-#             "radar_status": "ADOPT",
 #             "department": "Engineering",
 #             "team": "Platform",
 #             "team_email": "platform@company.com",
@@ -160,7 +158,7 @@ Authorization: Bearer {{token}}
 #             "pros": ["Easy to use", "Well documented"],
 #             "cons": ["Learning curve"],
 #             "stage": "DEVELOPING",
-#             "recommend_status": "BUY",
+#             "recommend_status": "ADOPT",
 #             "review_status": "PENDING",
 #             "id": "...",
 #             "slug": "my-solution",

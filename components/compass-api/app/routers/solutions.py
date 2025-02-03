@@ -35,8 +35,7 @@ async def get_solutions(
     category: Optional[str] = None,
     department: Optional[str] = None,
     team: Optional[str] = None,
-    recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (BUY/HOLD/SELL)"),
-    radar_status: Optional[str] = Query(None, description="Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)"),
+    recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)"),
     stage: Optional[str] = Query(None, description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)"),
     review_status: Optional[str] = Query(None, description="Filter by review status (PENDING/APPROVED/REJECTED)"),
     sort: str = Query("name", description="Sort field (prefix with - for descending order)"),
@@ -48,23 +47,17 @@ async def get_solutions(
     - category: Filter by category name
     - department: Filter by department name
     - team: Filter by team name
-    - recommend_status: Filter by recommendation status (BUY/HOLD/SELL)
-    - radar_status: Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
+    - recommend_status: Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)
     - stage: Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
     - review_status: Filter by review status (PENDING/APPROVED/REJECTED)
     - sort: Sort field (name, category, created_at, updated_at). Prefix with - for descending order
     """
     try:
         # Validate enum values if provided
-        if recommend_status and recommend_status not in ["BUY", "HOLD", "SELL"]:
+        if recommend_status and recommend_status not in ["ADOPT", "TRIAL", "ASSESS", "HOLD"]:
             raise HTTPException(
                 status_code=400,
-                detail="Invalid recommend_status. Must be one of: BUY, HOLD, SELL"
-            )
-        if radar_status and radar_status not in ["ADOPT", "TRIAL", "ASSESS", "HOLD"]:
-            raise HTTPException(
-                status_code=400,
-                detail="Invalid radar_status. Must be one of: ADOPT, TRIAL, ASSESS, HOLD"
+                detail="Invalid recommend_status. Must be one of: ADOPT, TRIAL, ASSESS, HOLD"
             )
         if stage and stage not in ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]:
             raise HTTPException(
@@ -84,7 +77,6 @@ async def get_solutions(
             department=department,
             team=team,
             recommend_status=recommend_status,
-            radar_status=radar_status,
             stage=stage,
             review_status=review_status,
             sort=sort

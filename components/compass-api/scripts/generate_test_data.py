@@ -90,9 +90,8 @@ class TestDataGenerator:
 
     def create_solution(self) -> Dict:
         """Create a new solution through the API."""
-        radar_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
-        recommend_statuses = ['BUY', 'HOLD', 'SELL']
+        recommend_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
         
         # Define technology quadrants and their key areas
         tech_quadrants = {
@@ -131,7 +130,6 @@ class TestDataGenerator:
             'name': fake.catch_phrase(),
             'description': fake.text(max_nb_chars=200),
             'category': category,
-            'radar_status': random.choice(radar_statuses),
             'department': fake.company_suffix(),
             'team': fake.job(),
             'team_email': fake.company_email(),
