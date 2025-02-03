@@ -73,6 +73,7 @@ class SolutionUpdate(BaseModel):
     """Solution update model - all fields are optional"""
     name: Optional[str] = None
     description: Optional[str] = None
+    logo: Optional[str] = None
     category: Optional[str] = None
     radar_status: Optional[RadarStatusEnum] = None
     department: Optional[str] = None
