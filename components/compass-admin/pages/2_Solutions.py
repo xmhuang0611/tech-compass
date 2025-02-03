@@ -33,7 +33,7 @@ if not st.session_state.authenticated:
     st.stop()
 
 # Constants
-RADAR_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
+RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
 STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
 
 
@@ -129,7 +129,7 @@ def render_solution_form(solution_data):
         )
 
         # Status Information
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3 = st.columns(3)
         with col1:
             review_status = st.selectbox(
                 "Review Status",
@@ -158,28 +158,16 @@ def render_solution_form(solution_data):
         with col3:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=[""] + ["BUY", "HOLD", "SELL"],
+                options=[""] + RECOMMEND_STATUS_OPTIONS,
                 index=(
                     0
                     if not solution_data.get("recommend_status")
-                    else ["BUY", "HOLD", "SELL"].index(
+                    else RECOMMEND_STATUS_OPTIONS.index(
                         solution_data.get("recommend_status")
                     )
                     + 1
                 ),
                 help="Select recommend status",
-            )
-        with col4:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
-                index=(
-                    0
-                    if not solution_data.get("radar_status")
-                    else RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status"))
-                    + 1
-                ),
-                help="Select radar status",
             )
 
         # Team Information
@@ -292,11 +280,9 @@ def render_solution_form(solution_data):
         if submitted:
             update_data = {
                 "name": name,
-
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
-                "radar_status": radar_status if radar_status else None,
                 "review_status": review_status if review_status else None,
                 "department": department,
                 "team": team,
@@ -363,15 +349,10 @@ def render_add_solution_form():
         with col2:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=[""] + ["BUY", "HOLD", "SELL"],
+                options=[""] + RECOMMEND_STATUS_OPTIONS,
                 help="Select recommend status",
             )
-        with col3:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
-                help="Select radar status",
-            )
+
         # Team Information
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -442,7 +423,6 @@ def render_add_solution_form():
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
-                "radar_status": radar_status if radar_status else None,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -488,7 +468,7 @@ def main():
     with list_tab:
         # Filters
         with st.expander("Filters", expanded=True):
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 category = st.selectbox(
                     "Category",
@@ -501,12 +481,6 @@ def main():
                 stage = st.selectbox(
                     "Stage", options=["All"] + STAGE_OPTIONS, key="filter_stage"
                 )
-            with col4:
-                radar_status = st.selectbox(
-                    "Radar Status",
-                    options=["All"] + RADAR_STATUS_OPTIONS,
-                    key="filter_radar_status",
-                )
 
         # Load solutions with filters
         filters = {}
@@ -516,8 +490,6 @@ def main():
             filters["department"] = department
         if stage != "All":
             filters["stage"] = stage
-        if radar_status != "All":
-            filters["radar_status"] = radar_status
 
         # Get page from session state
         if "page" not in st.session_state:
@@ -536,7 +508,6 @@ def main():
                 "review_status",
                 "stage",
                 "recommend_status",
-                "radar_status",
                 "department",
                 "team",
                 "team_email",
@@ -596,7 +567,6 @@ def main():
                 "category": {"width": 120, "headerName": "Category"},
                 "stage": {"width": 100, "headerName": "Stage"},
                 "recommend_status": {"width": 120, "headerName": "Recommend"},
-                "radar_status": {"width": 100, "headerName": "Radar"},
                 "department": {"width": 120, "headerName": "Department"},
                 "team": {"width": 120, "headerName": "Team"},
                 "team_email": {"width": 150, "headerName": "Team Email"},
