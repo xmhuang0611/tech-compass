@@ -73,18 +73,6 @@
         </div>
 
         <div class="filter-item">
-          <label>Radar Status</label>
-          <p-dropdown 
-            [options]="radarStatusOptions" 
-            [(ngModel)]="filters.radar_status"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Status">
-          </p-dropdown>
-        </div>
-
-        <div class="filter-item">
           <label>Stage</label>
           <p-dropdown 
             [options]="stageOptions" 

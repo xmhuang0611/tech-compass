@@ -22,8 +22,7 @@ interface SolutionFilters {
   category?: string;
   department?: string;
   team?: string;
-  recommend_status?: 'BUY' | 'HOLD' | 'SELL';
-  radar_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+  recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
   sort: string;
 }
@@ -93,12 +92,6 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
 
   // Filter options
   recommendStatusOptions = [
-    { label: 'Buy', value: 'BUY' },
-    { label: 'Hold', value: 'HOLD' },
-    { label: 'Sell', value: 'SELL' }
-  ];
-
-  radarStatusOptions = [
     { label: 'Adopt', value: 'ADOPT' },
     { label: 'Trial', value: 'TRIAL' },
     { label: 'Assess', value: 'ASSESS' },
@@ -146,7 +139,6 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       if (params['department']) this.filters.department = params['department'];
       if (params['team']) this.filters.team = params['team'];
       if (params['recommend_status']) this.filters.recommend_status = params['recommend_status'] as any;
-      if (params['radar_status']) this.filters.radar_status = params['radar_status'] as any;
       if (params['stage']) this.filters.stage = params['stage'] as any;
       if (params['sort']) this.filters.sort = params['sort'];
 

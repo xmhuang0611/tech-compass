@@ -56,17 +56,11 @@ export class SubmitSolutionComponent implements OnInit {
     { label: 'RETIRED', value: 'RETIRED' }
   ];
   
-  radarStatusOptions = [
+  recommendStatusOptions = [
     { label: 'ADOPT', value: 'ADOPT' },
     { label: 'TRIAL', value: 'TRIAL' },
     { label: 'ASSESS', value: 'ASSESS' },
     { label: 'HOLD', value: 'HOLD' }
-  ];
-  
-  recommendStatusOptions = [
-    { label: 'BUY', value: 'BUY' },
-    { label: 'HOLD', value: 'HOLD' },
-    { label: 'SELL', value: 'SELL' }
   ];
   
   solutionForm: FormGroup;
@@ -101,7 +95,6 @@ export class SubmitSolutionComponent implements OnInit {
       pros: [''],
       cons: [''],
       stage: ['', Validators.required],
-      radar_status: ['', Validators.required],
       recommend_status: ['', Validators.required]
     });
   }
@@ -147,11 +140,16 @@ export class SubmitSolutionComponent implements OnInit {
       const cons = formValue.cons?.split('\n').filter((line: string) => line.trim()) || [];
       const tags = formValue.tags?.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) || [];
       
+      // Ensure optional string fields are empty strings instead of null
       const solution = {
         ...formValue,
         pros,
         cons,
-        tags
+        tags,
+        logo: formValue.logo || '',
+        official_website: formValue.official_website || '',
+        documentation_url: formValue.documentation_url || '',
+        demo_url: formValue.demo_url || ''
       };
 
       this.solutionService.createSolution(solution).subscribe({

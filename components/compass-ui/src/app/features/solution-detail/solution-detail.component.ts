@@ -174,9 +174,10 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
 
   getRecommendStatusSeverity(status: string): Severity {
     const severityMap: { [key: string]: Severity } = {
-      'BUY': 'success',
-      'HOLD': 'warning',
-      'SELL': 'danger'
+      'ADOPT': 'success',
+      'TRIAL': 'info',
+      'ASSESS': 'warning',
+      'HOLD': 'danger'
     };
     return severityMap[status] || 'info';
   }

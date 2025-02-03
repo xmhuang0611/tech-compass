@@ -16,7 +16,7 @@ export interface Solution {
   tags: string[];
   pros?: string[];
   cons?: string[];
-  recommend_status: 'BUY' | 'HOLD' | 'SELL';
+  recommend_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   radar_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   stage: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
   created_at: string;

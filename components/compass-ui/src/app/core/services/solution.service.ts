@@ -19,8 +19,7 @@ export class SolutionService {
     category?: string;
     department?: string;
     team?: string;
-    recommend_status?: 'BUY' | 'HOLD' | 'SELL';
-    radar_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+    recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
     stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
     sort?: string;
   }): Observable<StandardResponse<Solution[]>> {
@@ -33,7 +32,6 @@ export class SolutionService {
     if (params.department) httpParams = httpParams.set('department', params.department);
     if (params.team) httpParams = httpParams.set('team', params.team);
     if (params.recommend_status) httpParams = httpParams.set('recommend_status', params.recommend_status);
-    if (params.radar_status) httpParams = httpParams.set('radar_status', params.radar_status);
     if (params.stage) httpParams = httpParams.set('stage', params.stage);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
 
@@ -47,7 +45,7 @@ export class SolutionService {
         params: {
           skip: skip.toString(),
           limit: limit.toString(),
-          recommend_status: 'BUY',
+          recommend_status: 'ADOPT',
           sort: 'name',
           review_status: 'APPROVED'
         }

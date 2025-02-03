@@ -33,11 +33,13 @@ export class SolutionCardComponent {
 
   getRecommendStatusSeverity(): TagSeverity {
     switch (this.solution.recommend_status) {
-      case 'BUY':
+      case 'ADOPT':
         return 'success';
-      case 'HOLD':
+      case 'TRIAL':
+        return 'info';
+      case 'ASSESS':
         return 'warning';
-      case 'SELL':
+      case 'HOLD':
         return 'danger';
       default:
         return 'info';
