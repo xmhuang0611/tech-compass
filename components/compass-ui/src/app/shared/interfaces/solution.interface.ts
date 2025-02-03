@@ -17,7 +17,6 @@ export interface Solution {
   pros?: string[];
   cons?: string[];
   recommend_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
-  radar_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   stage: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
   created_at: string;
   updated_at: string;

@@ -32,7 +32,6 @@ interface Solution {
   name: string;
   description: string;
   category: string;
-  radar_status: string;
   department: string;
   logo: string;
   team: string;
@@ -160,16 +159,6 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
       'RETIRED': 'danger'
     };
     return severityMap[stage] || 'info';
-  }
-
-  getRadarStatusSeverity(status: string): Severity {
-    const severityMap: { [key: string]: Severity } = {
-      'ADOPT': 'success',
-      'TRIAL': 'info',
-      'ASSESS': 'warning',
-      'HOLD': 'danger'
-    };
-    return severityMap[status] || 'info';
   }
 
   getRecommendStatusSeverity(status: string): Severity {
