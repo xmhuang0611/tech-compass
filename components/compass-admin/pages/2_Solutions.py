@@ -129,18 +129,20 @@ def render_solution_form(solution_data):
         )
 
         # Status Information
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
+            review_status = st.selectbox(
+                "Review Status",
+                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
                 index=(
                     0
-                    if not solution_data.get("radar_status")
-                    else RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status"))
+                    if not solution_data.get("review_status")
+                    else ["PENDING", "APPROVED", "REJECTED"].index(
+                        solution_data.get("review_status")
+                    )
                     + 1
                 ),
-                help="Select radar status",
+                help="Select review status",
             )
         with col2:
             stage = st.selectbox(
@@ -166,6 +168,18 @@ def render_solution_form(solution_data):
                     + 1
                 ),
                 help="Select recommend status",
+            )
+        with col4:
+            radar_status = st.selectbox(
+                "Radar Status",
+                options=[""] + RADAR_STATUS_OPTIONS,
+                index=(
+                    0
+                    if not solution_data.get("radar_status")
+                    else RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status"))
+                    + 1
+                ),
+                help="Select radar status",
             )
 
         # Team Information
@@ -283,6 +297,7 @@ def render_solution_form(solution_data):
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
                 "radar_status": radar_status if radar_status else None,
+                "review_status": review_status if review_status else None,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -342,22 +357,21 @@ def render_add_solution_form():
         # Status Information
         col1, col2, col3 = st.columns(3)
         with col1:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
-                help="Select radar status",
-            )
-        with col2:
             stage = st.selectbox(
                 "Stage", options=[""] + STAGE_OPTIONS, help="Select stage"
             )
-        with col3:
+        with col2:
             recommend_status = st.selectbox(
                 "Recommend Status",
                 options=[""] + ["BUY", "HOLD", "SELL"],
                 help="Select recommend status",
             )
-
+        with col3:
+            radar_status = st.selectbox(
+                "Radar Status",
+                options=[""] + RADAR_STATUS_OPTIONS,
+                help="Select radar status",
+            )
         # Team Information
         col1, col2, col3 = st.columns(3)
         with col1:
