@@ -66,7 +66,7 @@
   }
 
   .layout-footer {
-    background: var(--surface-card);
+    background: var(--surface-dark-ground);
     border-top: 1px solid var(--surface-border);
     padding: 2rem 0;
 
@@ -81,7 +81,7 @@
         gap: 2rem;
 
         .about-text {
-          color: var(--text-color-secondary);
+          color: var(--text-dark-color);
           margin-bottom: 1rem;
         }
 
@@ -95,7 +95,7 @@
           justify-content: flex-end;
 
           li {
-            color: var(--text-color-secondary);
+            color: var(--text-dark-color);
 
             a {
               color: var(--secondary-color);
