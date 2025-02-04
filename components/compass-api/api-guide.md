@@ -46,6 +46,57 @@ Authorization: Bearer {access_token}
 
 ## Solutions
 
+### Search Solutions
+
+```http
+GET /solutions/search
+```
+
+Search solutions using text similarity across multiple fields.
+
+**Query Parameters:**
+
+- `keyword` (string, required): Search keyword
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "956fDdc25eFF7aDcEc5cb5AE",
+      "created_at": "2025-02-04T03:55:44.626Z",
+      "created_by": "string",
+      "updated_at": "2025-02-04T03:55:44.626Z",
+      "updated_by": "string",
+      "name": "string",
+      "description": "string",
+      "brief": "string",
+      "logo": "",
+      "category": "string",
+      "department": "string",
+      "team": "string",
+      "team_email": "string",
+      "maintainer_id": "string",
+      "maintainer_name": "string",
+      "maintainer_email": "string",
+      "official_website": "string",
+      "documentation_url": "string",
+      "demo_url": "string",
+      "version": "string",
+      ...
+    }
+  ],
+  "detail": "string",
+  "total": 0,
+  "skip": 0,
+  "limit": 0
+}
+```
+
+Results are sorted by relevance score, with higher weights given to matches in more important fields.
+
 ### List Solutions
 
 ```http
