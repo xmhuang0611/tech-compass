@@ -74,7 +74,11 @@ class UserService:
             )
 
         user_dict = user.model_dump()
-        user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
+        # Only hash password if it's not empty (for external auth users)
+        if user_dict["password"]:
+            user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
+        else:
+            user_dict["hashed_password"] = ""  # Empty hash for external auth users
         user_dict["created_at"] = datetime.utcnow()
         user_dict["updated_at"] = user_dict["created_at"]
 

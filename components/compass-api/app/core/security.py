@@ -18,15 +18,17 @@ async def verify_credentials(username: str, password: str) -> bool:
     """Verify user credentials against external auth server or local database."""
     # First check if user exists in our database
     user = await get_user_from_db(username)
-    if not user:
-        return False
     
     # Always verify admin user with password
     if username == "admin":
+        if not user:
+            return False
         return verify_password(password, user.hashed_password)
     
     if not settings.AUTH_SERVER_ENABLED:
         # Development mode - verify password against local database
+        if not user:
+            return False
         return verify_password(password, user.hashed_password)
     
     try:
@@ -51,7 +53,48 @@ async def verify_credentials(username: str, password: str) -> bool:
                     headers=headers,
                     timeout=5.0
                 )
-            return response.status_code == 200
+
+            if response.status_code != 200:
+                return False
+
+            # Parse response JSON
+            try:
+                auth_data = response.json()
+                # Get full_name from configured field or fallback to username
+                full_name = auth_data.get(settings.AUTH_SERVER_FULLNAME_FIELD, username)
+                # Get email from configured field or use fallback
+                email = auth_data.get(settings.AUTH_SERVER_EMAIL_FIELD, f"{username}@external.auth")
+                
+                # Create or update local user
+                from app.services.user_service import UserService
+                user_service = UserService()
+                if not user:
+                    # Create new user
+                    from app.models.user import UserCreate
+                    user_create = UserCreate(
+                        username=username,
+                        password="",  # Empty password for external auth users
+                        email=email,
+                        full_name=full_name,
+                        is_active=True,
+                        is_superuser=False
+                    )
+                    await user_service.create_user(user_create)
+                else:
+                    # Update existing user's info if changed
+                    from app.models.user import UserUpdate
+                    if user.full_name != full_name or user.email != email:
+                        user_update = UserUpdate(
+                            full_name=full_name,
+                            email=email
+                        )
+                        await user_service.update_user_by_username(username, user_update, "system")
+                
+                return True
+            except (ValueError, KeyError):
+                # If response is not valid JSON or missing required fields
+                return False
+                
     except httpx.RequestError:
         # If auth server is unreachable, fail closed for security
         return False
