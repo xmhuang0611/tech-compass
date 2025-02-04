@@ -51,4 +51,36 @@ class TechRadarService:
             entries.append(entry)
         
         # Create and return radar data with current date
-        return TechRadarData.create_current(entries) 
+        return TechRadarData.create_current(entries)
+
+    async def get_radar_quadrants(self) -> List[Dict[str, str]]:
+        """Get radar quadrants from categories collection.
+        Returns categories with radar_quadrant >= 0, ordered by radar_quadrant.
+        """
+        # Find all categories with radar_quadrant >= 0 and sort by radar_quadrant
+        cursor = self.categories.find(
+            {"radar_quadrant": {"$gte": 0}},
+            {"name": 1, "radar_quadrant": 1, "_id": 0}
+        ).sort("radar_quadrant", 1)
+
+        # Create a list to store quadrants in order
+        quadrants = [None] * 4  # Initialize with None for all possible positions
+        
+        # Fill the quadrants list based on radar_quadrant value
+        async for category in cursor:
+            quadrant_index = category["radar_quadrant"]
+            if 0 <= quadrant_index < 4:  # Ensure index is valid
+                quadrants[quadrant_index] = {"name": category["name"]}
+        
+        # Filter out any None values and create final list
+        return [q for q in quadrants if q is not None]
+
+    def get_radar_rings(self) -> List[Dict[str, str]]:
+        """Get radar rings in order (ADOPT, TRIAL, ASSESS, HOLD)."""
+        rings = [
+            {"name": "ADOPT"},
+            {"name": "TRIAL"},
+            {"name": "ASSESS"},
+            {"name": "HOLD"}
+        ]
+        return rings 
