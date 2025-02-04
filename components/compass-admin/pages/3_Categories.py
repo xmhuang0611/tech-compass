@@ -105,10 +105,10 @@ def render_category_form(category_data):
         # Add radar quadrant field
         radar_quadrant = st.number_input(
             "Radar Quadrant",
-            min_value=0,
-            max_value=4,
-            value=category_data.get("radar_quadrant", 0),
-            help="Radar quadrant (0-4)"
+            min_value=-1,
+            max_value=3,
+            value=category_data.get("radar_quadrant", -1),
+            help="Radar quadrant (-1,0,1,2,3)"
         )
 
         # Save Changes and Delete buttons
@@ -164,10 +164,10 @@ def render_add_category_form():
         description = st.text_area("Description", help="Category description")
         radar_quadrant = st.number_input(
             "Radar Quadrant",
-            min_value=0,
-            max_value=4,
-            value=0,
-            help="Radar quadrant (0-4)"
+            min_value=-1,
+            max_value=3,
+            value=-1,
+            help="Radar quadrant (-1,0,1,2,3)"
         )
         submitted = st.form_submit_button("Add Category")
 

@@ -24,13 +24,14 @@ load_dotenv()
 BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
 fake = faker.Faker()
 user_data = {
-            'username': 'admin',
-            'email': 'admin@example.com',
-            'password': 'admin123',
-            'full_name': 'Admin User',
-            'is_active': True,
-            'is_superuser': True
-        }
+    'username': 'admin',
+    'email': 'admin@example.com',
+    'password': 'admin123',
+    'full_name': 'Admin User',
+    'is_active': True,
+    'is_superuser': True
+}
+
 def debug_request(method: str, url: str, **kwargs):
     """Print request details for debugging."""
     print(f"\n=== {method} {url} ===")
@@ -40,6 +41,7 @@ def debug_request(method: str, url: str, **kwargs):
         print("Form Data:", kwargs['data'])
     if 'json' in kwargs:
         print("JSON Data:", kwargs['json'])
+
 
 class TestDataGenerator:
     def __init__(self):
@@ -96,27 +98,55 @@ class TestDataGenerator:
         
         # Define technology quadrants and their key areas
         tech_quadrants = {
-            'Tools & Infrastructure': [
-                'Development Environments', 'Quality Assurance Tools',
-                'Continuous Integration', 'Observability Stack', 'Cloud Infrastructure'
-            ],
-            'Development Frameworks': [
-                'Core Languages', 'Frontend Technologies', 'Backend Solutions',
-                'Utility Libraries', 'Interface Components'
-            ],
-            'Platforms & Middleware': [
-                'Data Persistence', 'Message Brokers', 'API Management',
-                'Service Mesh', 'Distributed Caching'
-            ],
-            'Techniques & Patterns': [
-                'Development Methodologies', 'Engineering Practices', 'Architecture Patterns',
-                'Quality Standards', 'Team Practices'
-            ]
+            'Languages & Frameworks': {
+                'areas': [
+                    'Programming Languages', 'Web Frameworks', 'Mobile Frameworks',
+                    'Testing Tools', 'Build Tools'
+                ],
+                'quadrant': 0
+            },
+            'Platforms & Infrastructure': {
+                'areas': [
+                    'Cloud Platforms', 'Containers', 'Databases',
+                    'Message Queues', 'CI/CD Tools'
+                ],
+                'quadrant': 1
+            },
+            'Data & Analytics': {
+                'areas': [
+                    'Data Storage', 'Data Processing', 'Analytics Tools',
+                    'Machine Learning', 'Visualization'
+                ],
+                'quadrant': 2
+            },
+            'DevOps & Tools': {
+                'areas': [
+                    'Monitoring', 'Logging', 'Security',
+                    'Performance', 'Deployment'
+                ],
+                'quadrant': 3
+            }
         }
         
         # Select a random category and its key areas
-        category = random.choice(list(tech_quadrants.keys()))
-        key_areas = tech_quadrants[category]
+        category_name = random.choice(list(tech_quadrants.keys()))
+        category_info = tech_quadrants[category_name]
+        key_areas = category_info['areas']
+        
+        # Create or update category with radar_quadrant
+        headers = {'Authorization': f'Bearer {self.token}'}
+        category_data = {
+            'name': category_name,
+            'description': f'Technologies related to {category_name.lower()}',
+            'radar_quadrant': category_info['quadrant']
+        }
+        url = f'{BASE_URL}/api/categories'
+        try:
+            debug_request('POST', url, headers=headers, json=category_data)
+            self.session.post(url, json=category_data, headers=headers)
+        except requests.exceptions.RequestException:
+            # Category might already exist, ignore error
+            pass
         
         # Generate tags from key areas and some common tech terms
         selected_areas = random.sample(key_areas, k=random.randint(1, 3))
@@ -131,7 +161,7 @@ class TestDataGenerator:
             'name': fake.catch_phrase(),
             'description': fake.text(max_nb_chars=200),
             'brief': fake.text(max_nb_chars=100).split('.')[0] + '.',  # Ensure it's a single sentence with proper ending
-            'category': category,
+            'category': category_name,
             'department': fake.company_suffix(),
             'team': fake.job(),
             'team_email': fake.company_email(),
@@ -149,7 +179,7 @@ class TestDataGenerator:
             'stage': random.choice(stages),
             'recommend_status': random.choice(recommend_statuses)
         }
-        
+
         headers = {'Authorization': f'Bearer {self.token}'}
         url = f'{BASE_URL}/api/solutions/'
         debug_request('POST', url, headers=headers, json=solution_data)
@@ -237,6 +267,7 @@ class TestDataGenerator:
             self.update_solution_review_status(solution['slug'])
 
         print("Test data generation completed successfully!")
+
 
 def main():
     try:

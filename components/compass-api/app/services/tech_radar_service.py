@@ -20,10 +20,10 @@ class TechRadarService:
         
         # Status to ring mapping (1-based as per requirements)
         status_to_ring: Dict[str, int] = {
-            "ADOPT": 1,
-            "TRIAL": 2,
-            "ASSESS": 3,
-            "HOLD": 4
+            "ADOPT": 0,
+            "TRIAL": 1,
+            "ASSESS": 2,
+            "HOLD": 3
         }
         
         entries: List[TechRadarEntry] = []
