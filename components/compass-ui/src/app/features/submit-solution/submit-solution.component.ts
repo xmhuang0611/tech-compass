@@ -11,6 +11,7 @@ import { ChipsModule } from 'primeng/chips';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { MessagesModule } from 'primeng/messages';
 
 import { CategoryService } from '../../core/services/category.service';
@@ -35,6 +36,7 @@ import { LoginDialogComponent } from '../../core/components/login-dialog/login-d
     DropdownModule,
     InputTextModule,
     InputTextareaModule,
+    InputNumberModule,
     MessagesModule
   ],
   providers: [
@@ -61,6 +63,14 @@ export class SubmitSolutionComponent implements OnInit {
     { label: 'TRIAL', value: 'TRIAL' },
     { label: 'ASSESS', value: 'ASSESS' },
     { label: 'HOLD', value: 'HOLD' }
+  ];
+  
+  adoptionLevelOptions = [
+    { label: 'PILOT', value: 'PILOT' },
+    { label: 'TEAM', value: 'TEAM' },
+    { label: 'DEPARTMENT', value: 'DEPARTMENT' },
+    { label: 'ENTERPRISE', value: 'ENTERPRISE' },
+    { label: 'INDUSTRY', value: 'INDUSTRY' }
   ];
   
   solutionForm: FormGroup;
@@ -96,7 +106,9 @@ export class SubmitSolutionComponent implements OnInit {
       pros: [''],
       cons: [''],
       stage: ['', Validators.required],
-      recommend_status: ['', Validators.required]
+      recommend_status: ['', Validators.required],
+      adoption_level: ['', Validators.required],
+      adoption_user_count: [0, [Validators.required, Validators.min(0)]]
     });
   }
   

@@ -146,6 +146,17 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     return severityMap[status] || 'info';
   }
 
+  getAdoptionLevelSeverity(level: string): Severity {
+    const severityMap: { [key: string]: Severity } = {
+      'PILOT': 'warning',
+      'TEAM': 'info',
+      'DEPARTMENT': 'success',
+      'ENTERPRISE': 'success',
+      'INDUSTRY': 'success'
+    };
+    return severityMap[level] || 'info';
+  }
+
   private loadSolution(slug: string) {
     console.log('Starting to load solution data');
     this.loading = true;

@@ -125,6 +125,16 @@
             <p-dropdown id="recommend_status" [options]="recommendStatusOptions" formControlName="recommend_status" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select status"></p-dropdown>
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="adoption_level">Adoption Level *</label>
+            <p-dropdown id="adoption_level" [options]="adoptionLevelOptions" formControlName="adoption_level" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select adoption level"></p-dropdown>
+          </div>
+          <div class="form-field">
+            <label for="adoption_user_count">Estimated User Count *</label>
+            <p-inputNumber id="adoption_user_count" formControlName="adoption_user_count" [min]="0" placeholder="Enter number of users"></p-inputNumber>
+          </div>
+        </div>
       </div>
 
       <div class="section-card">

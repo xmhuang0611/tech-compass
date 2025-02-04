@@ -160,6 +160,18 @@
         </div>
 
         <div class="info-section">
+          <h3>Adoption Status</h3>
+          <div class="info-item">
+            <label>Adoption Level</label>
+            <p-tag [value]="solution.adoption_level" [severity]="getAdoptionLevelSeverity(solution.adoption_level)"></p-tag>
+          </div>
+          <div class="info-item">
+            <label>Adoption Users (Estimated)</label>
+            <span>{{ solution.adoption_user_count | number }}</span>
+          </div>
+        </div>
+
+        <div class="info-section">
           <h3>Team Information</h3>
           <div class="info-item">
             <label>Department</label>
