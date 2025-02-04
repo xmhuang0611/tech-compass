@@ -1,11 +1,13 @@
 export interface Solution {
   _id: string;
   name: string;
+  brief: string;
   description: string;
   category: string;
   department: string;
   team: string;
   team_email: string;
+  maintainer_id: string;
   maintainer_name: string;
   maintainer_email: string;
   official_website?: string;

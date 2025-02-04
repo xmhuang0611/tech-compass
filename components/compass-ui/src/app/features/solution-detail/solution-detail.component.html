@@ -28,7 +28,10 @@
       <p-tabView [(activeIndex)]="activeTab">
         <p-tabPanel header="Overview">
           <div class="overview-content">
-            <markdown [data]="solution.description"></markdown>
+            <div class="brief-section">
+              <h3>Brief</h3>
+              <p class="brief-text">{{ solution.brief }}</p>
+            </div>
             
             <div class="pros-cons">
               <div class="pros">
@@ -43,6 +46,11 @@
                   <li *ngFor="let con of solution.cons">{{ con }}</li>
                 </ul>
               </div>
+            </div>
+
+            <div class="description-section">
+              <h3>Description</h3>
+              <markdown [data]="solution.description"></markdown>
             </div>
           </div>
         </p-tabPanel>

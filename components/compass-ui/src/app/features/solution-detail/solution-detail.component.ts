@@ -9,6 +9,7 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../../core/services/auth.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { LoginDialogComponent } from '../../core/components/login-dialog/login-dialog.component';
+import { Solution } from '../../shared/interfaces/solution.interface';
 
 // PrimeNG Components
 import { BreadcrumbModule } from 'primeng/breadcrumb';
@@ -26,32 +27,6 @@ import { ToastModule } from 'primeng/toast';
 import { MarkdownModule } from 'ngx-markdown';
 
 type Severity = 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
-
-interface Solution {
-  _id: string;
-  name: string;
-  description: string;
-  category: string;
-  department: string;
-  logo: string;
-  team: string;
-  team_email: string;
-  maintainer_id: string;
-  maintainer_name: string;
-  maintainer_email: string;
-  official_website: string;
-  documentation_url: string;
-  demo_url: string;
-  version: string;
-  tags: string[];
-  pros: string[];
-  cons: string[];
-  stage: string;
-  recommend_status: string;
-  slug: string;
-  rating: number;
-  rating_count: number;
-}
 
 interface Comment {
   _id: string;

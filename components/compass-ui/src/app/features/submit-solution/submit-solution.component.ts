@@ -78,6 +78,7 @@ export class SubmitSolutionComponent implements OnInit {
   ) {
     this.solutionForm = this.fb.group({
       name: ['', Validators.required],
+      brief: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', Validators.required],
       category: ['', Validators.required],
       logo: [''],

@@ -43,6 +43,13 @@
         </div>
         <div class="form-row">
           <div class="form-field">
+            <label for="brief">Brief Description * (max 200 characters)</label>
+            <textarea id="brief" pInputTextarea formControlName="brief" [rows]="2" [maxlength]="200"
+              placeholder="Enter a brief description of your solution"></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
             <label for="description">Description *</label>
             <textarea id="description" pInputTextarea formControlName="description" [rows]="5" [autoResize]="true"
               placeholder="Please provide a detailed description of the solution, including its main features, use cases, and any special requirements."></textarea>
