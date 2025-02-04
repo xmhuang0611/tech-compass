@@ -91,7 +91,7 @@ class CategoryService:
 
             # Update all solutions using this category
             await self.db.solutions.update_many(
-                {"category_id": existing_category.id},
+                {"category": name},
                 {"$set": {
                     "category": update_dict["name"],
                     "updated_at": datetime.utcnow(),

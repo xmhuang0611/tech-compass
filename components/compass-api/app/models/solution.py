@@ -102,7 +102,6 @@ class SolutionUpdate(BaseModel):
 class SolutionInDB(SolutionInDBBase, AuditModel):
     """Solution model as stored in database"""
     slug: str = Field(..., description="URL-friendly identifier (auto-generated)")
-    category_id: Optional[PyObjectId] = Field(None, description="Reference to category")
 
 class Solution(SolutionInDB):
     """Solution model for API responses, including rating information"""

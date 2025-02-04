@@ -41,7 +41,6 @@ class SolutionService:
         # Handle category creation if provided
         if solution_dict.get("category"):
             category = await self.category_service.get_or_create_category(solution_dict["category"], username)
-            solution_dict["category_id"] = category.id
             # Keep category name in the response
             solution_dict["category"] = category.name
         
@@ -94,11 +93,6 @@ class SolutionService:
         """Get a solution by ID"""
         solution = await self.collection.find_one({"_id": ObjectId(solution_id)})
         if solution:
-            # Get category details if category_id exists
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
             return SolutionInDB(**solution)
         return None
 
@@ -119,10 +113,7 @@ class SolutionService:
         
         # Add filters if provided
         if category:
-            # Get category by name
-            category_obj = await self.category_service.get_category_by_name(category)
-            if category_obj:
-                query["category_id"] = category_obj.id
+            query["category"] = category
         if department:
             query["department"] = department
         if team:
@@ -150,25 +141,12 @@ class SolutionService:
 
         cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
-        
-        # Populate category names
-        for solution in solutions:
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
-
         return [SolutionInDB(**solution) for solution in solutions]
 
     async def get_solution_by_slug(self, slug: str) -> Optional[SolutionInDB]:
         """Get a solution by slug"""
         solution = await self.collection.find_one({"slug": slug})
         if solution:
-            # Get category details if category_id exists
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
             return SolutionInDB(**solution)
         return None
 
@@ -200,7 +178,6 @@ class SolutionService:
         # Handle category update
         if "category" in update_dict:
             category = await self.category_service.get_or_create_category(update_dict["category"], username)
-            update_dict["category_id"] = category.id
             # Keep category name in the response
             update_dict["category"] = update_dict["category"]
 
@@ -393,13 +370,7 @@ class SolutionService:
         
         # Convert to Solution model with ratings
         result = []
-        for solution in solutions:
-            # Get category name if category_id exists
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
-            
+        for solution in solutions:            
             # Add rating information
             solution_model = SolutionInDB(**solution)
             rating_summary = await self.rating_service.get_rating_summary(solution_model.slug)
