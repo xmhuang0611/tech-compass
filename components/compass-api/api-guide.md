@@ -95,6 +95,8 @@ Create a new solution. Requires authentication.
   "maintainer_id": "string",
   "maintainer_name": "string",
   "maintainer_email": "string",
+  "adoption_level": "string (PILOT/TEAM/DEPARTMENT/ENTERPRISE/INDUSTRY)",
+  "adoption_user_count": "integer (>= 0)",
   "tags": ["string"]
 }
 ```

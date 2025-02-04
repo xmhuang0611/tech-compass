@@ -92,6 +92,7 @@ class TestDataGenerator:
         """Create a new solution through the API."""
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
         recommend_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
+        adoption_levels = ['PILOT', 'TEAM', 'DEPARTMENT', 'ENTERPRISE', 'INDUSTRY']
         
         # Define technology quadrants and their key areas
         tech_quadrants = {
@@ -140,6 +141,8 @@ class TestDataGenerator:
             'documentation_url': fake.url(),
             'demo_url': fake.url(),
             'version': f"{random.randint(1,5)}.{random.randint(0,9)}.{random.randint(0,9)}",
+            'adoption_level': random.choice(adoption_levels),
+            'adoption_user_count': random.randint(0, 1000),  # Generate random user count between 0 and 1000
             'tags': tags,
             'pros': [fake.sentence() for _ in range(random.randint(2, 4))],
             'cons': [fake.sentence() for _ in range(random.randint(1, 3))],

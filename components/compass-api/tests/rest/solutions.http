@@ -40,6 +40,8 @@ Authorization: Bearer {{token}}
     "documentation_url": "https://docs.solution.com",
     "demo_url": "https://demo.solution.com",
     "version": "1.0.0",
+    "adoption_level": "TEAM",
+    "adoption_user_count": 150,
     "tags": ["testing", "development"],
     "pros": ["Easy to use", "Well documented"],
     "cons": ["Learning curve"],
@@ -55,6 +57,8 @@ Authorization: Bearer {{token}}
 {
     "description": "Updated description",
     "brief": "Updated brief overview",
+    "adoption_level": "ENTERPRISE",
+    "adoption_user_count": 300,
     "recommend_status": "TRIAL",
     "stage": "UAT",
     "tags": ["testing", "development", "updated"]
@@ -148,6 +152,20 @@ Authorization: Bearer {{token}}
 ### Try to delete non-existent solution
 DELETE {{baseUrl}}/solutions/non-existent-solution
 Authorization: Bearer {{token}}
+
+### Try to create solution with invalid adoption level
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Testing invalid adoption level",
+    "brief": "A brief overview",
+    "adoption_level": "INVALID",
+    "department": "Engineering",
+    "team": "Platform"
+}
 
 ### Example responses:
 

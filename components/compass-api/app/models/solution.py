@@ -24,6 +24,15 @@ RecommendStatusEnum = Literal[
     "HOLD"     # Proceed with caution
 ]
 
+# Adoption level values
+AdoptionLevelEnum = Literal[
+    "PILOT",      # Pilot phase or proof of concept
+    "TEAM",       # Used by single team
+    "DEPARTMENT", # Used across department
+    "ENTERPRISE", # Used across enterprise
+    "INDUSTRY"    # Industry standard
+]
+
 # Review status values
 ReviewStatusEnum = Literal[
     "PENDING",   # Awaiting review
@@ -48,6 +57,8 @@ class SolutionBase(BaseModel):
     documentation_url: Optional[str] = Field(None, description="Documentation URL")
     demo_url: Optional[str] = Field(None, description="Demo/POC URL")
     version: Optional[str] = Field(None, description="Current version")
+    adoption_level: Optional[AdoptionLevelEnum] = Field(default="PILOT", description="Current adoption level (PILOT/TEAM/DEPARTMENT/ENTERPRISE/INDUSTRY)")
+    adoption_user_count: Optional[int] = Field(0, ge=0, description="Number of users currently using this solution")
     tags: List[str] = Field(default_factory=list, description="List of tag names")
     pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
@@ -79,6 +90,8 @@ class SolutionUpdate(BaseModel):
     documentation_url: Optional[str] = None
     demo_url: Optional[str] = None
     version: Optional[str] = None
+    adoption_level: Optional[AdoptionLevelEnum] = None
+    adoption_user_count: Optional[int] = None
     tags: Optional[List[str]] = None
     pros: Optional[List[str]] = None
     cons: Optional[List[str]] = None
