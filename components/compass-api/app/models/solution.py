@@ -62,8 +62,8 @@ class SolutionBase(BaseModel):
     tags: List[str] = Field(default_factory=list, description="List of tag names")
     pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
     cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
-    stage: Optional[StageEnum] = Field(None, description="Development stage status")
-    recommend_status: Optional[RecommendStatusEnum] = Field(None, description="Strategic recommendation (ADOPT/TRIAL/ASSESS/HOLD)")
+    stage: Optional[StageEnum] = Field(default="UAT", description="Development stage status")
+    recommend_status: Optional[RecommendStatusEnum] = Field(default="ASSESS", description="Strategic recommendation (ADOPT/TRIAL/ASSESS/HOLD)")
 
 class SolutionCreate(SolutionBase):
     """Solution creation model - excludes review_status field"""
