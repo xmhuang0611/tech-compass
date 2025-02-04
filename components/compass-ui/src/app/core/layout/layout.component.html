@@ -26,7 +26,7 @@
   <footer class="layout-footer">
     <div class="footer-container">
       <div class="footer-content">
-        <p class="about-text">{{ config.footer.aboutText }}</p>
+        <p class="about-text"> <markdown [data]="config.footer.aboutText"></markdown></p>
         <ul class="quick-links">
           <li *ngFor="let link of config.footer.quickLinks">
             <a [routerLink]="link.path">{{ link.label }}</a>

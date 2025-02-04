@@ -83,6 +83,17 @@
         .about-text {
           color: var(--text-dark-color);
           margin-bottom: 1rem;
+
+          ::ng-deep a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 400;
+
+            &:hover {
+              color: var(--primary-600);
+              text-decoration: underline;
+            }
+          }
         }
 
         .quick-links {

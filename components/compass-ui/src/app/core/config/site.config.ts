@@ -122,7 +122,7 @@ export const siteConfig = {
 
   // Footer content
   footer: {
-    aboutText: "Tech Compass - Your Technology Solutions Library",
+    aboutText: `**Tech Compass** - Your technology solutions library, helping teams make informed decisions about their tech stack. Visit our [GitHub repository](https://github.com/tobyqin/tech-compass) to learn more.`,
     quickLinks: [
       { label: "Home", path: "/" },
       { label: "Solution Catalog", path: "/solutions" },
