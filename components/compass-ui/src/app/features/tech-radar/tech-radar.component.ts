@@ -198,7 +198,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
   private createRadarConfig(data: TechRadarData): any {
     return {
       svg_id: "radar",
-      scale: 0.9,
+      scale: 0.92,
       title: "Technology Radar",
       date: data.date,
       quadrants: [
