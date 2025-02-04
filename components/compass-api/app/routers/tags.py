@@ -31,11 +31,18 @@ async def create_tag(
 async def get_tags(
     skip: int = 0,
     limit: int = 100,  # Default to 100 items
+    show_all: bool = False,  # Default to only show tags with usage_count > 0
     tag_service: TagService = Depends()
 ) -> Any:
-    """Get all tags with pagination. Default limit is 100 items."""
-    tags = await tag_service.get_tags(skip=skip, limit=limit)
-    total = await tag_service.count_tags()
+    """Get all tags with pagination.
+    
+    Args:
+        skip: Number of items to skip
+        limit: Maximum number of items to return (default: 100)
+        show_all: If True, return all tags; if False, only return tags with usage_count > 0 (default: False)
+    """
+    tags = await tag_service.get_tags(skip=skip, limit=limit, show_all=show_all)
+    total = await tag_service.count_tags(show_all=show_all)
     return StandardResponse.paginated(
         data=tags,
         total=total,
