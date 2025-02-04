@@ -198,13 +198,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
   private createRadarConfig(data: TechRadarData): any {
     return {
       svg_id: "radar",
-      width: 500,
-      height: 500,
-      colors: {
-        background: '#fff',
-        grid: '#dddde0',
-        inactive: '#ddd'
-      },
+      scale: 0.9,
       title: "Technology Radar",
       date: data.date,
       quadrants: [
@@ -220,28 +214,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
         { name: "HOLD", color: "#e09b96" }
       ],
       entries: data.entries,
-      // Layout configuration
-      radiality: 0.8,
-      rotation: Math.PI / 2,
-      print_layout: true,
-      radius: 400,
-      radial_min: 20,
-      radial_max: 400,
-      // Segment configuration
-      segment: {
-        radial_padding: 30,
-        width: Math.PI / 2
-      },
-      quadrant_width: Math.PI / 2,
-      quadrant_radial_padding: 30,
-      // Ring configuration
-      ring_margin: 30,
-      ring_width: 95,
-      ring_radius_margin: 30,
-      ring_radius_width: 95,
-      ring_label_height: 14,
-      ring_label_font_size: 12,
-      ring_label_padding: 10
+      print_layout: true
     };
   }
 
