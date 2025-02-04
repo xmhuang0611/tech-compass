@@ -38,58 +38,56 @@
   }
 
   .faq-section {
-    h2 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      color: var(--primary-color);
-    }
-
-    .faq-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-
-      @media (max-width: 1024px) {
-        grid-template-columns: 1fr;
-      }
-    }
+    margin-top: 2rem;
+    width: 100%;
+    background: var(--surface-card);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
 
     .faq-item {
-      background: var(--surface-card);
-      padding: 2rem;
-      border-radius: var(--border-radius);
-      box-shadow: var(--card-shadow);
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--surface-border);
+
+      &:first-child {
+        padding-top: 0;
+      }
+
+      &:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+      }
 
       h3 {
         font-size: 1.5rem;
         margin: 0 0 1rem 0;
         color: var(--primary-color);
-
-        &:not(:first-child) {
-          margin-top: 2rem;
-        }
       }
 
-      p {
+      :deep(p) {
         color: var(--text-color-secondary);
         line-height: 1.6;
         margin-bottom: 1rem;
       }
 
-      ul {
+      :deep(ul) {
         list-style-type: none;
         padding-left: 0;
-        margin: 0;
+        margin: 1rem 0;
 
         li {
           margin-bottom: 1rem;
           color: var(--text-color-secondary);
           line-height: 1.6;
+          position: relative;
+          padding-left: 1.5rem;
 
-          strong {
-            color: var(--text-color);
-            display: inline-block;
-            margin-right: 0.5rem;
+          &:before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
           }
 
           &:last-child {
@@ -98,9 +96,25 @@
         }
       }
 
-      em {
+      :deep(strong) {
+        color: var(--text-color);
+        font-weight: 600;
+      }
+
+      :deep(em) {
         font-style: italic;
         color: var(--text-color);
+      }
+
+      :deep(a) {
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.2s;
+
+        &:hover {
+          color: var(--primary-color-hover, var(--primary-color));
+          text-decoration: underline;
+        }
       }
     }
   }

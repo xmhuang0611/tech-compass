@@ -4,6 +4,8 @@ import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Subscription } from 'rxjs';
+import { siteConfig } from '../../../app/core/config/site.config';
+import { MarkdownModule } from 'ngx-markdown';
 
 // External libraries
 declare const d3: any;
@@ -28,7 +30,8 @@ interface TechRadarData {
   standalone: true,
   imports: [
     CommonModule,
-    BreadcrumbModule
+    BreadcrumbModule,
+    MarkdownModule
   ],
   templateUrl: './tech-radar.component.html',
   styleUrls: ['./tech-radar.component.scss']
@@ -42,6 +45,8 @@ export class TechRadarComponent implements OnInit, OnDestroy {
   // Component state
   private dataSubscription: Subscription | null = null;
   private scriptsLoaded = false;
+
+  faqs = siteConfig.techRadar.faqs;
 
   constructor(private http: HttpClient) {}
 
