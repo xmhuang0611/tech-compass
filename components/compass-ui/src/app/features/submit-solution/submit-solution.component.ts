@@ -140,16 +140,11 @@ export class SubmitSolutionComponent implements OnInit {
       const cons = formValue.cons?.split('\n').filter((line: string) => line.trim()) || [];
       const tags = formValue.tags?.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) || [];
       
-      // Ensure optional string fields are empty strings instead of null
       const solution = {
         ...formValue,
         pros,
         cons,
-        tags,
-        logo: formValue.logo || '',
-        official_website: formValue.official_website || '',
-        documentation_url: formValue.documentation_url || '',
-        demo_url: formValue.demo_url || ''
+        tags
       };
 
       this.solutionService.createSolution(solution).subscribe({
