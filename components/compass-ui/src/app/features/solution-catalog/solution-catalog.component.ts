@@ -162,16 +162,18 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       if (params['team']) this.filters.team = params['team'];
       if (params['recommend_status']) this.filters.recommend_status = params['recommend_status'] as any;
       if (params['sort']) this.filters.sort = params['sort'];
-      if (params['tags']) {
-        this.selectedTags = params['tags'].split(',');
+      
+      // Handle tags
+      this.selectedTags = params['tags'] ? params['tags'].split(',') : [];
+      if (this.selectedTags.length > 0) {
         this.filters.tags = params['tags'];
-      } else {
-        this.selectedTags = [];
       }
 
       // Handle search keyword from URL
-      if (params['keyword']) {
-        this.searchKeyword = params['keyword'];
+      this.searchKeyword = params['keyword'] || '';
+      
+      // Only perform search if there's a keyword, otherwise load solutions once
+      if (this.searchKeyword) {
         this.performSearch(this.searchKeyword);
       } else {
         // Reset pagination
@@ -279,12 +281,34 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   private loadMore(): void {
     if (this.loadingMore) return;
     
+    // Calculate the next skip value
+    const nextSkip = this.currentPage * this.loadMoreSize;
+    
+    console.log('Debug loadMore:', {
+      currentPage: this.currentPage,
+      nextSkip,
+      loadMoreSize: this.loadMoreSize,
+      currentSolutionsLength: this.solutions.length,
+      totalRecords: this.totalRecords,
+      hasMore: this.hasMore
+    });
+    
+    // Check if we've already loaded all records
+    if (nextSkip >= this.totalRecords) {
+      console.log('Stopping loadMore: nextSkip >= totalRecords');
+      this.hasMore = false;
+      return;
+    }
+    
     this.loadingMore = true;
-    this.currentPage++;
+    
+    // Calculate the actual limit for this request
+    const remainingRecords = this.totalRecords - nextSkip;
+    const actualLimit = Math.min(this.loadMoreSize, remainingRecords);
     
     const params: SolutionParams = {
-      skip: this.currentPage * this.loadMoreSize,
-      limit: this.loadMoreSize,
+      skip: nextSkip,
+      limit: actualLimit,
       ...this.filters
     };
 
@@ -300,12 +324,30 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       params.tags = this.selectedTags.join(',');
     }
 
+    console.log('Loading more with params:', params);
+
     this.solutionService.getSolutions(params).subscribe({
       next: (response) => {
+        console.log('LoadMore response:', {
+          newDataLength: response.data.length,
+          responseTotal: response.total,
+          currentTotal: this.solutions.length,
+          willHaveTotal: this.solutions.length + response.data.length
+        });
+        
         this.solutions = [...this.solutions, ...response.data];
         this.totalRecords = response.total;
-        this.hasMore = this.solutions.length < this.totalRecords;
+        // Update hasMore based on next skip value
+        this.hasMore = (nextSkip + response.data.length) < this.totalRecords;
         this.loadingMore = false;
+        this.currentPage++;
+
+        console.log('After loading more:', {
+          hasMore: this.hasMore,
+          solutionsLength: this.solutions.length,
+          totalRecords: this.totalRecords,
+          nextSkipWouldBe: (this.currentPage * this.loadMoreSize)
+        });
       },
       error: (error) => {
         this.error = 'Failed to load more solutions';
