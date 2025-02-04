@@ -61,9 +61,26 @@ class CategoryService:
         )
         return await self.create_category(category, username)
 
-    async def get_categories(self, skip: int = 0, limit: int = 100) -> list[CategoryInDB]:
-        """Get all categories with pagination"""
-        cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
+    async def get_categories(self, skip: int = 0, limit: int = 100, sort: str = "radar_quadrant") -> list[CategoryInDB]:
+        """Get all categories with pagination and sorting
+        
+        Args:
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+            sort: Sort field (prefix with - for descending order)
+        """
+        # Parse sort parameter
+        sort_field = sort.lstrip("-")
+        sort_direction = -1 if sort.startswith("-") else 1
+        
+        # Build sort query
+        sort_query = [(sort_field, sort_direction)]
+        
+        # Add name as secondary sort if not already sorting by name
+        if sort_field != "name":
+            sort_query.append(("name", 1))
+        
+        cursor = self.collection.find().sort(sort_query).skip(skip).limit(limit)
         categories = await cursor.to_list(length=limit)
         return [CategoryInDB(**category) for category in categories]
 
