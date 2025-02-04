@@ -21,6 +21,10 @@ async def verify_credentials(username: str, password: str) -> bool:
     if not user:
         return False
     
+    # Always verify admin user with password
+    if username == "admin":
+        return verify_password(password, user.hashed_password)
+    
     if not settings.AUTH_SERVER_ENABLED:
         # Development mode - verify password against local database
         return verify_password(password, user.hashed_password)
