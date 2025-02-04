@@ -349,21 +349,41 @@ class SolutionService:
 
     async def search_solutions(self, keyword: str, limit: int = 5) -> List[Solution]:
         """Search solutions by keyword using text similarity
-        Searches across name, category, description, team, maintainer_name, pros and cons
-        Returns top 5 matches by default
+        Searches across:
+        - name (highest weight)
+        - brief
+        - description
+        - category
+        - department
+        - team
+        - maintainer_name
+        - pros and cons
+        Returns top matches sorted by text relevance score
         """
-        # Create text index if it doesn't exist
+        # Create text index with field weights if it doesn't exist
         await self.collection.create_index([
             ("name", "text"),
+            ("brief", "text"),
             ("description", "text"),
-            ("team", "text"),
+            ("category", "text"),
             ("department", "text"),
+            ("team", "text"),
             ("maintainer_name", "text"),
             ("pros", "text"),
             ("cons", "text")
-        ])
+        ], weights={
+            "name": 10,        # Highest priority
+            "brief": 8,        # Second priority
+            "description": 5,  # Third priority
+            "category": 3,
+            "department": 3,
+            "team": 3,
+            "maintainer_name": 2,
+            "pros": 1,
+            "cons": 1
+        })
 
-        # Perform text search
+        # Perform text search with score
         cursor = self.collection.find(
             {"$text": {"$search": keyword}},
             {"score": {"$meta": "textScore"}}
