@@ -67,7 +67,7 @@ export const siteConfig = {
       },
       {
         icon: 'pi pi-shield',
-        text: 'Make informed decisions about adopting or retiring technologies'
+        text: 'Make decisions about adopting or retiring technologies'
       },
       {
         icon: 'pi pi-sync',
