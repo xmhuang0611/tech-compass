@@ -19,14 +19,13 @@
     <div class="filters-row">
       <div class="left-group">
         <div class="filter-item">
-          <label>Sort By</label>
-          <p-dropdown 
-            [options]="sortOptions" 
-            [(ngModel)]="filters.sort"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            placeholder="Select Sort Order">
-          </p-dropdown>
+          <label>Search</label>
+          <span class="p-input-icon-left search-input">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText [(ngModel)]="searchKeyword" 
+                   (input)="onSearch($event)" 
+                   placeholder="Search solutions...">
+          </span>
         </div>
 
         <div class="filter-item">
@@ -73,14 +72,13 @@
         </div>
 
         <div class="filter-item">
-          <label>Stage</label>
+          <label>Sort By</label>
           <p-dropdown 
-            [options]="stageOptions" 
-            [(ngModel)]="filters.stage"
+            [options]="sortOptions" 
+            [(ngModel)]="filters.sort"
             (onChange)="onFilterChange()"
             [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Stage">
+            placeholder="Select Sort Order">
           </p-dropdown>
         </div>
       </div>

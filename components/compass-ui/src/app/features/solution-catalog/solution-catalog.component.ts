@@ -7,7 +7,8 @@ import { SolutionCardComponent } from '../../shared/components/solution-card/sol
 import { Solution } from '../../shared/interfaces/solution.interface';
 import { CategoryService, Category } from '../../core/services/category.service';
 import { DepartmentService } from '../../core/services/department.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // PrimeNG imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -17,13 +18,13 @@ import { MessageModule } from 'primeng/message';
 import { TooltipModule } from 'primeng/tooltip';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
 
 interface SolutionFilters {
   category?: string;
   department?: string;
   team?: string;
   recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
-  stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
   sort: string;
 }
 
@@ -58,7 +59,8 @@ interface DropdownOption {
     TooltipModule,
     BreadcrumbModule,
     ButtonModule,
-    RouterModule
+    RouterModule,
+    InputTextModule
   ],
   templateUrl: './solution-catalog.component.html',
   styleUrls: ['./solution-catalog.component.scss'],
@@ -98,14 +100,6 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     { label: 'Hold', value: 'HOLD' }
   ];
 
-  stageOptions = [
-    { label: 'Developing', value: 'DEVELOPING' },
-    { label: 'UAT', value: 'UAT' },
-    { label: 'Production', value: 'PRODUCTION' },
-    { label: 'Deprecated', value: 'DEPRECATED' },
-    { label: 'Retired', value: 'RETIRED' }
-  ];
-
   sortOptions = [
     { label: 'Newest First', value: '-created_at' },
     { label: 'Oldest First', value: 'created_at' },
@@ -115,13 +109,30 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
 
   private queryParamSubscription: Subscription | null = null;
 
+  searchKeyword = '';
+  private searchSubject = new Subject<string>();
+  private searchSubscription: Subscription | null = null;
+
   constructor(
     private solutionService: SolutionService,
     private categoryService: CategoryService,
     private departmentService: DepartmentService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) {
+    this.searchSubscription = this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe(keyword => {
+        if (keyword.trim()) {
+          this.performSearch(keyword);
+        } else {
+          this.resetAndLoadSolutions();
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.loadCategories();
@@ -139,22 +150,29 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       if (params['department']) this.filters.department = params['department'];
       if (params['team']) this.filters.team = params['team'];
       if (params['recommend_status']) this.filters.recommend_status = params['recommend_status'] as any;
-      if (params['stage']) this.filters.stage = params['stage'] as any;
       if (params['sort']) this.filters.sort = params['sort'];
 
-      // Reset pagination
-      this.currentPage = 0;
-      this.solutions = [];
-      this.hasMore = true;
-
-      // Load solutions with new filters
-      this.loadSolutions();
+      // Handle search keyword from URL
+      if (params['keyword']) {
+        this.searchKeyword = params['keyword'];
+        this.performSearch(this.searchKeyword);
+      } else {
+        // Reset pagination
+        this.currentPage = 0;
+        this.solutions = [];
+        this.hasMore = true;
+        // Load solutions with new filters
+        this.loadSolutions();
+      }
     });
   }
 
   ngOnDestroy(): void {
     if (this.queryParamSubscription) {
       this.queryParamSubscription.unsubscribe();
+    }
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
     }
   }
 
@@ -172,32 +190,70 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     return position > height - threshold;
   }
 
-  onFilterChange(): void {
-    // Reset pagination
-    this.currentPage = 0;
-    this.solutions = [];
-    this.hasMore = true;
+  onSearch(event: Event): void {
+    const keyword = (event.target as HTMLInputElement).value;
+    this.searchKeyword = keyword;
+    this.searchSubject.next(keyword);
+  }
 
-    // Update URL with current filters
-    const queryParams: { [key: string]: string } = {};
-    Object.entries(this.filters).forEach(([key, value]) => {
-      // Only include non-null, non-undefined, non-empty values, and non-default values
-      if (value !== null && value !== undefined && value !== '' && 
-          !(key === 'sort' && value === 'name')) { // Don't include default sort
-        queryParams[key] = value;
-      }
-    });
-
-    // Update URL without reloading the page
+  private performSearch(keyword: string): void {
+    this.loading = true;
+    this.error = null;
+    this.clearFilters();
+    
+    // Update URL with search keyword
     this.router.navigate([], {
       relativeTo: this.route,
-      queryParams,
-      // Remove queryParamsHandling: 'merge' to ensure old params are removed
+      queryParams: { keyword },
+      queryParamsHandling: 'merge'
+    });
+    
+    this.solutionService.searchSolutions(keyword)
+      .subscribe({
+        next: (response) => {
+          this.solutions = response.data;
+          this.totalRecords = response.total || 0;
+          this.loading = false;
+          this.hasMore = false;
+        },
+        error: (error) => {
+          this.error = 'Failed to search solutions. Please try again.';
+          this.loading = false;
+          console.error('Search error:', error);
+        }
+      });
+  }
+
+  private clearFilters(): void {
+    this.filters = {
+      sort: 'name'
+    };
+    // Clear URL params except keyword
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { keyword: this.searchKeyword },
       replaceUrl: true
     });
+  }
 
-    // Load solutions immediately instead of waiting for queryParams subscription
+  onFilterChange(): void {
+    this.searchKeyword = '';
+    this.currentPage = 0;
+    this.solutions = [];
     this.loadSolutions();
+    this.updateQueryParams();
+  }
+
+  private resetAndLoadSolutions(): void {
+    this.currentPage = 0;
+    this.solutions = [];
+    this.loadSolutions();
+    // Clear keyword from URL when search is cleared
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true
+    });
   }
 
   private loadMore(): void {
@@ -307,5 +363,25 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     if (!this.filters.category) return '';
     const selectedOption = this.categoryOptions.find(opt => opt.value === this.filters.category);
     return selectedOption?.title || '';
+  }
+
+  private updateQueryParams(): void {
+    // Update URL with current filters
+    const queryParams: { [key: string]: string } = {};
+    Object.entries(this.filters).forEach(([key, value]) => {
+      // Only include non-null, non-undefined, non-empty values, and non-default values
+      if (value !== null && value !== undefined && value !== '' && 
+          !(key === 'sort' && value === 'name')) { // Don't include default sort
+        queryParams[key] = value;
+      }
+    });
+
+    // Update URL without reloading the page
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      // Remove queryParamsHandling: 'merge' to ensure old params are removed
+      replaceUrl: true
+    });
   }
 }
