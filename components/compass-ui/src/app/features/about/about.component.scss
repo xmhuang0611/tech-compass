@@ -10,7 +10,7 @@
     color: white;
     text-align: center;
     border-radius: var(--border-radius);
-    animation: fadeInUp 0.8s ease-out;
+    animation: fadeInUp 0.4s ease-out;
 
     &::before {
       content: '';
@@ -76,7 +76,7 @@
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         opacity: 0;
-        animation: fadeInScale 0.6s ease-out forwards;
+        animation: fadeInScale 0.3s ease-out forwards;
 
         &.clickable {
           cursor: pointer;
@@ -127,7 +127,7 @@
       }
     }
     opacity: 0;
-    animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    animation: fadeInUp 0.4s ease-out 0.6s forwards;
   }
 
   .features-section {
@@ -147,7 +147,7 @@
         background: var(--primary-color);
         color: var(--primary-color-text);
         opacity: 0;
-        animation: fadeInScale 0.6s ease-out forwards;
+        animation: fadeInScale 0.3s ease-out forwards;
 
         .icon-wrapper i {
           color: var(--primary-color-text);
@@ -213,7 +213,7 @@
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
         opacity: 0;
-        animation: fadeInScale 0.6s ease-out forwards;
+        animation: fadeInScale 0.4s ease-out forwards;
 
         &.clickable {
           cursor: pointer;
