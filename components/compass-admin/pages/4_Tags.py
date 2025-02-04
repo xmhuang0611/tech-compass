@@ -40,6 +40,7 @@ if not st.session_state.authenticated:
 COLUMN_DEFS = {
     "name": {"width": 150, "headerName": "Name"},
     "description": {"width": 300, "headerName": "Description"},
+    "usage_count": {"width": 120, "headerName": "Usage Count"},
     "created_at": {"width": 140, "headerName": "Created At"},
     "created_by": {"width": 100, "headerName": "Created By"},
     "updated_at": {"width": 140, "headerName": "Updated At"},
@@ -49,7 +50,7 @@ COLUMN_DEFS = {
 def load_tags(skip=0, limit=10):
     """Load tags with pagination"""
     try:
-        params = {"skip": skip, "limit": limit}
+        params = {"skip": skip, "limit": limit, "show_all": "true"}
         response = APIClient.get("tags/", params)
         if response and isinstance(response, dict):
             return response.get("data", []), {
@@ -98,6 +99,14 @@ def render_tag_form(tag_data):
             "Description",
             value=tag_data.get("description", ""),
             help="Tag description"
+        )
+        
+        # Display usage count as read-only
+        st.text_input(
+            "Usage Count",
+            value=str(tag_data.get("usage_count", 0)),
+            disabled=True,
+            help="Number of times this tag is used"
         )
 
         # Save Changes and Delete buttons
