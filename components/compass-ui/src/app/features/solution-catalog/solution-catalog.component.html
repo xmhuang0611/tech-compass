@@ -85,7 +85,7 @@
         <p-chip *ngFor="let tag of tags" 
                 [label]="tag.name + ' (' + tag.usage_count + ')'"
                 [removable]="false"
-                [class.selected]="isTagSelected(tag)"
+                [styleClass]="isTagSelected(tag) ? 'selected' : ''"
                 (click)="onTagClick(tag)">
         </p-chip>
       </div>
