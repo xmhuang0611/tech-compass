@@ -12,7 +12,9 @@ class TechRadarService:
         self.categories = self.db.categories
 
     async def get_tech_radar_data(self) -> TechRadarData:
-        """Generate tech radar data from approved solutions"""
+        """Generate tech radar data from approved solutions.
+        Only includes solutions whose categories have radar_quadrant >= 0.
+        """
         # Get all approved solutions
         cursor = self.solutions.find({"review_status": "APPROVED"})
         
@@ -33,6 +35,10 @@ class TechRadarService:
             
             # Parse category data using CategoryInDB model
             category = CategoryInDB(**category_data)
+            
+            # Skip if radar_quadrant is negative
+            if category.radar_quadrant < 0:
+                continue
             
             # Create radar entry
             entry = TechRadarEntry(

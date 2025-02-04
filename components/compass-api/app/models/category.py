@@ -19,10 +19,10 @@ class CategoryBase(BaseModel):
         max_length=500
     )
     radar_quadrant: int = Field(
-        default=0,
-        description="Radar quadrant number (0-4)",
-        ge=0,
-        le=4
+        default=-1,
+        description="Radar quadrant number (-1 to 3, -1 means not assigned)",
+        ge=-1,
+        le=3
     )
 
     @field_validator('name')
@@ -46,8 +46,8 @@ class CategoryBase(BaseModel):
     @classmethod
     def validate_radar_quadrant(cls, value: int) -> int:
         """Validate radar quadrant value"""
-        if not (0 <= value <= 4):
-            raise ValueError("Radar quadrant must be between 0 and 4")
+        if not (-1 <= value <= 3):
+            raise ValueError("Radar quadrant must be between -1 and 3")
         return value
 
 
