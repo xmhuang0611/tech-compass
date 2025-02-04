@@ -106,6 +106,7 @@ class SolutionService:
         recommend_status: Optional[str] = None,
         stage: Optional[str] = None,
         review_status: Optional[str] = None,
+        tags: Optional[List[str]] = None,
         sort: str = "name"
     ) -> List[SolutionInDB]:
         """Get all solutions with filtering and pagination"""
@@ -124,6 +125,9 @@ class SolutionService:
             query["stage"] = stage
         if review_status:
             query["review_status"] = review_status
+        if tags:
+            # Match solutions that have all the specified tags
+            query["tags"] = {"$all": tags}
 
         # Parse sort parameter
         sort_field = "name"
@@ -273,6 +277,7 @@ class SolutionService:
         recommend_status: Optional[str] = None,
         stage: Optional[str] = None,
         review_status: Optional[str] = None,
+        tags: Optional[List[str]] = None,
         sort: str = "name"
     ) -> List[Solution]:
         """Get solutions with ratings"""
@@ -285,6 +290,7 @@ class SolutionService:
             recommend_status=recommend_status,
             stage=stage,
             review_status=review_status,
+            tags=tags,
             sort=sort
         )
         

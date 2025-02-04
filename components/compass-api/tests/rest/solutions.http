@@ -13,6 +13,18 @@ Content-Type: application/json
 GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&recommend_status=ADOPT&stage=PRODUCTION&review_status=APPROVED&sort=-created_at
 Content-Type: application/json
 
+### Get solutions filtered by single tag
+GET {{baseUrl}}/solutions?tags=docker
+Content-Type: application/json
+
+### Get solutions filtered by multiple tags
+GET {{baseUrl}}/solutions?tags=docker,kubernetes,cloud
+Content-Type: application/json
+
+### Get solutions with combined filters (tags and other filters)
+GET {{baseUrl}}/solutions?tags=python,api&department=Engineering&stage=PRODUCTION&sort=-created_at
+Content-Type: application/json
+
 ### Get all departments
 GET {{baseUrl}}/solutions/departments
 Content-Type: application/json
@@ -27,25 +39,24 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "My Solution",
-    "description": "A comprehensive solution for testing",
-    "brief": "A brief overview of the solution",
-    "category": "Development",
+    "name": "Docker Container Service",
+    "brief": "Enterprise container platform",
+    "description": "Docker container service for enterprise applications",
+    "category": "Infrastructure",
     "department": "Engineering",
     "team": "Platform",
     "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
     "maintainer_name": "John Doe",
     "maintainer_email": "john@company.com",
-    "official_website": "https://solution.com",
-    "documentation_url": "https://docs.solution.com",
-    "demo_url": "https://demo.solution.com",
-    "version": "1.0.0",
-    "adoption_level": "TEAM",
-    "adoption_user_count": 150,
-    "tags": ["testing", "development"],
-    "pros": ["Easy to use", "Well documented"],
-    "cons": ["Learning curve"],
-    "stage": "DEVELOPING",
+    "official_website": "https://docker.com",
+    "documentation_url": "https://docs.docker.com",
+    "demo_url": "https://demo.docker.com",
+    "version": "24.0.7",
+    "tags": ["docker", "container", "infrastructure"],
+    "pros": ["Industry standard", "Easy to use", "Well documented"],
+    "cons": ["Resource intensive"],
+    "stage": "PRODUCTION",
     "recommend_status": "ADOPT"
 }
 

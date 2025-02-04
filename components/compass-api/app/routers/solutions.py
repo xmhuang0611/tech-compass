@@ -38,6 +38,7 @@ async def get_solutions(
     recommend_status: Optional[str] = Query(None, description="Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)"),
     stage: Optional[str] = Query(None, description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)"),
     review_status: Optional[str] = Query(None, description="Filter by review status (PENDING/APPROVED/REJECTED)"),
+    tags: Optional[str] = Query(None, description="Filter by tags (comma-separated list of tag names)"),
     sort: str = Query("name", description="Sort field (prefix with - for descending order)"),
     solution_service: SolutionService = Depends()
 ) -> Any:
@@ -50,6 +51,7 @@ async def get_solutions(
     - recommend_status: Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)
     - stage: Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
     - review_status: Filter by review status (PENDING/APPROVED/REJECTED)
+    - tags: Filter by tags (comma-separated list of tag names)
     - sort: Sort field (name, category, created_at, updated_at). Prefix with - for descending order
     """
     try:
@@ -70,6 +72,11 @@ async def get_solutions(
                 detail="Invalid review_status. Must be one of: PENDING, APPROVED, REJECTED"
             )
 
+        # Process tags if provided
+        tag_list = None
+        if tags:
+            tag_list = [tag.strip() for tag in tags.split(",")]
+
         solutions = await solution_service.get_solutions_with_ratings(
             skip=skip,
             limit=limit,
@@ -79,6 +86,7 @@ async def get_solutions(
             recommend_status=recommend_status,
             stage=stage,
             review_status=review_status,
+            tags=tag_list,
             sort=sort
         )
         total = await solution_service.count_solutions()
