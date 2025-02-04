@@ -239,7 +239,7 @@
     padding: 4rem 2rem;
     text-align: center;
     border-radius: var(--border-radius);
-    margin-bottom: 2rem;
+    margin-bottom: 0rem;
     
     &::before {
       content: '';
@@ -373,6 +373,7 @@
 
 .intro-section {
   padding: 4rem 0;
+  margin-top: 3rem;
   background: var(--surface-card);
   border-radius: var(--border-radius);
 
