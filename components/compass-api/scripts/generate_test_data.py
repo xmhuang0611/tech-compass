@@ -96,11 +96,11 @@ class TestDataGenerator:
         
         # Define technology quadrants and their key areas
         tech_quadrants = {
-            'Tools & Infrastructure': [
+            'Tools & Infrastructures': [
                 'Development Environments', 'Quality Assurance Tools',
                 'Continuous Integration', 'Observability Stack', 'Cloud Infrastructure'
             ],
-            'Languages & Development Frameworks': [
+            'Development Frameworks': [
                 'Core Languages', 'Frontend Technologies', 'Backend Solutions',
                 'Utility Libraries', 'Interface Components'
             ],
