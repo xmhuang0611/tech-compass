@@ -35,6 +35,7 @@ if not st.session_state.authenticated:
 # Constants
 RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
 STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
+ADOPTION_LEVEL_OPTIONS = ["PILOT", "TEAM", "DEPARTMENT", "ENTERPRISE", "INDUSTRY"]
 
 
 def load_categories():
@@ -162,6 +163,27 @@ def render_solution_form(solution_data):
                     + 1
                 ),
                 help="Select recommend status",
+            )
+
+        # Adoption Information
+        col1, col2 = st.columns(2)
+        with col1:
+            adoption_level = st.selectbox(
+                "Adoption Level",
+                options=[""] + ADOPTION_LEVEL_OPTIONS,
+                index=(
+                    0
+                    if not solution_data.get("adoption_level")
+                    else ADOPTION_LEVEL_OPTIONS.index(solution_data.get("adoption_level")) + 1
+                ),
+                help="Select adoption level",
+            )
+        with col2:
+            adoption_user_count = st.number_input(
+                "Adoption User Count",
+                min_value=1,
+                value=solution_data.get("adoption_user_count", 1),
+                help="Number of users adopting this solution",
             )
 
         # Team Information
@@ -296,6 +318,8 @@ def render_solution_form(solution_data):
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
                 "review_status": review_status if review_status else None,
+                "adoption_level": adoption_level if adoption_level else None,
+                "adoption_user_count": adoption_user_count,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -350,7 +374,7 @@ def render_add_solution_form():
             )
 
         # Status Information
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             stage = st.selectbox(
                 "Stage", options=[""] + STAGE_OPTIONS, help="Select stage"
@@ -360,6 +384,28 @@ def render_add_solution_form():
                 "Recommend Status",
                 options=[""] + RECOMMEND_STATUS_OPTIONS,
                 help="Select recommend status",
+            )
+        with col3:
+            review_status = st.selectbox(
+                "Review Status",
+                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
+                help="Select review status",
+            )
+
+        # Adoption Information
+        col1, col2 = st.columns(2)
+        with col1:
+            adoption_level = st.selectbox(
+                "Adoption Level",
+                options=[""] + ADOPTION_LEVEL_OPTIONS,
+                help="Select adoption level",
+            )
+        with col2:
+            adoption_user_count = st.number_input(
+                "Adoption User Count",
+                min_value=1,
+                value=1,
+                help="Number of users adopting this solution",
             )
 
         # Team Information
@@ -447,6 +493,8 @@ def render_add_solution_form():
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
+                "adoption_level": adoption_level if adoption_level else None,
+                "adoption_user_count": adoption_user_count,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -532,6 +580,8 @@ def main():
                 "review_status",
                 "stage",
                 "recommend_status",
+                "adoption_level",
+                "adoption_user_count",
                 "department",
                 "team",
                 "team_email",
@@ -592,6 +642,8 @@ def main():
                 "category": {"width": 120, "headerName": "Category"},
                 "stage": {"width": 100, "headerName": "Stage"},
                 "recommend_status": {"width": 120, "headerName": "Recommend"},
+                "adoption_level": {"width": 120, "headerName": "Adoption Level"},
+                "adoption_user_count": {"width": 120, "headerName": "User Count"},
                 "department": {"width": 120, "headerName": "Department"},
                 "team": {"width": 120, "headerName": "Team"},
                 "team_email": {"width": 150, "headerName": "Team Email"},
