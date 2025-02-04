@@ -122,10 +122,17 @@ def render_solution_form(solution_data):
                 help="URL to the solution's logo image"
             )
 
+        # Brief Description
+        brief = st.text_area(
+            "Brief Description",
+            value=solution_data.get("brief", ""),
+            help="Brief description of the solution"
+        )
+
         description = st.text_area(
             "Description",
             value=solution_data.get("description", ""),
-            help="Solution description",
+            help="Detailed solution description",
         )
 
         # Status Information
@@ -280,6 +287,8 @@ def render_solution_form(solution_data):
         if submitted:
             update_data = {
                 "name": name,
+                "brief": brief,
+                "description": description,
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
@@ -295,7 +304,6 @@ def render_solution_form(solution_data):
                 "demo_url": demo_url if demo_url else None,
                 "version": version if version else None,
                 "logo": logo if logo else None,
-                "description": description,
                 "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
                 "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()],
@@ -338,7 +346,13 @@ def render_add_solution_form():
                 help="URL to the solution's logo image"
             )
 
-        description = st.text_area("Description", help="Solution description")
+        # Brief Description
+        brief = st.text_area(
+            "Brief Description",
+            help="Brief description of the solution"
+        )
+
+        description = st.text_area("Description", help="Detailed solution description")
 
         # Status Information
         col1, col2, col3 = st.columns(3)
@@ -419,6 +433,7 @@ def render_add_solution_form():
         if submitted:
             solution_data = {
                 "name": name,
+                "brief": brief,
                 "description": description,
                 "category": category if category else None,
                 "stage": stage if stage else None,
@@ -521,6 +536,7 @@ def main():
                 "official_website",
                 "documentation_url",
                 "demo_url",
+                "brief",
                 "description",
                 "pros",
                 "cons",
