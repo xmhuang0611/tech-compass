@@ -122,19 +122,6 @@ def render_solution_form(solution_data):
                 help="URL to the solution's logo image"
             )
 
-        # Brief Description
-        brief = st.text_area(
-            "Brief Description",
-            value=solution_data.get("brief", ""),
-            help="Brief description of the solution"
-        )
-
-        description = st.text_area(
-            "Description",
-            value=solution_data.get("description", ""),
-            help="Detailed solution description",
-        )
-
         # Status Information
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -257,14 +244,30 @@ def render_solution_form(solution_data):
             pros = st.text_area(
                 "Pros (one per line)",
                 value=solution_data.get("pros", ""),
-                help="Enter pros (one per line)",
+                help="Enter pros (one per line)"
             )
         with col2:
             cons = st.text_area(
                 "Cons (one per line)",
                 value=solution_data.get("cons", ""),
-                help="Enter cons (one per line)",
+                help="Enter cons (one per line)"
             )
+
+        # Brief Description after Pros & Cons
+        brief = st.text_area(
+            "Brief Description",
+            value=solution_data.get("brief", ""),
+            help="Brief description of the solution"
+        )
+
+        # Full Description at the end
+        description = st.text_area(
+            "Description",
+            value=solution_data.get("description", ""),
+            help="Detailed solution description",
+            placeholder="Markdown supported",
+            height=300
+        )
 
         # Save Changes button only in the form
         col1, col2, col3 = st.columns([1, 1, 3])
@@ -346,16 +349,8 @@ def render_add_solution_form():
                 help="URL to the solution's logo image"
             )
 
-        # Brief Description
-        brief = st.text_area(
-            "Brief Description",
-            help="Brief description of the solution"
-        )
-
-        description = st.text_area("Description", help="Detailed solution description")
-
         # Status Information
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
             stage = st.selectbox(
                 "Stage", options=[""] + STAGE_OPTIONS, help="Select stage"
@@ -415,6 +410,20 @@ def render_add_solution_form():
             pros = st.text_area("Pros (one per line)", help="Enter pros (one per line)")
         with col2:
             cons = st.text_area("Cons (one per line)", help="Enter cons (one per line)")
+
+        # Brief Description after Pros & Cons
+        brief = st.text_area(
+            "Brief Description",
+            help="Brief description of the solution"
+        )
+
+        # Full Description at the end
+        description = st.text_area(
+            "Description",
+            help="Detailed solution description",
+            placeholder="Markdown supported",
+            height=300
+        )
 
         # Add button
         submitted = st.form_submit_button("Add Solution")
