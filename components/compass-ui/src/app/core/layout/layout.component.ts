@@ -3,6 +3,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { siteConfig } from '../config/site.config';
+import { NavigationItem, SubMenuNavigationItem, InternalNavigationItem, ExternalNavigationItem } from '../types/navigation.types';
 import { AuthService } from '../services/auth.service';
 import { LoginDialogComponent } from '../components/login-dialog/login-dialog.component';
 
@@ -47,11 +48,51 @@ export class LayoutComponent implements OnInit {
   }
 
   private initializeMenus() {
-    this.menuItems = this.config.navigation.map(item => ({
-      label: item.label,
-      icon: item.icon,
-      routerLink: item.path
-    }));
+    this.menuItems = this.config.navigation.map(item => {
+      const menuItem: MenuItem = {
+        label: item.label,
+        icon: item.icon
+      };
+
+      if (this.isInternalLink(item)) {
+        menuItem.routerLink = item.path;
+      }
+      else if (this.isExternalLink(item)) {
+        menuItem.url = item.url;
+        menuItem.target = item.target;
+      }
+      else if (this.isSubMenu(item)) {
+        menuItem.items = item.items.map((subItem: InternalNavigationItem | ExternalNavigationItem) => {
+          const subMenuItem: MenuItem = {
+            label: subItem.label,
+            icon: subItem.icon
+          };
+          
+          if ('url' in subItem) {
+            subMenuItem.url = subItem.url;
+            subMenuItem.target = subItem.target;
+          } else if ('path' in subItem) {
+            subMenuItem.routerLink = subItem.path;
+          }
+          
+          return subMenuItem;
+        });
+      }
+
+      return menuItem;
+    });
+  }
+
+  private isSubMenu(item: NavigationItem): item is SubMenuNavigationItem {
+    return 'items' in item && Array.isArray(item.items);
+  }
+
+  private isInternalLink(item: NavigationItem): item is InternalNavigationItem {
+    return 'path' in item;
+  }
+
+  private isExternalLink(item: NavigationItem): item is ExternalNavigationItem {
+    return 'url' in item;
   }
 
   showSearch() {
