@@ -102,11 +102,23 @@
   </div>
 
   <div class="solutions-content">
-    <div class="solutions-grid" *ngIf="!loading || solutions.length > 0">
+    <div class="solutions-grid" *ngIf="!loading && solutions.length > 0">
       <app-solution-card 
         *ngFor="let solution of solutions" 
         [solution]="solution">
       </app-solution-card>
+    </div>
+
+    <div class="no-results" *ngIf="!loading && !error && solutions.length === 0">
+      <i class="pi pi-info-circle"></i>
+      <h3>No Solutions Found</h3>
+      <p *ngIf="searchKeyword">No solutions match your search "{{ searchKeyword }}"</p>
+      <p *ngIf="!searchKeyword && (selectedTags.length > 0 || filters.category || filters.department || filters.recommend_status)">
+        No solutions match your selected filters
+      </p>
+      <p *ngIf="!searchKeyword && !selectedTags.length && !filters.category && !filters.department && !filters.recommend_status">
+        No solutions available at the moment
+      </p>
     </div>
 
     <div class="loading-more" *ngIf="loadingMore">
