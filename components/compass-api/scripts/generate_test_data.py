@@ -96,7 +96,7 @@ class TestDataGenerator:
         
         # Define technology quadrants and their key areas
         tech_quadrants = {
-            'Tools & Infrastructures': [
+            'Tools & Infrastructure': [
                 'Development Environments', 'Quality Assurance Tools',
                 'Continuous Integration', 'Observability Stack', 'Cloud Infrastructure'
             ],
