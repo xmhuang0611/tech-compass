@@ -35,13 +35,13 @@ const routes: Routes = [
         loadComponent: () => import('./features/tech-radar/tech-radar.component').then(m => m.TechRadarComponent)
       },
       {
-        path: 'submit-solution',
+        path: 'solutions/new',
         title: 'Submit Solution',
         loadChildren: () => import('./features/submit-solution/submit-solution.module')
           .then(m => m.SubmitSolutionModule)
       },
       {
-        path: 'solution-catalog',
+        path: 'solutions',
         title: 'Solution Catalog',
         loadComponent: () => import('./features/solution-catalog/solution-catalog.component')
           .then(m => m.SolutionCatalogComponent)

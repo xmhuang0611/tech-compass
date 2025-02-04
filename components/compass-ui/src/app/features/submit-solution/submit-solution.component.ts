@@ -162,7 +162,7 @@ export class SubmitSolutionComponent implements OnInit {
 
       this.solutionService.createSolution(solution).subscribe({
         next: (response) => {
-          this.router.navigate(['submit-solution/success']);
+          this.router.navigate(['solutions/new/success']);
         },
         error: (error) => {
           this.messageService.add({

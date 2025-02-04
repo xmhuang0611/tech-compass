@@ -119,8 +119,8 @@ export const siteConfig = {
     aboutText: 'Tech Compass - Your Technology Solutions Library',
     quickLinks: [
       { label: 'Home', path: '/' },
-      { label: 'Solution Catalog', path: '/solution-catalog' },
-      { label: 'Submit Solution', path: '/submit-solution' },
+      { label: 'Solution Catalog', path: '/solutions' },
+      { label: 'Submit Solution', path: '/solutions/new' },
       { label: 'About', path: '/about' }
     ],
     copyright: ' 2024 Tech Compass'
@@ -257,7 +257,7 @@ export const siteConfig = {
     { 
       label: 'Solutions',
       icon: 'pi pi-list',
-      path: '/solution-catalog'
+      path: '/solutions'
     },
     { 
       label: 'Tech Radar',
