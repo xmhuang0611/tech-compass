@@ -129,6 +129,7 @@ class TestDataGenerator:
         solution_data = {
             'name': fake.catch_phrase(),
             'description': fake.text(max_nb_chars=200),
+            'brief': fake.text(max_nb_chars=200),
             'category': category,
             'department': fake.company_suffix(),
             'team': fake.job(),

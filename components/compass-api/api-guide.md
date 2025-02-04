@@ -86,6 +86,7 @@ Create a new solution. Requires authentication.
 {
   "name": "string",
   "description": "string",
+  "brief": "string (max 200 chars)",
   "category": "string",
   "department": "string",
   "team": "string",

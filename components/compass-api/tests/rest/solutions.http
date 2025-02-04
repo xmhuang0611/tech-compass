@@ -29,6 +29,7 @@ Authorization: Bearer {{token}}
 {
     "name": "My Solution",
     "description": "A comprehensive solution for testing",
+    "brief": "A brief overview of the solution",
     "category": "Development",
     "department": "Engineering",
     "team": "Platform",
@@ -53,6 +54,7 @@ Authorization: Bearer {{token}}
 
 {
     "description": "Updated description",
+    "brief": "Updated brief overview",
     "recommend_status": "TRIAL",
     "stage": "UAT",
     "tags": ["testing", "development", "updated"]
