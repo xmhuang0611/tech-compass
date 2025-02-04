@@ -253,28 +253,35 @@ export const siteConfig = {
       path: '/'
     },
     {
-      label: 'Tech Radar',
-      icon: 'pi pi-compass',
-      path: '/tech-radar'
+      label: 'Categories',
+      icon: 'pi pi-folder',
+      path: '/categories'
     },
     {
       label: 'Solutions',
-      icon: 'pi pi-box',
+      icon: 'pi pi-list',
+      path: '/solutions'
+    },
+    {
+      label: 'Tech Radar',
+      icon: 'pi pi-wave-pulse',
+      path: '/tech-radar'
+    },
+    {
+      label: 'Useful Links',
+      icon: 'pi pi-link',
       items: [
         {
-          label: 'Solution Catalog',
-          icon: 'pi pi-list',
-          path: '/solutions'
+          label: 'Documentation',
+          icon: 'pi pi-file',
+          url: 'https://docs.techcompass.com',
+          target: '_blank'
         },
         {
-          label: 'Submit Solution',
-          icon: 'pi pi-plus',
-          path: '/solutions/new'
-        },
-        {
-          label: 'Categories',
-          icon: 'pi pi-folder',
-          path: '/categories'
+          label: 'Feedback Wall',
+          icon: 'pi pi-comments',
+          url: 'https://feedback.techcompass.com',
+          target: '_blank'
         }
       ]
     },
