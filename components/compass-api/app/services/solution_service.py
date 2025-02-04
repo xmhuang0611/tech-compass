@@ -347,7 +347,7 @@ class SolutionService:
             return Solution(**solution_dict)
         return None
 
-    async def search_solutions(self, keyword: str, limit: int = 5) -> List[Solution]:
+    async def search_solutions(self, keyword: str, limit: int = 6) -> List[Solution]:
         """Search solutions by keyword using text similarity
         Searches across:
         - name (highest weight)
