@@ -6,9 +6,35 @@
       <div class="search-container">
         <span class="p-input-icon-left">
           <i class="pi pi-search"></i>
-          <input type="text" pInputText [placeholder]="config.hero.searchPlaceholder" />
+          <input type="text" pInputText [placeholder]="config.hero.searchPlaceholder" 
+                 [(ngModel)]="searchKeyword" 
+                 (input)="onSearch($event)" />
         </span>
       </div>
+    </div>
+  </section>
+
+  <section class="search-results" *ngIf="searchKeyword">
+    <div class="section-header">
+      <h2>Search Results</h2>
+      <p *ngIf="!loadingSearch && searchResults.length > 0">Found {{ searchResults.length }} solutions</p>
+    </div>
+
+    <div class="loading-state" *ngIf="loadingSearch">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Searching solutions...</p>
+    </div>
+
+    <div class="error-state" *ngIf="searchError">
+      <p-message severity="error" [text]="searchError"></p-message>
+    </div>
+
+    <div class="results-grid" *ngIf="!loadingSearch && searchResults.length > 0">
+      <app-solution-card *ngFor="let solution of searchResults" [solution]="solution"></app-solution-card>
+    </div>
+
+    <div class="no-results" *ngIf="!loadingSearch && searchResults.length === 0">
+      <p>No solutions found for "{{ searchKeyword }}"</p>
     </div>
   </section>
 

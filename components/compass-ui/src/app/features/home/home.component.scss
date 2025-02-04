@@ -633,4 +633,48 @@
   .carousel-container {
     @include carousel-container;
   }
+}
+
+.search-results {
+  padding: 2rem 0;
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+    }
+  }
+
+  .loading-state,
+  .error-state,
+  .no-results {
+    text-align: center;
+    padding: 2rem 0;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    padding: 0 2rem;
+  }
+
+  @media (max-width: 1200px) {
+    .results-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .results-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 } 

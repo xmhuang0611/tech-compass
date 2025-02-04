@@ -4,10 +4,14 @@ import { RouterModule } from '@angular/router';
 import { CarouselModule } from 'primeng/carousel';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
+import { InputTextModule } from 'primeng/inputtext';
 import { SolutionService } from '../../core/services/solution.service';
 import { Solution } from '../../shared/interfaces/solution.interface';
 import { SolutionCardComponent } from '../../shared/components/solution-card/solution-card.component';
 import { siteConfig } from '../../core/config/site.config';
+import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'tc-home',
@@ -18,7 +22,9 @@ import { siteConfig } from '../../core/config/site.config';
     CarouselModule, 
     ProgressSpinnerModule, 
     MessageModule, 
-    SolutionCardComponent
+    SolutionCardComponent,
+    InputTextModule,
+    FormsModule
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
@@ -27,10 +33,15 @@ export class HomeComponent implements OnInit {
   config = siteConfig;
   recommendedSolutions: Solution[] = [];
   newSolutions: Solution[] = [];
+  searchResults: Solution[] = [];
   loading = true;
   loadingNew = true;
+  loadingSearch = false;
   error: string | null = null;
   newSolutionsError: string | null = null;
+  searchError: string | null = null;
+  searchKeyword = '';
+  private searchSubject = new Subject<string>();
 
   responsiveOptions = [
     {
@@ -50,7 +61,21 @@ export class HomeComponent implements OnInit {
     }
   ];
 
-  constructor(private solutionService: SolutionService) {}
+  constructor(private solutionService: SolutionService) {
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe(keyword => {
+        if (keyword.trim()) {
+          this.performSearch(keyword);
+        } else {
+          this.searchResults = [];
+          this.loadingSearch = false;
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.loadRecommendedSolutions();
@@ -84,6 +109,29 @@ export class HomeComponent implements OnInit {
           this.newSolutionsError = 'Failed to load new solutions';
           this.loadingNew = false;
           console.error('Error loading new solutions:', error);
+        }
+      });
+  }
+
+  onSearch(event: Event): void {
+    const keyword = (event.target as HTMLInputElement).value;
+    this.searchKeyword = keyword;
+    this.searchSubject.next(keyword);
+  }
+
+  private performSearch(keyword: string): void {
+    this.loadingSearch = true;
+    this.searchError = null;
+    this.solutionService.searchSolutions(keyword)
+      .subscribe({
+        next: (response) => {
+          this.searchResults = response.data;
+          this.loadingSearch = false;
+        },
+        error: (error) => {
+          this.searchError = 'Failed to search solutions. Please try again.';
+          this.loadingSearch = false;
+          console.error('Search error:', error);
         }
       });
   }

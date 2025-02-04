@@ -49,7 +49,7 @@ Authorization: Bearer {access_token}
 ### Search Solutions
 
 ```http
-GET /solutions/search
+GET /api/solutions/search
 ```
 
 Search solutions using text similarity across multiple fields.

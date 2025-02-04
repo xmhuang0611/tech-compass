@@ -70,4 +70,13 @@ export class SolutionService {
       }
     );
   }
+
+  searchSolutions(keyword: string): Observable<StandardResponse<Solution[]>> {
+    return this.http.get<StandardResponse<Solution[]>>(
+      `${this.apiUrl}search/`,
+      {
+        params: { keyword }
+      }
+    );
+  }
 } 
