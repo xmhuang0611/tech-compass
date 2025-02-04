@@ -226,7 +226,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { keyword },
-      replaceUrl: true // Use replaceUrl to avoid browser history stacking
+      replaceUrl: true
     });
     
     this.solutionService.searchSolutions(keyword)
@@ -237,10 +237,9 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.hasMore = false;
         },
-        error: (error) => {
+        error: () => {
           this.error = 'Failed to search solutions. Please try again.';
           this.loading = false;
-          console.error('Search error:', error);
         }
       });
   }
@@ -279,23 +278,13 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   }
 
   private loadMore(): void {
-    if (this.loadingMore) return;
+    if (this.loadingMore || this.loading) return;
     
     // Calculate the next skip value
     const nextSkip = this.currentPage * this.loadMoreSize;
     
-    console.log('Debug loadMore:', {
-      currentPage: this.currentPage,
-      nextSkip,
-      loadMoreSize: this.loadMoreSize,
-      currentSolutionsLength: this.solutions.length,
-      totalRecords: this.totalRecords,
-      hasMore: this.hasMore
-    });
-    
     // Check if we've already loaded all records
     if (nextSkip >= this.totalRecords) {
-      console.log('Stopping loadMore: nextSkip >= totalRecords');
       this.hasMore = false;
       return;
     }
@@ -324,35 +313,18 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       params.tags = this.selectedTags.join(',');
     }
 
-    console.log('Loading more with params:', params);
-
     this.solutionService.getSolutions(params).subscribe({
       next: (response) => {
-        console.log('LoadMore response:', {
-          newDataLength: response.data.length,
-          responseTotal: response.total,
-          currentTotal: this.solutions.length,
-          willHaveTotal: this.solutions.length + response.data.length
-        });
-        
         this.solutions = [...this.solutions, ...response.data];
         this.totalRecords = response.total;
         // Update hasMore based on next skip value
         this.hasMore = (nextSkip + response.data.length) < this.totalRecords;
         this.loadingMore = false;
         this.currentPage++;
-
-        console.log('After loading more:', {
-          hasMore: this.hasMore,
-          solutionsLength: this.solutions.length,
-          totalRecords: this.totalRecords,
-          nextSkipWouldBe: (this.currentPage * this.loadMoreSize)
-        });
       },
-      error: (error) => {
-        this.error = 'Failed to load more solutions';
+      error: () => {
+        this.error = 'Failed to load more solutions. Please try again.';
         this.loadingMore = false;
-        console.error('Error loading solutions:', error);
       }
     });
   }
@@ -385,11 +357,12 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
         this.totalRecords = response.total;
         this.hasMore = this.solutions.length < this.totalRecords;
         this.loading = false;
+        // Set currentPage to 1 since we've loaded the first page
+        this.currentPage = 1;
       },
-      error: (error) => {
-        this.error = 'Failed to load solutions';
+      error: () => {
+        this.error = 'Failed to load solutions. Please try again.';
         this.loading = false;
-        console.error('Error loading solutions:', error);
       }
     });
   }
@@ -407,8 +380,8 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
           ...categories.sort((a, b) => a.label.localeCompare(b.label))
         ];
       },
-      error: (error: Error) => {
-        console.error('Error loading categories:', error);
+      error: () => {
+        this.error = 'Failed to load categories. Please refresh the page to try again.';
       }
     });
   }
@@ -425,8 +398,8 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
           ...departments.sort((a, b) => a.label.localeCompare(b.label))
         ];
       },
-      error: (error: Error) => {
-        console.error('Error loading departments:', error);
+      error: () => {
+        this.error = 'Failed to load departments. Please refresh the page to try again.';
       }
     });
   }
@@ -440,10 +413,9 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
         this.tags = response.data.sort((a, b) => b.usage_count - a.usage_count);
         this.loadingTags = false;
       },
-      error: (error) => {
-        this.tagsError = 'Failed to load tags';
+      error: () => {
+        this.tagsError = 'Failed to load tags. Please refresh the page to try again.';
         this.loadingTags = false;
-        console.error('Error loading tags:', error);
       }
     });
   }
