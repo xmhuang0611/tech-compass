@@ -72,7 +72,20 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Invalid Solution"
+    "name": "Invalid Solution",
+    "description": "Missing brief field"
+}
+
+### Try to create solution with missing brief field
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Solution without brief field",
+    "department": "Engineering",
+    "team": "Platform"
 }
 
 ### Try to create solution with invalid recommend status

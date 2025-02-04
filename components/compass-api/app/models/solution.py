@@ -35,7 +35,7 @@ class SolutionBase(BaseModel):
     """Base solution model with common fields"""
     name: str = Field(..., min_length=1, description="Solution name")
     description: str = Field(..., description="Detailed description")
-    brief: Optional[str] = Field(None, max_length=200, description="Brief description of the solution (max 200 chars)")
+    brief: str = Field(..., max_length=200, description="Brief description of the solution (max 200 chars)")
     logo: Optional[str] = Field("", description="Logo URL or path")
     category: Optional[str] = Field(None, description="Primary category")
     department: str = Field(..., description="Department name")

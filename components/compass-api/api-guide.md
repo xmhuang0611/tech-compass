@@ -84,12 +84,12 @@ Create a new solution. Requires authentication.
 
 ```json
 {
-  "name": "string",
-  "description": "string",
-  "brief": "string (max 200 chars)",
+  "name": "string (required)",
+  "description": "string (required)",
+  "brief": "string (required, max 200 chars)",
   "category": "string",
-  "department": "string",
-  "team": "string",
+  "department": "string (required)",
+  "team": "string (required)",
   "recommend_status": "string",
   "stage": "string",
   "maintainer_id": "string",
