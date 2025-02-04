@@ -79,6 +79,26 @@
         </p-dropdown>
       </div>
     </div>
+
+    <div class="tags-section" *ngIf="!loadingTags">
+      <div class="tags-container">
+        <p-chip *ngFor="let tag of tags" 
+                [label]="tag.name + ' (' + tag.usage_count + ')'"
+                [removable]="false"
+                [class.selected]="isTagSelected(tag)"
+                (click)="onTagClick(tag)">
+        </p-chip>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loadingTags">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading tags...</p>
+    </div>
+
+    <div class="error-state" *ngIf="tagsError">
+      <p-message severity="error" [text]="tagsError"></p-message>
+    </div>
   </div>
 
   <div class="solutions-content">

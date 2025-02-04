@@ -9,6 +9,8 @@ import { CategoryService, Category } from '../../core/services/category.service'
 import { DepartmentService } from '../../core/services/department.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { TagService, Tag } from '../../core/services/tag.service';
+import { ChipModule } from 'primeng/chip';
 
 // PrimeNG imports
 import { DropdownModule } from 'primeng/dropdown';
@@ -26,6 +28,7 @@ interface SolutionFilters {
   team?: string;
   recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   sort: string;
+  tags?: string;
 }
 
 interface SolutionParams extends SolutionFilters {
@@ -60,11 +63,12 @@ interface DropdownOption {
     BreadcrumbModule,
     ButtonModule,
     RouterModule,
-    InputTextModule
+    InputTextModule,
+    ChipModule
   ],
   templateUrl: './solution-catalog.component.html',
   styleUrls: ['./solution-catalog.component.scss'],
-  providers: [CategoryService, DepartmentService]
+  providers: [CategoryService, DepartmentService, TagService]
 })
 export class SolutionCatalogComponent implements OnInit, OnDestroy {
   solutions: Solution[] = [];
@@ -113,10 +117,16 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   private searchSubject = new Subject<string>();
   private searchSubscription: Subscription | null = null;
 
+  tags: Tag[] = [];
+  selectedTags: string[] = [];
+  loadingTags = true;
+  tagsError: string | null = null;
+
   constructor(
     private solutionService: SolutionService,
     private categoryService: CategoryService,
     private departmentService: DepartmentService,
+    private tagService: TagService,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -137,6 +147,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadCategories();
     this.loadDepartments();
+    this.loadTags();
     
     // Subscribe to URL query parameters
     this.queryParamSubscription = this.route.queryParams.subscribe(params => {
@@ -151,6 +162,12 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       if (params['team']) this.filters.team = params['team'];
       if (params['recommend_status']) this.filters.recommend_status = params['recommend_status'] as any;
       if (params['sort']) this.filters.sort = params['sort'];
+      if (params['tags']) {
+        this.selectedTags = params['tags'].split(',');
+        this.filters.tags = params['tags'];
+      } else {
+        this.selectedTags = [];
+      }
 
       // Handle search keyword from URL
       if (params['keyword']) {
@@ -199,13 +216,15 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   private performSearch(keyword: string): void {
     this.loading = true;
     this.error = null;
+    // Clear filters and selected tags
     this.clearFilters();
+    this.selectedTags = [];
     
-    // Update URL with search keyword
+    // Update URL with only the search keyword
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { keyword },
-      queryParamsHandling: 'merge'
+      replaceUrl: true // Use replaceUrl to avoid browser history stacking
     });
     
     this.solutionService.searchSolutions(keyword)
@@ -228,12 +247,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     this.filters = {
       sort: 'name'
     };
-    // Clear URL params except keyword
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams: { keyword: this.searchKeyword },
-      replaceUrl: true
-    });
+    this.selectedTags = [];
   }
 
   onFilterChange(): void {
@@ -247,8 +261,14 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   private resetAndLoadSolutions(): void {
     this.currentPage = 0;
     this.solutions = [];
+    this.searchKeyword = '';
+    this.selectedTags = [];
+    this.filters = {
+      sort: 'name'
+    };
     this.loadSolutions();
-    // Clear keyword from URL when search is cleared
+    
+    // Clear all query parameters
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: {},
@@ -359,6 +379,23 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadTags(): void {
+    this.loadingTags = true;
+    this.tagsError = null;
+
+    this.tagService.getTags().subscribe({
+      next: (response) => {
+        this.tags = response.data.sort((a, b) => b.usage_count - a.usage_count);
+        this.loadingTags = false;
+      },
+      error: (error) => {
+        this.tagsError = 'Failed to load tags';
+        this.loadingTags = false;
+        console.error('Error loading tags:', error);
+      }
+    });
+  }
+
   getSelectedCategoryTooltip(): string {
     if (!this.filters.category) return '';
     const selectedOption = this.categoryOptions.find(opt => opt.value === this.filters.category);
@@ -368,20 +405,52 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
   private updateQueryParams(): void {
     // Update URL with current filters
     const queryParams: { [key: string]: string } = {};
+    
+    // Only add non-default values to URL
     Object.entries(this.filters).forEach(([key, value]) => {
-      // Only include non-null, non-undefined, non-empty values, and non-default values
       if (value !== null && value !== undefined && value !== '' && 
-          !(key === 'sort' && value === 'name')) { // Don't include default sort
+          !(key === 'sort' && value === 'name')) {
         queryParams[key] = value;
       }
     });
+
+    // Add search keyword if exists
+    if (this.searchKeyword) {
+      queryParams['keyword'] = this.searchKeyword;
+    }
 
     // Update URL without reloading the page
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams,
-      // Remove queryParamsHandling: 'merge' to ensure old params are removed
       replaceUrl: true
     });
+  }
+
+  onTagClick(tag: Tag): void {
+    // Clear search keyword
+    this.searchKeyword = '';
+
+    const index = this.selectedTags.indexOf(tag.name);
+    if (index === -1) {
+      this.selectedTags.push(tag.name);
+    } else {
+      this.selectedTags.splice(index, 1);
+    }
+    
+    if (this.selectedTags.length > 0) {
+      this.filters.tags = this.selectedTags.join(',');
+    } else {
+      delete this.filters.tags;
+    }
+
+    this.currentPage = 0;
+    this.solutions = [];
+    this.loadSolutions();
+    this.updateQueryParams(); // This will update URL without the keyword parameter since we cleared it
+  }
+
+  isTagSelected(tag: Tag): boolean {
+    return this.selectedTags.includes(tag.name);
   }
 }
