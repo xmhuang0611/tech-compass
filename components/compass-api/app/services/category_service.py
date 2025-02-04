@@ -133,8 +133,11 @@ class CategoryService:
         return await self.collection.count_documents({})
 
     async def get_category_usage_count(self, name: str) -> int:
-        """Get the number of solutions using this category"""
-        return await self.db.solutions.count_documents({"category": name})
+        """Get the number of approved solutions using this category"""
+        return await self.db.solutions.count_documents({
+            "category": name,
+            "review_status": "APPROVED"
+        })
 
     async def get_category_with_usage(self, category: CategoryInDB) -> Category:
         """Convert CategoryInDB to Category with usage count"""
