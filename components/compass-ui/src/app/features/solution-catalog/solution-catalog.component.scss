@@ -1,6 +1,10 @@
 .solutions-container {
+  animation: fadeInUp 0.8s ease-out;
+  position: relative;
+
   .breadcrumb {
     margin-bottom: 1.5rem;
+    animation: fadeInUp 0.8s ease-out;
   }
 
   .filters-header {
@@ -14,6 +18,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
 
       h2 {
         margin: 0;
@@ -71,6 +76,9 @@
       flex-wrap: nowrap;
       gap: 1rem;
       align-items: flex-end;
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+      position: relative;
+      z-index: 2;
 
       .filter-item {
         flex: 1;
@@ -95,6 +103,10 @@
             color: var(--text-color-secondary);
           }
         }
+
+        ::ng-deep .p-dropdown-panel {
+          z-index: 1000;
+        }
       }
     }
 
@@ -102,6 +114,9 @@
       margin-top: 1.5rem;
       padding-top: 1.5rem;
       border-top: 1px solid var(--surface-border);
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      position: relative;
+      z-index: 1;
 
       .tags-container {
         display: flex;
@@ -152,26 +167,36 @@
       padding: 1rem;
       text-align: center;
       color: var(--text-color-secondary);
+      animation: fadeInScale 0.6s ease-out both;
     }
   }
 
   .solutions-content {
+    animation: fadeInScale 0.6s ease-out 0.4s both;
+
     .solutions-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
       gap: 1.5rem;
+
+      app-solution-card {
+        opacity: 0;
+        animation: fadeInScale 0.4s ease-out forwards;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        @for $i from 1 through 20 {
+          &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05 + 0.4}s;
+          }
+        }
+      }
     }
 
-    .loading-more {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      text-align: center;
-      color: var(--text-color-secondary);
-    }
-
+    .loading-more,
     .loading-state,
     .error-state {
       display: flex;
@@ -181,6 +206,38 @@
       padding: 3rem;
       text-align: center;
       color: var(--text-color-secondary);
+      animation: fadeInScale 0.6s ease-out both;
+    }
+
+    .no-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+      background: var(--surface-ground);
+      border-radius: 8px;
+      margin: 1rem 0;
+      animation: fadeInScale 0.6s ease-out both;
+
+      i {
+        font-size: 2rem;
+        color: var(--text-color-secondary);
+        margin-bottom: 1rem;
+      }
+
+      h3 {
+        color: var(--text-color);
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+      }
+
+      p {
+        color: var(--text-color-secondary);
+        margin: 0;
+        line-height: 1.5;
+      }
     }
   }
 }
@@ -255,32 +312,25 @@
   }
 }
 
-.no-results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  text-align: center;
-  background: var(--surface-ground);
-  border-radius: 8px;
-  margin: 1rem 0;
-
-  i {
-    font-size: 2rem;
-    color: var(--text-color-secondary);
-    margin-bottom: 1rem;
+// Animation keyframes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-
-  h3 {
-    color: var(--text-color);
-    margin: 0 0 1rem 0;
-    font-weight: 600;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
+}
 
-  p {
-    color: var(--text-color-secondary);
-    margin: 0;
-    line-height: 1.5;
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 } 
