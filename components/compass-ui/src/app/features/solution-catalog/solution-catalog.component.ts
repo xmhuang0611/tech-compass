@@ -295,6 +295,11 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Ensure tags are included in the request if selected
+    if (this.selectedTags.length > 0) {
+      params.tags = this.selectedTags.join(',');
+    }
+
     this.solutionService.getSolutions(params).subscribe({
       next: (response) => {
         this.solutions = [...this.solutions, ...response.data];
@@ -312,7 +317,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
 
   private loadSolutions(): void {
     this.loading = true;
-    this.error = null; // Reset error state
+    this.error = null;
     
     const params: SolutionParams = {
       skip: 0,
@@ -326,6 +331,11 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
         delete params[key];
       }
     });
+
+    // Ensure tags are included in the request if selected
+    if (this.selectedTags.length > 0) {
+      params.tags = this.selectedTags.join(',');
+    }
 
     this.solutionService.getSolutions(params).subscribe({
       next: (response) => {
@@ -447,7 +457,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     this.currentPage = 0;
     this.solutions = [];
     this.loadSolutions();
-    this.updateQueryParams(); // This will update URL without the keyword parameter since we cleared it
+    this.updateQueryParams();
   }
 
   isTagSelected(tag: Tag): boolean {

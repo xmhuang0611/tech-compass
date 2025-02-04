@@ -22,6 +22,7 @@ export class SolutionService {
     recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
     stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
     sort?: string;
+    tags?: string;
   }): Observable<StandardResponse<Solution[]>> {
     let httpParams = new HttpParams()
       .set('skip', params.skip?.toString() || '0')
@@ -34,6 +35,7 @@ export class SolutionService {
     if (params.recommend_status) httpParams = httpParams.set('recommend_status', params.recommend_status);
     if (params.stage) httpParams = httpParams.set('stage', params.stage);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
+    if (params.tags) httpParams = httpParams.set('tags', params.tags);
 
     return this.http.get<StandardResponse<Solution[]>>(this.apiUrl, { params: httpParams });
   }

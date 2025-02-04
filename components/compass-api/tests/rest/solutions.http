@@ -17,7 +17,7 @@ Content-Type: application/json
 GET {{baseUrl}}/solutions?tags=docker
 Content-Type: application/json
 
-### Get solutions filtered by multiple tags
+### Get solutions filtered by multiple tags (AND relationship)
 GET {{baseUrl}}/solutions?tags=docker,kubernetes,cloud
 Content-Type: application/json
 
@@ -177,6 +177,84 @@ Authorization: Bearer {{token}}
     "department": "Engineering",
     "team": "Platform"
 }
+
+### Create test solutions with different tag combinations (requires auth)
+
+### Solution with docker tag only
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Docker Basic Service",
+    "brief": "Basic docker service",
+    "description": "Basic docker container service",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Solution with docker and kubernetes tags
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Docker Kubernetes Service",
+    "brief": "Docker with Kubernetes",
+    "description": "Docker container service with Kubernetes orchestration",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker", "kubernetes"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Solution with all three tags
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Cloud Container Platform",
+    "brief": "Complete cloud container platform",
+    "description": "Cloud-based container platform with Kubernetes orchestration",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker", "kubernetes", "cloud"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Verify AND relationship:
+# 1. This should return all solutions with docker tag
+GET {{baseUrl}}/solutions?tags=docker
+Content-Type: application/json
+
+# 2. This should return only solutions with both docker and kubernetes tags
+GET {{baseUrl}}/solutions?tags=docker,kubernetes
+Content-Type: application/json
+
+# 3. This should return only the solution with all three tags
+GET {{baseUrl}}/solutions?tags=docker,kubernetes,cloud
+Content-Type: application/json
 
 ### Example responses:
 
