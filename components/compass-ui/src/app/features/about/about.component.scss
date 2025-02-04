@@ -73,6 +73,10 @@
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
 
+        &.clickable {
+          cursor: pointer;
+        }
+
         &:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -135,6 +139,10 @@
           color: var(--primary-color-text);
         }
 
+        &.clickable {
+          cursor: pointer;
+        }
+
         &:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
@@ -184,6 +192,10 @@
         padding: 2rem;
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+        &.clickable {
+          cursor: pointer;
+        }
 
         &:hover {
           transform: translateY(-5px);

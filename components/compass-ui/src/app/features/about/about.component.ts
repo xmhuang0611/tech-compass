@@ -7,4 +7,6 @@ import { siteConfig } from '../../core/config/site.config';
   styleUrls: ['./about.component.scss']
 })
 export class AboutComponent {
-  aboutConfig = siteConfig.about; }
+  aboutConfig = siteConfig.about;
+  window = window;
+}

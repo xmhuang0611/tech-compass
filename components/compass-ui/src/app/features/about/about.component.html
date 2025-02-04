@@ -7,7 +7,9 @@
   <div class="section team-section">
     <h2>{{ aboutConfig.team.title }}</h2>
     <div class="team-grid">
-      <div class="team-member" *ngFor="let member of aboutConfig.team.members">
+      <div class="team-member" *ngFor="let member of aboutConfig.team.members" 
+           [class.clickable]="member.url"
+           (click)="member.url && window.open(member.url, '_blank')">
         <div class="member-avatar">
           <img [src]="member.avatar" [alt]="member.name">
         </div>
@@ -21,7 +23,9 @@
   <div class="section features-section">
     <h2>{{ aboutConfig.features.title }}</h2>
     <div class="features-grid">
-      <div class="feature-card" *ngFor="let feature of aboutConfig.features.items">
+      <div class="feature-card" *ngFor="let feature of aboutConfig.features.items"
+           [class.clickable]="feature.url"
+           (click)="feature.url && window.open(feature.url, '_blank')">
         <div class="icon-wrapper">
           <i [class]="feature.icon"></i>
         </div>
@@ -34,7 +38,9 @@
   <div class="section engagement-section">
     <h2>{{ aboutConfig.engagement.title }}</h2>
     <div class="engagement-cards">
-      <div class="engagement-card" *ngFor="let card of aboutConfig.engagement.cards">
+      <div class="engagement-card" *ngFor="let card of aboutConfig.engagement.cards"
+           [class.clickable]="card.url"
+           (click)="card.url && window.open(card.url, '_blank')">
         <div class="icon-wrapper">
           <i [class]="card.icon"></i>
         </div>

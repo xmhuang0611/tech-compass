@@ -139,7 +139,8 @@ export const siteConfig = {
           name: 'John Smith',
           role: 'Gold Sponsor',
           avatar: 'assets/avatars/avatar1.svg',
-          bio: 'Supporting innovation and technological advancement.'
+          bio: 'Supporting innovation and technological advancement.',
+          url: 'https://example.com/john-smith'
         },
         {
           name: 'Sarah Chen',
@@ -191,7 +192,8 @@ export const siteConfig = {
         {
           icon: 'pi pi-check-square',
           title: 'Standardization',
-          description: 'Establish and promote standardized software development processes and practices to ensure consistency and quality across development teams.'
+          description: 'Establish and promote standardized software development processes and practices to ensure consistency and quality across development teams.',
+          url: 'https://example.com/standardization'
         },
         {
           icon: 'pi pi-sync',
@@ -211,7 +213,8 @@ export const siteConfig = {
         {
           icon: 'pi pi-check-circle',
           title: 'Adopt to Standards',
-          description: 'Implement standardized practices and methodologies in your development process.'
+          description: 'Implement standardized practices and methodologies in your development process.',
+          url: 'https://example.com/adopt-standards'
         },
         {
           icon: 'pi pi-cog',
