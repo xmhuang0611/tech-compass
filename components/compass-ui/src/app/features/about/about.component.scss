@@ -10,6 +10,7 @@
     color: white;
     text-align: center;
     border-radius: var(--border-radius);
+    animation: fadeInUp 0.8s ease-out;
 
     &::before {
       content: '';
@@ -33,6 +34,7 @@
       font-weight: 700;
       position: relative;
       z-index: 2;
+      animation: fadeInUp 1s ease-out 0.2s both;
     }
 
     p {
@@ -42,6 +44,7 @@
       line-height: 1.6;
       position: relative;
       z-index: 2;
+      animation: fadeInUp 1s ease-out 0.4s both;
     }
   }
 
@@ -72,6 +75,8 @@
         padding: 2rem;
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        opacity: 0;
+        animation: fadeInScale 0.6s ease-out forwards;
 
         &.clickable {
           cursor: pointer;
@@ -114,8 +119,15 @@
           font-size: 0.875rem;
           line-height: 1.5;
         }
+
+        &:nth-child(1) { animation-delay: 0.8s; }
+        &:nth-child(2) { animation-delay: 1s; }
+        &:nth-child(3) { animation-delay: 1.2s; }
+        &:nth-child(4) { animation-delay: 1.4s; }
       }
     }
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.6s forwards;
   }
 
   .features-section {
@@ -134,6 +146,8 @@
         overflow: hidden;
         background: var(--primary-color);
         color: var(--primary-color-text);
+        opacity: 0;
+        animation: fadeInScale 0.6s ease-out forwards;
 
         .icon-wrapper i {
           color: var(--primary-color-text);
@@ -168,8 +182,14 @@
           line-height: 1.6;
           opacity: 0.9;
         }
+
+        &:nth-child(1) { animation-delay: 1.8s; }
+        &:nth-child(2) { animation-delay: 2s; }
+        &:nth-child(3) { animation-delay: 2.2s; }
       }
     }
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 1.6s forwards;
   }
 
   .engagement-section {
@@ -192,6 +212,8 @@
         padding: 2rem;
         text-align: center;
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        opacity: 0;
+        animation: fadeInScale 0.6s ease-out forwards;
 
         &.clickable {
           cursor: pointer;
@@ -229,8 +251,14 @@
           font-size: 0.875rem;
           line-height: 1.6;
         }
+
+        &:nth-child(1) { animation-delay: 2.6s; }
+        &:nth-child(2) { animation-delay: 2.8s; }
+        &:nth-child(3) { animation-delay: 3s; }
       }
     }
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 2.4s forwards;
   }
 }
 
@@ -245,5 +273,27 @@
         font-size: 2rem;
       }
     }
+  }
+}
+// Animation classes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
