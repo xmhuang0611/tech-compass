@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user
@@ -29,10 +29,11 @@ async def create_category(
 async def get_categories(
     skip: int = 0,
     limit: int = 100,
+    sort: str = Query("radar_quadrant", description="Sort field (prefix with - for descending order)"),
     category_service: CategoryService = Depends()
 ) -> StandardResponse[List[Category]]:
-    """Get all categories with pagination. Default limit is 100 items."""
-    categories = await category_service.get_categories(skip=skip, limit=limit)
+    """Get all categories with pagination and sorting. Default sorting is by radar_quadrant ascending."""
+    categories = await category_service.get_categories(skip=skip, limit=limit, sort=sort)
     total = await category_service.count_categories()
     
     # Convert to Category model with usage count

@@ -15,6 +15,17 @@ GET {{baseUrl}}/users/newuser
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
+### Create test user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "test",
+    "email": "test@example.com",
+    "password": "test",
+    "full_name": "Test User"
+}
+
 ### Create new user
 POST {{baseUrl}}/users
 Content-Type: application/json
@@ -22,7 +33,7 @@ Content-Type: application/json
 {
     "username": "newuser",
     "email": "newuser@example.com",
-    "password": "strongpassword123",
+    "password": "password123",
     "full_name": "New User",
     "role": "USER"
 }

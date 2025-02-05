@@ -1,36 +1,49 @@
 .breadcrumb {
   margin-bottom: 2rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
 .submit-solution {
   margin: 0 auto;
+  opacity: 0;
+  animation: fadeInUp 0.8s ease-out 0.2s forwards;
 }
 
 .form-section {
   background: var(--surface-card);
   border-radius: 6px;
-  box-shadow: 0 2px 1px -1px rgba(0,0,0,.2), 0 1px 1px 0 rgba(0,0,0,.14), 0 1px 3px 0 rgba(0,0,0,.12);
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+    0 1px 3px 0 rgba(0, 0, 0, 0.12);
   margin-bottom: 1.5rem;
-  
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+
+  @for $i from 1 through 10 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1 + 0.3}s;
+    }
+  }
+
   .section-header {
     display: flex;
     align-items: center;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--surface-border);
-    
+
     i {
       font-size: 1.5rem;
       margin-right: 0.75rem;
       color: var(--primary-color);
     }
-    
+
     h2 {
       margin: 0;
       font-size: 1.25rem;
       color: var(--text-color);
     }
   }
-  
+
   .section-content {
     padding: 1.5rem;
   }
@@ -40,34 +53,42 @@
   display: flex;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   .form-field {
     flex: 1;
     min-width: 0; // Prevents flex items from overflowing
-    
+
     &.full-width {
       flex: 0 0 100%;
     }
-    
+
+    &.one-third {
+      flex: 0 0 calc(33.333% - 1rem);
+    }
+
+    &.two-thirds {
+      flex: 0 0 calc(66.667% - 0.5rem);
+    }
+
     label {
       display: block;
       margin-bottom: 0.5rem;
       font-weight: 500;
       color: var(--text-color);
     }
-    
-    input, textarea {
+
+    input,
+    textarea {
       width: 100%;
     }
   }
 }
 
 :host {
-
   ::ng-deep {
     .section-card {
       background: var(--surface-card);
@@ -117,7 +138,7 @@
 
     .p-chips {
       width: 100%;
-      
+
       .p-chips-multiple-container {
         width: 100%;
         min-height: 38px;
@@ -134,21 +155,21 @@
 
   .p-dropdown {
     width: 100%;
-    
+
     .p-dropdown-label {
       padding: 0.5rem 0.75rem;
       height: 40px;
       line-height: 24px;
     }
-    
+
     .p-dropdown-trigger {
       width: 2.5rem;
     }
   }
-  
+
   .p-chips {
     width: 100%;
-    
+
     .p-chips-multiple-container {
       width: 100%;
       height: 40px;
@@ -159,16 +180,16 @@
       align-items: center;
       flex-wrap: nowrap;
       overflow: hidden;
-      
+
       &:not(.p-disabled):hover {
         border-color: var(--primary-color);
       }
-      
+
       &.p-focus {
         border-color: var(--primary-color);
         box-shadow: 0 0 0 1px var(--primary-color);
       }
-      
+
       .p-chips-token {
         padding: 0.15rem 0.5rem;
         margin: 0 0.25rem 0 0;
@@ -179,12 +200,12 @@
         display: inline-flex;
         align-items: center;
         white-space: nowrap;
-        
+
         .p-chips-token-icon {
           margin-left: 0.5rem;
         }
       }
-      
+
       .p-chips-input-token {
         padding: 0;
         margin: 0;
@@ -192,7 +213,7 @@
         min-width: 2rem;
         height: 24px;
         line-height: 24px;
-        
+
         input {
           font-family: inherit;
           padding: 0;
@@ -204,7 +225,7 @@
           height: 100%;
           line-height: 24px;
           color: var(--text-color);
-          
+
           &::placeholder {
             color: var(--text-color-secondary);
             line-height: 24px;
@@ -221,6 +242,8 @@
   background: var(--surface-card);
   border-radius: var(--border-radius);
   box-shadow: var(--card-shadow);
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out 0.4s forwards;
 
   p {
     margin: 0;
@@ -242,7 +265,7 @@
 .form-actions {
   margin-top: 2rem;
   text-align: right;
-  
+
   button {
     min-width: 150px;
   }
@@ -255,6 +278,16 @@
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out 0.8s forwards;
+
+  button {
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+  }
 
   ::ng-deep .p-button {
     min-width: 150px;
@@ -262,14 +295,15 @@
     &.p-button-primary {
       background: var(--primary-color);
       border-color: var(--primary-color);
-      
+
       &:hover {
         background: var(--primary-600);
         border-color: var(--primary-600);
       }
 
       &:focus {
-        box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 4px var(--primary-300);
+        box-shadow: 0 0 0 2px var(--surface-ground),
+          0 0 0 4px var(--primary-300);
       }
 
       &:disabled {
@@ -282,5 +316,27 @@
     .p-button-icon {
       font-size: 0.9rem;
     }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }

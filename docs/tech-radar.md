@@ -19,7 +19,7 @@ The radar is structured into two main dimensions:
 - Observability Stack: Prometheus, Grafana, ELK Stack
 - Cloud Infrastructure: Kubernetes, Docker, AWS
 
-### 2. Languages & Development Frameworks
+### 2. Development Frameworks
 **Definition**: Core programming technologies and their associated ecosystems that serve as the foundation for application development.
 
 **Key Areas**:

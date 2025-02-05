@@ -19,22 +19,23 @@ export class SolutionService {
     category?: string;
     department?: string;
     team?: string;
-    recommend_status?: 'BUY' | 'HOLD' | 'SELL';
-    radar_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+    recommend_status?: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
     stage?: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
     sort?: string;
+    tags?: string;
   }): Observable<StandardResponse<Solution[]>> {
     let httpParams = new HttpParams()
       .set('skip', params.skip?.toString() || '0')
-      .set('limit', params.limit?.toString() || '10');
+      .set('limit', params.limit?.toString() || '10')
+      .set('review_status', 'APPROVED');
 
     if (params.category) httpParams = httpParams.set('category', params.category);
     if (params.department) httpParams = httpParams.set('department', params.department);
     if (params.team) httpParams = httpParams.set('team', params.team);
     if (params.recommend_status) httpParams = httpParams.set('recommend_status', params.recommend_status);
-    if (params.radar_status) httpParams = httpParams.set('radar_status', params.radar_status);
     if (params.stage) httpParams = httpParams.set('stage', params.stage);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
+    if (params.tags) httpParams = httpParams.set('tags', params.tags);
 
     return this.http.get<StandardResponse<Solution[]>>(this.apiUrl, { params: httpParams });
   }
@@ -46,8 +47,9 @@ export class SolutionService {
         params: {
           skip: skip.toString(),
           limit: limit.toString(),
-          recommend_status: 'BUY',
-          sort: 'name'
+          recommend_status: 'ADOPT',
+          sort: 'name',
+          review_status: 'APPROVED'
         }
       }
     );
@@ -64,8 +66,18 @@ export class SolutionService {
         params: {
           skip: skip.toString(),
           limit: limit.toString(),
-          sort: '-created_at'
+          sort: '-created_at',
+          review_status: 'APPROVED'
         }
+      }
+    );
+  }
+
+  searchSolutions(keyword: string): Observable<StandardResponse<Solution[]>> {
+    return this.http.get<StandardResponse<Solution[]>>(
+      `${this.apiUrl}search/`,
+      {
+        params: { keyword }
       }
     );
   }

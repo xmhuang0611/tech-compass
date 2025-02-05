@@ -1,7 +1,7 @@
 <div class="breadcrumb">
   <p-breadcrumb [model]="[
     { label: 'Home', routerLink: '/' },
-    { label: 'Solution Catalog', routerLink: '/solution-catalog' },
+    { label: 'Solution Catalog', routerLink: '/solutions' },
     { label: 'Submit Solution' }
   ]"></p-breadcrumb>
 </div>
@@ -26,11 +26,26 @@
             <label for="category">Category *</label>
             <p-dropdown id="category" [options]="categories" formControlName="category" optionLabel="name" optionValue="name" [style]="{'width':'100%'}" placeholder="Select a category"></p-dropdown>
           </div>
+          <div class="form-field">
+            <label for="logo">Logo URL</label>
+            <input id="logo" type="text" pInputText formControlName="logo" placeholder="Enter logo path or URL" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field one-third">
+            <label for="version">Version *</label>
+            <input id="version" type="text" pInputText formControlName="version" />
+          </div>
+          <div class="form-field two-thirds">
+            <label for="tags">Tags</label>
+            <input id="tags" type="text" pInputText formControlName="tags" placeholder="Enter multiple tags separated by comma" />
+          </div>
         </div>
         <div class="form-row">
           <div class="form-field">
-            <label for="tags">Tags</label>
-            <p-chips id="tags" formControlName="tags" [style]="{'width':'100%'}" placeholder="Add tags"></p-chips>
+            <label for="brief">Brief Description * (max 200 characters)</label>
+            <textarea id="brief" pInputTextarea formControlName="brief" [rows]="2" [maxlength]="200"
+              placeholder="Enter a brief description of your solution"></textarea>
           </div>
         </div>
         <div class="form-row">
@@ -82,10 +97,6 @@
         </div>
         <div class="form-row">
           <div class="form-field">
-            <label for="version">Version *</label>
-            <input id="version" type="text" pInputText formControlName="version" />
-          </div>
-          <div class="form-field">
             <label for="official_website">Official Website</label>
             <input id="official_website" type="url" pInputText formControlName="official_website" placeholder="https://" />
           </div>
@@ -110,12 +121,18 @@
             <p-dropdown id="stage" [options]="stageOptions" formControlName="stage" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select stage"></p-dropdown>
           </div>
           <div class="form-field">
-            <label for="radar_status">Tech Radar Status *</label>
-            <p-dropdown id="radar_status" [options]="radarStatusOptions" formControlName="radar_status" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select status"></p-dropdown>
-          </div>
-          <div class="form-field">
             <label for="recommend_status">Recommend Status *</label>
             <p-dropdown id="recommend_status" [options]="recommendStatusOptions" formControlName="recommend_status" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select status"></p-dropdown>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="adoption_level">Adoption Level *</label>
+            <p-dropdown id="adoption_level" [options]="adoptionLevelOptions" formControlName="adoption_level" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select adoption level"></p-dropdown>
+          </div>
+          <div class="form-field">
+            <label for="adoption_user_count">Estimated User Count *</label>
+            <p-inputNumber id="adoption_user_count" formControlName="adoption_user_count" [min]="0" placeholder="Enter number of users"></p-inputNumber>
           </div>
         </div>
       </div>

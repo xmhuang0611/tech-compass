@@ -1,0 +1,23 @@
+<div class="tech-radar-container">
+  <div class="breadcrumb">
+    <p-breadcrumb [model]="[
+      { label: 'Home', routerLink: '/' },
+      { label: 'Tech Radar' }
+    ]"></p-breadcrumb>
+  </div>
+  
+  
+
+  <div class="content">
+    <div class="radar-container">
+        <svg id="radar"></svg>
+    </div>
+
+    <div class="faq-section">
+      <div class="faq-item" *ngFor="let faq of faqs">
+        <h3>{{ faq.title }}</h3>
+        <markdown [data]="faq.content"></markdown>
+      </div>
+    </div>
+  </div>
+</div> 

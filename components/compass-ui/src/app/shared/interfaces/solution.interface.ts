@@ -1,11 +1,13 @@
 export interface Solution {
   _id: string;
   name: string;
+  brief: string;
   description: string;
   category: string;
   department: string;
   team: string;
   team_email: string;
+  maintainer_id: string;
   maintainer_name: string;
   maintainer_email: string;
   official_website?: string;
@@ -16,9 +18,10 @@ export interface Solution {
   tags: string[];
   pros?: string[];
   cons?: string[];
-  recommend_status: 'BUY' | 'HOLD' | 'SELL';
-  radar_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
+  recommend_status: 'ADOPT' | 'TRIAL' | 'ASSESS' | 'HOLD';
   stage: 'DEVELOPING' | 'UAT' | 'PRODUCTION' | 'DEPRECATED' | 'RETIRED';
+  adoption_level: 'PILOT' | 'TEAM' | 'DEPARTMENT' | 'ENTERPRISE' | 'INDUSTRY';
+  adoption_user_count: number;
   created_at: string;
   updated_at: string;
   slug: string;

@@ -11,6 +11,7 @@ import { ChipsModule } from 'primeng/chips';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { MessagesModule } from 'primeng/messages';
 
 import { CategoryService } from '../../core/services/category.service';
@@ -35,6 +36,7 @@ import { LoginDialogComponent } from '../../core/components/login-dialog/login-d
     DropdownModule,
     InputTextModule,
     InputTextareaModule,
+    InputNumberModule,
     MessagesModule
   ],
   providers: [
@@ -56,17 +58,19 @@ export class SubmitSolutionComponent implements OnInit {
     { label: 'RETIRED', value: 'RETIRED' }
   ];
   
-  radarStatusOptions = [
+  recommendStatusOptions = [
     { label: 'ADOPT', value: 'ADOPT' },
     { label: 'TRIAL', value: 'TRIAL' },
     { label: 'ASSESS', value: 'ASSESS' },
     { label: 'HOLD', value: 'HOLD' }
   ];
   
-  recommendStatusOptions = [
-    { label: 'BUY', value: 'BUY' },
-    { label: 'HOLD', value: 'HOLD' },
-    { label: 'SELL', value: 'SELL' }
+  adoptionLevelOptions = [
+    { label: 'PILOT', value: 'PILOT' },
+    { label: 'TEAM', value: 'TEAM' },
+    { label: 'DEPARTMENT', value: 'DEPARTMENT' },
+    { label: 'ENTERPRISE', value: 'ENTERPRISE' },
+    { label: 'INDUSTRY', value: 'INDUSTRY' }
   ];
   
   solutionForm: FormGroup;
@@ -84,8 +88,10 @@ export class SubmitSolutionComponent implements OnInit {
   ) {
     this.solutionForm = this.fb.group({
       name: ['', Validators.required],
+      brief: ['', [Validators.required, Validators.maxLength(200)]],
       description: ['', Validators.required],
       category: ['', Validators.required],
+      logo: [''],
       department: ['', Validators.required],
       team: ['', Validators.required],
       team_email: ['', [Validators.required, Validators.email]],
@@ -100,8 +106,9 @@ export class SubmitSolutionComponent implements OnInit {
       pros: [''],
       cons: [''],
       stage: ['', Validators.required],
-      radar_status: ['', Validators.required],
-      recommend_status: ['', Validators.required]
+      recommend_status: ['', Validators.required],
+      adoption_level: ['', Validators.required],
+      adoption_user_count: [0, [Validators.required, Validators.min(0)]]
     });
   }
   
@@ -140,20 +147,22 @@ export class SubmitSolutionComponent implements OnInit {
     if (this.solutionForm.valid) {
       this.submitting = true;
       
-      // Convert multiline text to arrays
+      // Convert multiline text to arrays and process tags
       const formValue = this.solutionForm.value;
       const pros = formValue.pros?.split('\n').filter((line: string) => line.trim()) || [];
       const cons = formValue.cons?.split('\n').filter((line: string) => line.trim()) || [];
+      const tags = formValue.tags?.split(',').map((tag: string) => tag.trim()).filter((tag: string) => tag) || [];
       
       const solution = {
         ...formValue,
         pros,
-        cons
+        cons,
+        tags
       };
 
       this.solutionService.createSolution(solution).subscribe({
         next: (response) => {
-          this.router.navigate(['submit-solution/success']);
+          this.router.navigate(['solutions/new/success']);
         },
         error: (error) => {
           this.messageService.add({

@@ -2,7 +2,7 @@
   <div class="breadcrumb">
     <p-breadcrumb [model]="[
       { label: 'Home', routerLink: '/' },
-      { label: 'Solution Catalog', routerLink: '/solution-catalog' },
+      { label: 'Solution Catalog', routerLink: '/solutions' },
       { label: solution.name }
     ]"></p-breadcrumb>
   </div>
@@ -28,7 +28,10 @@
       <p-tabView [(activeIndex)]="activeTab">
         <p-tabPanel header="Overview">
           <div class="overview-content">
-            <markdown [data]="solution.description"></markdown>
+            <div class="brief-section">
+              <h3>Brief</h3>
+              <p class="brief-text">{{ solution.brief }}</p>
+            </div>
             
             <div class="pros-cons">
               <div class="pros">
@@ -43,6 +46,11 @@
                   <li *ngFor="let con of solution.cons">{{ con }}</li>
                 </ul>
               </div>
+            </div>
+
+            <div class="description-section">
+              <h3>Description</h3>
+              <markdown [data]="solution.description"></markdown>
             </div>
           </div>
         </p-tabPanel>
@@ -65,7 +73,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of comments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.username }}</span>
+                    <span class="username">{{ comment.full_name }}</span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -105,7 +113,7 @@
               <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
-                    <span class="username">{{ rating.username }}</span>
+                    <span class="username">{{ rating.full_name }}</span>
                     <span class="date">{{ rating.created_at | date }}</span>
                   </div>
                   <div class="rating-score">
@@ -134,12 +142,12 @@
         <div class="info-section">
           <h3>Basic Information</h3>
           <div class="info-item">
-            <label>Stage</label>
-            <p-tag [value]="solution.stage" [severity]="getStageSeverity(solution.stage)"></p-tag>
+            <label>Category</label>
+            <span>{{ solution.category }}</span>
           </div>
           <div class="info-item">
-            <label>Radar Status</label>
-            <p-tag [value]="solution.radar_status" [severity]="getRadarStatusSeverity(solution.radar_status)"></p-tag>
+            <label>Stage</label>
+            <p-tag [value]="solution.stage" [severity]="getStageSeverity(solution.stage)"></p-tag>
           </div>
           <div class="info-item">
             <label>Recommend Status</label>
@@ -147,7 +155,19 @@
           </div>
           <div class="info-item" *ngIf="solution.version">
             <label>Version</label>
-            <span>v{{ solution.version }}</span>
+            <span>{{ solution.version }}</span>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h3>Adoption Status</h3>
+          <div class="info-item">
+            <label>Adoption Level</label>
+            <p-tag [value]="solution.adoption_level" [severity]="getAdoptionLevelSeverity(solution.adoption_level)"></p-tag>
+          </div>
+          <div class="info-item">
+            <label>Adoption Users (Estimated)</label>
+            <span>{{ solution.adoption_user_count | number }}</span>
           </div>
         </div>
 
@@ -207,4 +227,4 @@
   <p>Loading solution details...</p>
 </div>
 
-<p-toast></p-toast> 
+<p-toast></p-toast>

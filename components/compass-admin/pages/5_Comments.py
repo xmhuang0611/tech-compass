@@ -40,6 +40,7 @@ COLUMN_DEFS = {
     "solution_slug": {"width": 150, "headerName": "Solution"},
     "content": {"width": 400, "headerName": "Content"},
     "username": {"width": 120, "headerName": "Username"},
+    "full_name": {"width": 150, "headerName": "Full Name"},
     "created_at": {"width": 140, "headerName": "Created At"},
     "updated_at": {"width": 140, "headerName": "Updated At"},
 }
@@ -114,6 +115,11 @@ def render_comment_form(comment_data):
             st.text_input(
                 "Username",
                 value=comment_data.get("username", ""),
+                disabled=True
+            )
+            st.text_input(
+                "Full Name",
+                value=comment_data.get("full_name", ""),
                 disabled=True
             )
             st.text_input(

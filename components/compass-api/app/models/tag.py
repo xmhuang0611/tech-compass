@@ -45,16 +45,4 @@ class TagInDB(TagBase,AuditModel):
 
 class Tag(TagInDB):
     """API response model for tag"""
-    pass
-
-class TagList(BaseModel):
-    """API response model for list of tags"""
-    tags: list[TagInDB]
-
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {
-            datetime: lambda dt: dt.isoformat(),
-            PyObjectId: str
-        }
+    usage_count: int = Field(default=0, description="Number of solutions using this tag")

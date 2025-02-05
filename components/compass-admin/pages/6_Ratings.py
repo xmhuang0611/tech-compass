@@ -39,6 +39,7 @@ COLUMN_DEFS = {
     "score": {"width": 100, "headerName": "Score"},
     "comment": {"width": 400, "headerName": "Comment"},
     "username": {"width": 120, "headerName": "Username"},
+    "full_name": {"width": 150, "headerName": "Full Name"},
     "created_at": {"width": 140, "headerName": "Created At"},
     "updated_at": {"width": 140, "headerName": "Updated At"},
 }
@@ -111,6 +112,11 @@ def render_rating_details(rating_data):
         st.text_input(
             "Username",
             value=rating_data.get("username", ""),
+            disabled=True
+        )
+        st.text_input(
+            "Full Name",
+            value=rating_data.get("full_name", ""),
             disabled=True
         )
         st.text_input(

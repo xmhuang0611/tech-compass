@@ -21,11 +21,14 @@ class Settings(BaseSettings):
     AUTH_SERVER_USERNAME_FIELD: str = "username"
     AUTH_SERVER_PASSWORD_FIELD: str = "password"
     AUTH_SERVER_CONTENT_TYPE: Literal["json", "form"] = "json"
+    AUTH_SERVER_FULLNAME_FIELD: str = "full_name"
+    AUTH_SERVER_EMAIL_FIELD: str = "email"
     
     # Default Admin settings
     DEFAULT_ADMIN_USERNAME: str = "admin"
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
     DEFAULT_ADMIN_EMAIL: str = "admin@techcompass.com"
+    DEFAULT_ADMIN_FULLNAME: str = "System Admin"
     
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
@@ -34,5 +37,6 @@ class Settings(BaseSettings):
     
     class Config:
         env_file = ".env"
+        case_sensitive = True
 
 settings = Settings()

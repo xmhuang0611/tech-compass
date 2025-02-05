@@ -239,7 +239,7 @@
     padding: 4rem 2rem;
     text-align: center;
     border-radius: var(--border-radius);
-    margin-bottom: 2rem;
+    margin-bottom: 0rem;
     
     &::before {
       content: '';
@@ -373,6 +373,7 @@
 
 .intro-section {
   padding: 4rem 0;
+  margin-top: 3rem;
   background: var(--surface-card);
   border-radius: var(--border-radius);
 
@@ -632,5 +633,165 @@
 
   .carousel-container {
     @include carousel-container;
+  }
+}
+
+.search-results {
+  padding: 2rem 0;
+  animation: fadeInScale 0.8s ease-out;
+
+  .section-header {
+    text-align: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    padding: 0 2rem;
+
+    app-solution-card {
+      opacity: 0;
+      animation: fadeInScale 0.6s ease-out forwards;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      }
+
+      @for $i from 1 through 20 {
+        &:nth-child(#{$i}) {
+          animation-delay: #{$i * 0.1 + 0.4}s;
+        }
+      }
+    }
+  }
+
+  .loading-state,
+  .error-state {
+    text-align: center;
+    padding: 2rem;
+    animation: fadeInScale 0.6s ease-out both;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: var(--surface-ground);
+    border-radius: var(--border-radius);
+    margin: 1rem 2rem;
+    animation: fadeInScale 0.6s ease-out both;
+
+    i {
+      font-size: 2rem;
+      color: var(--text-color-secondary);
+      margin-bottom: 1rem;
+    }
+
+    p {
+      color: var(--text-color-secondary);
+      font-size: 1.1rem;
+      margin: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    .search-results {
+      .results-grid {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+      }
+
+      .no-results {
+        margin: 1rem;
+      }
+    }
+  }
+}
+
+// Animation classes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.home-container {
+  .hero-section {
+    .hero-content {
+      animation: fadeInUp 0.8s ease-out;
+      h1 {
+        animation: fadeInUp 1s ease-out 0.2s both;
+      }
+      .subtitle {
+        animation: fadeInUp 1s ease-out 0.4s both;
+      }
+      .search-container {
+        animation: fadeInUp 1s ease-out 0.6s both;
+      }
+    }
+  }
+
+  .intro-section {
+    .intro-item {
+      opacity: 0;
+      animation: fadeInScale 0.6s ease-out forwards;
+      &:nth-child(1) { animation-delay: 0.2s; }
+      &:nth-child(2) { animation-delay: 0.4s; }
+      &:nth-child(3) { animation-delay: 0.6s; }
+    }
+  }
+
+  .recommended-section, .new-solutions-section {
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.8s forwards;
+  }
+
+  .benefits-section {
+    .benefits-content {
+      opacity: 0;
+      animation: fadeInScale 0.8s ease-out 1s forwards;
+    }
+  }
+
+  .testimonials-section {
+    .testimonial-card {
+      opacity: 0;
+      animation: fadeInScale 0.6s ease-out forwards;
+      &:nth-child(1) { animation-delay: 0.3s; }
+      &:nth-child(2) { animation-delay: 0.5s; }
+      &:nth-child(3) { animation-delay: 0.7s; }
+    }
   }
 } 

@@ -1,6 +1,10 @@
 .solutions-container {
+  animation: fadeInUp 0.8s ease-out;
+  position: relative;
+
   .breadcrumb {
     margin-bottom: 1.5rem;
+    animation: fadeInUp 0.8s ease-out;
   }
 
   .filters-header {
@@ -14,12 +18,32 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 1.5rem;
+      animation: fadeInUp 0.8s ease-out 0.2s both;
 
       h2 {
         margin: 0;
         font-size: 1.5rem;
         font-weight: 600;
         color: var(--text-color);
+      }
+
+      .header-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        .search-input {
+          width: 300px;
+
+          input {
+            width: 100%;
+            padding: 0.5rem 0.5rem 0.5rem 2.5rem;
+          }
+
+          i {
+            color: var(--text-color-secondary);
+          }
+        }
       }
 
       ::ng-deep .p-button {
@@ -52,64 +76,127 @@
       flex-wrap: nowrap;
       gap: 1rem;
       align-items: flex-end;
-
-      // Left group container (Sort, Category, Department)
-      .left-group {
-        display: flex;
-        gap: 1rem;
-        width: 60%;
-        
-        .filter-item {
-          flex: 1;
-          min-width: 0; // Allow shrinking below min-content
-        }
-      }
-
-      // Right group container (Status filters)
-      .right-group {
-        display: flex;
-        gap: 1rem;
-        width: 40%;
-        
-        .filter-item {
-          flex: 1;
-          min-width: 0; // Allow shrinking below min-content
-        }
-      }
+      animation: fadeInUp 0.8s ease-out 0.4s both;
+      position: relative;
+      z-index: 2;
 
       .filter-item {
+        flex: 1;
+        min-width: 0; // Allow shrinking below min-content
+
         label {
           display: block;
           margin-bottom: 0.5rem;
           color: var(--text-color-secondary);
           font-size: 0.875rem;
-          white-space: nowrap;
         }
 
-        :host ::ng-deep .p-dropdown {
+        .search-input {
           width: 100%;
+          
+          input {
+            width: 100%;
+            padding-left: 2.5rem;
+          }
+
+          i {
+            color: var(--text-color-secondary);
+          }
+        }
+
+        ::ng-deep .p-dropdown-panel {
+          z-index: 1000;
         }
       }
     }
-  }
 
-  .solutions-content {
-    .solutions-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 1.5rem;
+    .tags-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--surface-border);
+      animation: fadeInUp 0.8s ease-out 0.6s both;
+      position: relative;
+      z-index: 1;
+
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+
+        ::ng-deep {
+          .p-chip {
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--surface-ground);
+            border: 1px solid transparent;
+
+            &:hover {
+              background: var(--primary-color);
+              color: white;
+              transform: translateY(-1px);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            }
+
+            &.selected {
+              background: var(--primary-color) !important;
+              color: white !important;
+              border-color: var(--primary-color) !important;
+              font-weight: 600;
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+              &:hover {
+                background: var(--primary-600) !important;
+                border-color: var(--primary-600) !important;
+              }
+
+              .p-chip-text {
+                color: white !important;
+              }
+            }
+          }
+        }
+      }
     }
 
-    .loading-more {
+    .loading-state,
+    .error-state {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 1rem;
       text-align: center;
       color: var(--text-color-secondary);
+      animation: fadeInScale 0.6s ease-out both;
+    }
+  }
+
+  .solutions-content {
+    animation: fadeInScale 0.6s ease-out 0.4s both;
+
+    .solutions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+
+      app-solution-card {
+        opacity: 0;
+        animation: fadeInScale 0.4s ease-out forwards;
+
+        &:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        @for $i from 1 through 20 {
+          &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.05 + 0.4}s;
+          }
+        }
+      }
     }
 
+    .loading-more,
     .loading-state,
     .error-state {
       display: flex;
@@ -119,6 +206,38 @@
       padding: 3rem;
       text-align: center;
       color: var(--text-color-secondary);
+      animation: fadeInScale 0.6s ease-out both;
+    }
+
+    .no-results {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+      text-align: center;
+      background: var(--surface-ground);
+      border-radius: 8px;
+      margin: 1rem 0;
+      animation: fadeInScale 0.6s ease-out both;
+
+      i {
+        font-size: 2rem;
+        color: var(--text-color-secondary);
+        margin-bottom: 1rem;
+      }
+
+      h3 {
+        color: var(--text-color);
+        margin: 0 0 1rem 0;
+        font-weight: 600;
+      }
+
+      p {
+        color: var(--text-color-secondary);
+        margin: 0;
+        line-height: 1.5;
+      }
     }
   }
 }
@@ -131,7 +250,7 @@
         
         .filter-item {
           flex: 1 1 calc(33.333% - 1rem);
-          max-width: calc(33.333% - 1rem);
+          min-width: calc(33.333% - 1rem);
         }
       }
     }
@@ -141,10 +260,18 @@
 @media (max-width: 992px) {
   .solutions-container {
     .filters-header {
+      .header-row {
+        .header-right {
+          .search-input {
+            width: 250px;
+          }
+        }
+      }
+
       .filters-row {
         .filter-item {
           flex: 1 1 calc(50% - 1rem);
-          max-width: calc(50% - 1rem);
+          min-width: calc(50% - 1rem);
         }
       }
     }
@@ -156,10 +283,25 @@
     padding: 1rem;
 
     .filters-header {
+      .header-row {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+
+        .header-right {
+          flex-direction: column;
+          gap: 1rem;
+
+          .search-input {
+            width: 100%;
+          }
+        }
+      }
+
       .filters-row {
         .filter-item {
           flex: 1 1 100%;
-          max-width: 100%;
+          min-width: 100%;
         }
       }
     }
@@ -167,5 +309,28 @@
     .solutions-grid {
       grid-template-columns: 1fr !important;
     }
+  }
+}
+
+// Animation keyframes
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 } 

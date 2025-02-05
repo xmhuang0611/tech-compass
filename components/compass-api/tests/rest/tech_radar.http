@@ -1,0 +1,118 @@
+@baseUrl = http://127.0.0.1:8000/api/tech-radar
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+
+### Get Tech Radar Data
+GET {{baseUrl}}/data
+Content-Type: application/json
+
+### Example Response:
+# {
+#   "date": "2024-03",
+#   "entries": [
+#     {
+#       "quadrant": 0,
+#       "ring": 0,
+#       "label": "React",
+#       "active": true,
+#       "moved": 0
+#     }
+#   ]
+# }
+
+### Get Radar Quadrants
+GET {{baseUrl}}/quadrants
+Content-Type: application/json
+
+### Example Response:
+# [
+#   {
+#     "name": "Development Frameworks"
+#   },
+#   {
+#     "name": "Techniques & Patterns"
+#   },
+#   {
+#     "name": "Tools & Infrastructure"
+#   },
+#   {
+#     "name": "Platforms & Middleware"
+#   }
+# ]
+
+### Get Radar Rings
+GET {{baseUrl}}/rings
+Content-Type: application/json
+
+### Example Response:
+# [
+#   {
+#     "name": "ADOPT"
+#   },
+#   {
+#     "name": "TRIAL"
+#   },
+#   {
+#     "name": "ASSESS"
+#   },
+#   {
+#     "name": "HOLD"
+#   }
+# ]
+
+### Get tech radar data
+GET {{baseUrl}}/tech-radar/data
+Content-Type: application/json
+
+### Example responses:
+
+# Success response
+# {
+#     "date": "2024.03",
+#     "entries": [
+#         {
+#             "quadrant": 0,
+#             "ring": 1,
+#             "label": "Python",
+#             "active": true,
+#             "moved": 0
+#         },
+#         {
+#             "quadrant": 1,
+#             "ring": 2,
+#             "label": "Docker",
+#             "active": true,
+#             "moved": 0
+#         },
+#         {
+#             "quadrant": 2,
+#             "ring": 1,
+#             "label": "PostgreSQL",
+#             "active": true,
+#             "moved": 0
+#         },
+#         {
+#             "quadrant": 3,
+#             "ring": 3,
+#             "label": "Apache Kafka",
+#             "active": true,
+#             "moved": 0
+#         }
+#     ]
+# }
+
+# Empty response (no approved solutions)
+# {
+#     "date": "2024.03",
+#     "entries": []
+# }
+
+# Example entries explanation:
+# - quadrant: Category's radar_quadrant (0-4)
+# - ring: Based on solution's recommend_status
+#   * ADOPT = 1
+#   * TRIAL = 2
+#   * ASSESS = 3
+#   * HOLD = 4
+# - label: Solution name
+# - active: Always true for approved solutions
+# - moved: Always 0 

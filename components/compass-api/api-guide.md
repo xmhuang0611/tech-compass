@@ -46,6 +46,57 @@ Authorization: Bearer {access_token}
 
 ## Solutions
 
+### Search Solutions
+
+```http
+GET /api/solutions/search
+```
+
+Search solutions using text similarity across multiple fields.
+
+**Query Parameters:**
+
+- `keyword` (string, required): Search keyword
+
+**Response:**
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "956fDdc25eFF7aDcEc5cb5AE",
+      "created_at": "2025-02-04T03:55:44.626Z",
+      "created_by": "string",
+      "updated_at": "2025-02-04T03:55:44.626Z",
+      "updated_by": "string",
+      "name": "string",
+      "description": "string",
+      "brief": "string",
+      "logo": "",
+      "category": "string",
+      "department": "string",
+      "team": "string",
+      "team_email": "string",
+      "maintainer_id": "string",
+      "maintainer_name": "string",
+      "maintainer_email": "string",
+      "official_website": "string",
+      "documentation_url": "string",
+      "demo_url": "string",
+      "version": "string",
+      ...
+    }
+  ],
+  "detail": "string",
+  "total": 0,
+  "skip": 0,
+  "limit": 0
+}
+```
+
+Results are sorted by relevance score, with higher weights given to matches in more important fields.
+
 ### List Solutions
 
 ```http
@@ -61,8 +112,7 @@ Get a paginated list of solutions with optional filtering.
 - `category` (string, optional): Filter by category
 - `department` (string, optional): Filter by department
 - `team` (string, optional): Filter by team
-- `recommend_status` (string, optional): Filter by recommendation status (BUY/HOLD/SELL)
-- `radar_status` (string, optional): Filter by radar status (ADOPT/TRIAL/ASSESS/HOLD)
+- `recommend_status` (string, optional): Filter by recommendation status (ADOPT/TRIAL/ASSESS/HOLD)
 - `stage` (string, optional): Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)
 
 ### Get Solution
@@ -85,17 +135,19 @@ Create a new solution. Requires authentication.
 
 ```json
 {
-  "name": "string",
-  "description": "string",
+  "name": "string (required)",
+  "description": "string (required)",
+  "brief": "string (required, max 200 chars)",
   "category": "string",
-  "department": "string",
-  "team": "string",
+  "department": "string (required)",
+  "team": "string (required)",
   "recommend_status": "string",
-  "radar_status": "string",
   "stage": "string",
   "maintainer_id": "string",
   "maintainer_name": "string",
   "maintainer_email": "string",
+  "adoption_level": "string (PILOT/TEAM/DEPARTMENT/ENTERPRISE/INDUSTRY)",
+  "adoption_user_count": "integer (>= 0)",
   "tags": ["string"]
 }
 ```

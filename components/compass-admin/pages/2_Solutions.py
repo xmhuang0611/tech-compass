@@ -33,8 +33,9 @@ if not st.session_state.authenticated:
     st.stop()
 
 # Constants
-RADAR_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
+RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
 STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
+ADOPTION_LEVEL_OPTIONS = ["PILOT", "TEAM", "DEPARTMENT", "ENTERPRISE", "INDUSTRY"]
 
 
 def load_categories():
@@ -91,7 +92,7 @@ def render_solution_form(solution_data):
         st.subheader("Edit Solution")
 
         # Basic Information
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             name = st.text_input(
                 "Name", value=solution_data.get("name", ""), help="Solution name"
@@ -115,26 +116,28 @@ def render_solution_form(solution_data):
                 index=selected_index,
                 help="Solution category",
             )
-
-        description = st.text_area(
-            "Description",
-            value=solution_data.get("description", ""),
-            help="Solution description",
-        )
+        with col3:
+            logo = st.text_input(
+                "Logo URL",
+                value=solution_data.get("logo", ""),
+                help="URL to the solution's logo image"
+            )
 
         # Status Information
         col1, col2, col3 = st.columns(3)
         with col1:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
+            review_status = st.selectbox(
+                "Review Status",
+                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
                 index=(
                     0
-                    if not solution_data.get("radar_status")
-                    else RADAR_STATUS_OPTIONS.index(solution_data.get("radar_status"))
+                    if not solution_data.get("review_status")
+                    else ["PENDING", "APPROVED", "REJECTED"].index(
+                        solution_data.get("review_status")
+                    )
                     + 1
                 ),
-                help="Select radar status",
+                help="Select review status",
             )
         with col2:
             stage = st.selectbox(
@@ -150,16 +153,37 @@ def render_solution_form(solution_data):
         with col3:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=[""] + ["BUY", "HOLD", "SELL"],
+                options=[""] + RECOMMEND_STATUS_OPTIONS,
                 index=(
                     0
                     if not solution_data.get("recommend_status")
-                    else ["BUY", "HOLD", "SELL"].index(
+                    else RECOMMEND_STATUS_OPTIONS.index(
                         solution_data.get("recommend_status")
                     )
                     + 1
                 ),
                 help="Select recommend status",
+            )
+
+        # Adoption Information
+        col1, col2 = st.columns(2)
+        with col1:
+            adoption_level = st.selectbox(
+                "Adoption Level",
+                options=[""] + ADOPTION_LEVEL_OPTIONS,
+                index=(
+                    0
+                    if not solution_data.get("adoption_level")
+                    else ADOPTION_LEVEL_OPTIONS.index(solution_data.get("adoption_level")) + 1
+                ),
+                help="Select adoption level",
+            )
+        with col2:
+            adoption_user_count = st.number_input(
+                "Adoption User Count",
+                min_value=0,
+                value=solution_data.get("adoption_user_count", 0),
+                help="Number of users adopting this solution",
             )
 
         # Team Information
@@ -242,14 +266,30 @@ def render_solution_form(solution_data):
             pros = st.text_area(
                 "Pros (one per line)",
                 value=solution_data.get("pros", ""),
-                help="Enter pros (one per line)",
+                help="Enter pros (one per line)"
             )
         with col2:
             cons = st.text_area(
                 "Cons (one per line)",
                 value=solution_data.get("cons", ""),
-                help="Enter cons (one per line)",
+                help="Enter cons (one per line)"
             )
+
+        # Brief Description after Pros & Cons
+        brief = st.text_area(
+            "Brief Description",
+            value=solution_data.get("brief", ""),
+            help="Brief description of the solution"
+        )
+
+        # Full Description at the end
+        description = st.text_area(
+            "Description",
+            value=solution_data.get("description", ""),
+            help="Detailed solution description",
+            placeholder="Markdown supported",
+            height=300
+        )
 
         # Save Changes button only in the form
         col1, col2, col3 = st.columns([1, 1, 3])
@@ -272,11 +312,14 @@ def render_solution_form(solution_data):
         if submitted:
             update_data = {
                 "name": name,
+                "brief": brief,
                 "description": description,
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
-                "radar_status": radar_status if radar_status else None,
+                "review_status": review_status if review_status else None,
+                "adoption_level": adoption_level if adoption_level else None,
+                "adoption_user_count": adoption_user_count,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -287,6 +330,7 @@ def render_solution_form(solution_data):
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
                 "version": version if version else None,
+                "logo": logo if logo else None,
                 "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
                 "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()],
@@ -314,7 +358,7 @@ def render_add_solution_form():
         st.subheader("Add New Solution")
 
         # Basic Information
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             name = st.text_input("Name", help="Solution name")
         with col2:
@@ -323,26 +367,45 @@ def render_add_solution_form():
             category = st.selectbox(
                 "Category", options=category_names, help="Solution category"
             )
-
-        description = st.text_area("Description", help="Solution description")
+        with col3:
+            logo = st.text_input(
+                "Logo URL",
+                help="URL to the solution's logo image"
+            )
 
         # Status Information
         col1, col2, col3 = st.columns(3)
         with col1:
-            radar_status = st.selectbox(
-                "Radar Status",
-                options=[""] + RADAR_STATUS_OPTIONS,
-                help="Select radar status",
-            )
-        with col2:
             stage = st.selectbox(
                 "Stage", options=[""] + STAGE_OPTIONS, help="Select stage"
             )
-        with col3:
+        with col2:
             recommend_status = st.selectbox(
                 "Recommend Status",
-                options=[""] + ["BUY", "HOLD", "SELL"],
+                options=[""] + RECOMMEND_STATUS_OPTIONS,
                 help="Select recommend status",
+            )
+        with col3:
+            review_status = st.selectbox(
+                "Review Status",
+                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
+                help="Select review status",
+            )
+
+        # Adoption Information
+        col1, col2 = st.columns(2)
+        with col1:
+            adoption_level = st.selectbox(
+                "Adoption Level",
+                options=[""] + ADOPTION_LEVEL_OPTIONS,
+                help="Select adoption level",
+            )
+        with col2:
+            adoption_user_count = st.number_input(
+                "Adoption User Count",
+                min_value=0,
+                value=1,
+                help="Number of users adopting this solution",
             )
 
         # Team Information
@@ -394,6 +457,20 @@ def render_add_solution_form():
         with col2:
             cons = st.text_area("Cons (one per line)", help="Enter cons (one per line)")
 
+        # Brief Description after Pros & Cons
+        brief = st.text_area(
+            "Brief Description",
+            help="Brief description of the solution"
+        )
+
+        # Full Description at the end
+        description = st.text_area(
+            "Description",
+            help="Detailed solution description",
+            placeholder="Markdown supported",
+            height=300
+        )
+
         # Add button
         submitted = st.form_submit_button("Add Solution")
 
@@ -411,11 +488,13 @@ def render_add_solution_form():
         if submitted:
             solution_data = {
                 "name": name,
+                "brief": brief,
                 "description": description,
                 "category": category if category else None,
                 "stage": stage if stage else None,
                 "recommend_status": recommend_status if recommend_status else None,
-                "radar_status": radar_status if radar_status else None,
+                "adoption_level": adoption_level if adoption_level else None,
+                "adoption_user_count": adoption_user_count,
                 "department": department,
                 "team": team,
                 "team_email": team_email if team_email else None,
@@ -426,6 +505,7 @@ def render_add_solution_form():
                 "documentation_url": documentation_url if documentation_url else None,
                 "demo_url": demo_url if demo_url else None,
                 "version": version if version else None,
+                "logo": logo if logo else None,
                 "tags": [tag.strip() for tag in tags.split(",") if tag.strip()],
                 "pros": [pro.strip() for pro in pros.split("\n") if pro.strip()],
                 "cons": [con.strip() for con in cons.split("\n") if con.strip()],
@@ -460,7 +540,7 @@ def main():
     with list_tab:
         # Filters
         with st.expander("Filters", expanded=True):
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 category = st.selectbox(
                     "Category",
@@ -473,12 +553,6 @@ def main():
                 stage = st.selectbox(
                     "Stage", options=["All"] + STAGE_OPTIONS, key="filter_stage"
                 )
-            with col4:
-                radar_status = st.selectbox(
-                    "Radar Status",
-                    options=["All"] + RADAR_STATUS_OPTIONS,
-                    key="filter_radar_status",
-                )
 
         # Load solutions with filters
         filters = {}
@@ -488,8 +562,6 @@ def main():
             filters["department"] = department
         if stage != "All":
             filters["stage"] = stage
-        if radar_status != "All":
-            filters["radar_status"] = radar_status
 
         # Get page from session state
         if "page" not in st.session_state:
@@ -503,13 +575,13 @@ def main():
         if solutions:
             # Create DataFrame with explicit column order
             columns = [
-                "slug",
                 "name",
-                "description",
                 "category",
+                "review_status",
                 "stage",
                 "recommend_status",
-                "radar_status",
+                "adoption_level",
+                "adoption_user_count",
                 "department",
                 "team",
                 "team_email",
@@ -518,9 +590,13 @@ def main():
                 "maintainer_email",
                 "version",
                 "tags",
+                "slug",
+                "logo",
                 "official_website",
                 "documentation_url",
                 "demo_url",
+                "brief",
+                "description",
                 "pros",
                 "cons",
                 "created_at",
@@ -530,13 +606,6 @@ def main():
             ]
             df = pd.DataFrame(solutions)  # Create DataFrame from solutions
             df = df[columns]  # Reorder columns to desired order
-
-            # Format dates
-            for date_col in ["created_at", "updated_at"]:
-                if date_col in df.columns:
-                    df[date_col] = pd.to_datetime(df[date_col]).dt.strftime(
-                        "%Y-%m-%d %H:%M"
-                    )
 
             # Format lists to string
             # Format tags with commas, pros and cons with newlines
@@ -566,7 +635,8 @@ def main():
                 "category": {"width": 120, "headerName": "Category"},
                 "stage": {"width": 100, "headerName": "Stage"},
                 "recommend_status": {"width": 120, "headerName": "Recommend"},
-                "radar_status": {"width": 100, "headerName": "Radar"},
+                "adoption_level": {"width": 120, "headerName": "Adoption Level"},
+                "adoption_user_count": {"width": 120, "headerName": "User Count"},
                 "department": {"width": 120, "headerName": "Department"},
                 "team": {"width": 120, "headerName": "Team"},
                 "team_email": {"width": 150, "headerName": "Team Email"},

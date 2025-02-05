@@ -40,6 +40,7 @@ if not st.session_state.authenticated:
 COLUMN_DEFS = {
     "name": {"width": 150, "headerName": "Name"},
     "description": {"width": 300, "headerName": "Description"},
+    "radar_quadrant": {"width": 120, "headerName": "Radar Quadrant"},
     "usage_count": {"width": 120, "headerName": "Usage Count"},
     "created_at": {"width": 140, "headerName": "Created At"},
     "created_by": {"width": 100, "headerName": "Created By"},
@@ -100,6 +101,15 @@ def render_category_form(category_data):
             value=category_data.get("description", ""),
             help="Category description"
         )
+        
+        # Add radar quadrant field
+        radar_quadrant = st.number_input(
+            "Radar Quadrant",
+            min_value=-1,
+            max_value=3,
+            value=category_data.get("radar_quadrant", -1),
+            help="Radar quadrant (-1,0,1,2,3)"
+        )
 
         # Save Changes and Delete buttons
         col1, col2, col3 = st.columns([1, 1, 3])
@@ -116,6 +126,7 @@ def render_category_form(category_data):
             update_data = {
                 "name": name,
                 "description": description if description else None,
+                "radar_quadrant": int(radar_quadrant),
             }
 
             if update_category(category_data["name"], update_data):
@@ -151,6 +162,13 @@ def render_add_category_form():
 
         name = st.text_input("Name*", help="Category name")
         description = st.text_area("Description", help="Category description")
+        radar_quadrant = st.number_input(
+            "Radar Quadrant",
+            min_value=-1,
+            max_value=3,
+            value=-1,
+            help="Radar quadrant (-1,0,1,2,3)"
+        )
         submitted = st.form_submit_button("Add Category")
 
         if st.session_state.show_success_message:
@@ -169,6 +187,7 @@ def render_add_category_form():
             category_data = {
                 "name": name,
                 "description": description if description else None,
+                "radar_quadrant": int(radar_quadrant),
             }
 
             try:

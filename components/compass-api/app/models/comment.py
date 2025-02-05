@@ -33,3 +33,7 @@ class CommentInDB(CommentBase, AuditModel):
     """Model for comment in database"""
     solution_slug: str = Field(..., description="Slug of the solution this comment belongs to")
     username: str = Field(..., description="Username of the comment author")
+
+class Comment(CommentInDB):
+    """Comment model for API responses with user's full name"""
+    full_name: Optional[str] = Field(None, description="Full name of the comment author")

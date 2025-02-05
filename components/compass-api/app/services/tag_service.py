@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.tag import TagCreate, TagUpdate, TagInDB, TagList, format_tag_name
+from app.models.tag import TagCreate, TagUpdate, TagInDB, Tag, format_tag_name
 
 
 class TagService:
@@ -49,41 +49,44 @@ class TagService:
             return TagInDB(**tag)
         return None
 
-    async def get_tags(self, skip: int = 0, limit: int = 100) -> list[TagInDB]:
-        """Get all tags with pagination"""
-        # Get tags with usage count
-        pipeline = [
-            {
-                "$lookup": {
-                    "from": "solutions",
-                    "localField": "_id",
-                    "foreignField": "tags",
-                    "as": "solutions"
-                }
-            },
-            {
-                "$addFields": {
-                    "usage_count": {"$size": "$solutions"}
-                }
-            },
-            {
-                "$project": {
-                    "solutions": 0
-                }
-            },
-            {
-                "$sort": {"name": 1}  # Sort tags alphabetically
-            },
-            {
-                "$skip": skip
-            },
-            {
-                "$limit": limit
-            }
-        ]
-        cursor = self.collection.aggregate(pipeline)
+    async def get_tag_usage_count(self, name: str) -> int:
+        """Get the number of solutions using this tag"""
+        return await self.db.solutions.count_documents({
+            "tags": name,
+            "review_status": "APPROVED"
+        })
+
+    async def get_tag_with_usage(self, tag: TagInDB) -> Tag:
+        """Convert TagInDB to Tag with usage count"""
+        tag_dict = tag.model_dump()
+        usage_count = await self.get_tag_usage_count(tag.name)
+        return Tag(**tag_dict, usage_count=usage_count)
+
+    async def get_tags(
+        self,
+        skip: int = 0,
+        limit: int = 100,
+        show_all: bool = False
+    ) -> List[Tag]:
+        """Get all tags with pagination
+        Args:
+            skip: Number of items to skip
+            limit: Maximum number of items to return
+            show_all: If True, return all tags; if False, only return tags with usage_count > 0
+        """
+        cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
         tags = await cursor.to_list(length=limit)
-        return [TagInDB(**tag) for tag in tags]
+        
+        # Convert to Tag model with usage count
+        result = []
+        for tag in tags:
+            tag_model = TagInDB(**tag)
+            tag_with_usage = await self.get_tag_with_usage(tag_model)
+            # Only include tags with usage_count > 0 if show_all is False
+            if show_all or tag_with_usage.usage_count > 0:
+                result.append(tag_with_usage)
+            
+        return result
 
     async def update_tag_by_name(
         self,
@@ -152,16 +155,21 @@ class TagService:
         """Get a solution by its slug"""
         return await self.db.solutions.find_one({"slug": slug})
 
-    async def get_solution_tags(self, solution_slug: str) -> TagList:
+    async def get_solution_tags(self, solution_slug: str) -> List[Tag]:
         """Get all tags for a specific solution using slug"""
         solution = await self.get_solution_by_slug(solution_slug)
         if not solution or not solution.get("tags"):
-            return TagList(tags=[])
+            return []
 
-        tag_ids = [ObjectId(tag_id) for tag_id in solution["tags"]]
-        cursor = self.collection.find({"_id": {"$in": tag_ids}})
-        tags = await cursor.to_list(length=None)
-        return TagList(tags=[TagInDB(**tag) for tag in tags])
+        # Get all tags for this solution
+        tags = []
+        for tag_name in solution["tags"]:
+            tag = await self.get_tag_by_name(tag_name)
+            if tag:
+                tag_with_usage = await self.get_tag_with_usage(tag)
+                tags.append(tag_with_usage)
+        
+        return tags
 
     async def add_solution_tag_by_name(self, solution_slug: str, name: str) -> bool:
         """Add a tag to a solution by solution slug and tag name"""
@@ -180,7 +188,7 @@ class TagService:
 
         result = await self.db.solutions.update_one(
             {"slug": solution_slug},
-            {"$addToSet": {"tags": tag.id}}
+            {"$addToSet": {"tags": formatted_name}}
         )
         return result.modified_count > 0
 
@@ -201,10 +209,24 @@ class TagService:
 
         result = await self.db.solutions.update_one(
             {"slug": solution_slug},
-            {"$pull": {"tags": tag.id}}
+            {"$pull": {"tags": formatted_name}}
         )
         return result.modified_count > 0
 
-    async def count_tags(self) -> int:
-        """Get total number of tags"""
-        return await self.collection.count_documents({})
+    async def count_tags(self, show_all: bool = False) -> int:
+        """Get total number of tags
+        Args:
+            show_all: If True, count all tags; if False, only count tags with usage_count > 0
+        """
+        if show_all:
+            return await self.collection.count_documents({})
+        
+        # Count tags with usage_count > 0
+        total = 0
+        cursor = self.collection.find()
+        async for tag in cursor:
+            tag_model = TagInDB(**tag)
+            usage_count = await self.get_tag_usage_count(tag_model.name)
+            if usage_count > 0:
+                total += 1
+        return total

@@ -18,6 +18,12 @@ class CategoryBase(BaseModel):
         description="Category description",
         max_length=500
     )
+    radar_quadrant: int = Field(
+        default=-1,
+        description="Radar quadrant number (-1 to 3, -1 means not assigned)",
+        ge=-1,
+        le=3
+    )
 
     @field_validator('name')
     @classmethod
@@ -35,6 +41,14 @@ class CategoryBase(BaseModel):
     def validate_description(cls, description: str) -> str:
         """Validate category description"""
         return description.strip() if description else ""
+
+    @field_validator('radar_quadrant')
+    @classmethod
+    def validate_radar_quadrant(cls, value: int) -> int:
+        """Validate radar quadrant value"""
+        if not (-1 <= value <= 3):
+            raise ValueError("Radar quadrant must be between -1 and 3")
+        return value
 
 
 class CategoryCreate(CategoryBase):

@@ -22,19 +22,27 @@ async def create_tag(
     """Create a new tag."""
     try:
         result = await tag_service.create_tag(tag, current_user.username)
-        return StandardResponse.of(result)
+        tag_with_usage = await tag_service.get_tag_with_usage(result)
+        return StandardResponse.of(tag_with_usage)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/", response_model=StandardResponse[List[TagInDB]])
+@router.get("/", response_model=StandardResponse[List[Tag]])
 async def get_tags(
     skip: int = 0,
     limit: int = 100,  # Default to 100 items
+    show_all: bool = False,  # Default to only show tags with usage_count > 0
     tag_service: TagService = Depends()
 ) -> Any:
-    """Get all tags with pagination. Default limit is 100 items."""
-    tags = await tag_service.get_tags(skip=skip, limit=limit)
-    total = await tag_service.count_tags()
+    """Get all tags with pagination.
+    
+    Args:
+        skip: Number of items to skip
+        limit: Maximum number of items to return (default: 100)
+        show_all: If True, return all tags; if False, only return tags with usage_count > 0 (default: False)
+    """
+    tags = await tag_service.get_tags(skip=skip, limit=limit, show_all=show_all)
+    total = await tag_service.count_tags(show_all=show_all)
     return StandardResponse.paginated(
         data=tags,
         total=total,
@@ -54,7 +62,8 @@ async def get_tag(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Tag not found"
         )
-    return StandardResponse.of(tag)
+    tag_with_usage = await tag_service.get_tag_with_usage(tag)
+    return StandardResponse.of(tag_with_usage)
 
 @router.put("/{name}", response_model=StandardResponse[Tag])
 async def update_tag(
@@ -86,7 +95,8 @@ async def update_tag(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Tag not found"
             )
-        return StandardResponse.of(tag)
+        tag_with_usage = await tag_service.get_tag_with_usage(tag)
+        return StandardResponse.of(tag_with_usage)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -115,19 +125,14 @@ async def delete_tag(
             detail=str(e)
         )
 
-@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[str]], tags=["tags"])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[Tag]], tags=["tags"])
 async def get_solution_tags(
     solution_slug: str,
-    solution_service: SolutionService = Depends()
+    tag_service: TagService = Depends()
 ) -> Any:
     """Get all tags for a specific solution."""
-    solution = await solution_service.get_solution_by_slug(solution_slug)
-    if not solution:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Solution not found"
-        )
-    return StandardResponse.of(solution.tags if solution.tags else [])
+    tags = await tag_service.get_solution_tags(solution_slug)
+    return StandardResponse.of(tags)
 
 @router.post("/solution/{solution_slug}/tag/{tag_name}", response_model=StandardResponse[dict], status_code=status.HTTP_201_CREATED, tags=["tags"])
 async def add_solution_tag(

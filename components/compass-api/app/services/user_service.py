@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from app.core.mongodb import get_database
 from app.core.password import get_password_hash, verify_password
-from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserList
+from app.models.user import User, UserCreate, UserUpdate, UserInDB
 from app.core.config import settings
 
 
@@ -20,15 +20,20 @@ class UserService:
             raise ValueError("DEFAULT_ADMIN_USERNAME is not set")
         if not settings.DEFAULT_ADMIN_PASSWORD:
             raise ValueError("DEFAULT_ADMIN_PASSWORD is not set")
-        admin_username = getattr(settings, "DEFAULT_ADMIN_USERNAME")
+        if not settings.DEFAULT_ADMIN_EMAIL:
+            raise ValueError("DEFAULT_ADMIN_EMAIL is not set")
+        if not settings.DEFAULT_ADMIN_FULLNAME:
+            raise ValueError("DEFAULT_ADMIN_FULLNAME is not set")
+
+        admin_username = settings.DEFAULT_ADMIN_USERNAME
         admin = await self.get_user_by_username(admin_username)
         
         if not admin:
             admin_user = UserCreate(
                 username=admin_username,
-                email=getattr(settings, "DEFAULT_ADMIN_EMAIL", "admin@techcompass.com"),
-                password=getattr(settings, "DEFAULT_ADMIN_PASSWORD"),
-                full_name="Default Admin",
+                email=settings.DEFAULT_ADMIN_EMAIL,
+                password=settings.DEFAULT_ADMIN_PASSWORD,
+                full_name=settings.DEFAULT_ADMIN_FULLNAME,
                 is_active=True,
                 is_superuser=True
             )
@@ -50,13 +55,13 @@ class UserService:
             return None
         return User.model_validate(user)
 
-    async def get_users(self, skip: int = 0, limit: int = 10) -> UserList:
+    async def get_users(self, skip: int = 0, limit: int = 10) -> list[User]:
         """Get all users with pagination."""
         cursor = self.collection.find().sort("username", 1).skip(skip).limit(limit)
         users = []
         async for user_dict in cursor:
             users.append(User(**user_dict))
-        return UserList(users=users)
+        return users
 
     async def get_user_for_api(self, username: str) -> Optional[User]:
         """Get a user by username for API response."""
@@ -74,7 +79,11 @@ class UserService:
             )
 
         user_dict = user.model_dump()
-        user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
+        # Only hash password if it's not empty (for external auth users)
+        if user_dict["password"]:
+            user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
+        else:
+            user_dict["hashed_password"] = ""  # Empty hash for external auth users
         user_dict["created_at"] = datetime.utcnow()
         user_dict["updated_at"] = user_dict["created_at"]
 

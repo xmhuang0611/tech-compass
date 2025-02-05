@@ -25,7 +25,7 @@
     </div>
   </ng-template>
 
-  <p class="description">{{ solution.description }}</p>
+  <p class="description">{{ solution.brief }}</p>
 
   <div class="tags">
     <p-chip *ngFor="let tag of solution.tags.slice(0,2)" [label]="tag"></p-chip>
@@ -33,7 +33,7 @@
   </div>
 
   <div class="meta-info">
-    <span><i class="pi pi-th-large"></i> {{solution.category}}</span>
+    <span><i class="pi pi-folder"></i> {{solution.category}}</span>
     <span><i class="pi pi-users"></i> {{solution.department}}</span>
     <span class="maintainer">
       <i class="pi pi-user"></i>

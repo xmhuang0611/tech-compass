@@ -1,7 +1,7 @@
 """
 Script to generate test data using the Compass API endpoints.
 This script will:
-1. Create a test user (test/test) if not exists
+1. Create admin user (admin/admin123) if not exists
 2. Create solutions with categories and tags
 3. Add comments to solutions
 4. Add ratings to solutions
@@ -23,6 +23,14 @@ load_dotenv()
 # Configuration
 BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
 fake = faker.Faker()
+user_data = {
+    'username': 'admin',
+    'email': 'admin@example.com',
+    'password': 'admin123',
+    'full_name': 'Admin User',
+    'is_active': True,
+    'is_superuser': True
+}
 
 def debug_request(method: str, url: str, **kwargs):
     """Print request details for debugging."""
@@ -34,6 +42,7 @@ def debug_request(method: str, url: str, **kwargs):
     if 'json' in kwargs:
         print("JSON Data:", kwargs['json'])
 
+
 class TestDataGenerator:
     def __init__(self):
         self.session = requests.Session()
@@ -42,17 +51,8 @@ class TestDataGenerator:
 
     def create_test_user(self) -> Optional[Dict]:
         """Create test user if not exists."""
-        user_data = {
-            'username': 'test',
-            'email': 'test@example.com',
-            'password': 'test',
-            'full_name': 'Test User',
-            'is_active': True,
-            'is_superuser': False
-        }
-        
         try:
-            self.login_user('test', 'test')
+            self.login_user(user_data['username'], user_data['password'])
             print("Test user already exists, skipping creation")
             return None
         except requests.exceptions.RequestException:
@@ -92,15 +92,76 @@ class TestDataGenerator:
 
     def create_solution(self) -> Dict:
         """Create a new solution through the API."""
-        radar_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
         stages = ['DEVELOPING', 'UAT', 'PRODUCTION', 'DEPRECATED', 'RETIRED']
-        recommend_statuses = ['BUY', 'HOLD', 'SELL']
+        recommend_statuses = ['ADOPT', 'TRIAL', 'ASSESS', 'HOLD']
+        adoption_levels = ['PILOT', 'TEAM', 'DEPARTMENT', 'ENTERPRISE', 'INDUSTRY']
+        
+        # Define technology quadrants and their key areas
+        tech_quadrants = {
+            'Languages & Frameworks': {
+                'areas': [
+                    'Programming Languages', 'Web Frameworks', 'Mobile Frameworks',
+                    'Testing Tools', 'Build Tools'
+                ],
+                'quadrant': 0
+            },
+            'Platforms & Infrastructure': {
+                'areas': [
+                    'Cloud Platforms', 'Containers', 'Databases',
+                    'Message Queues', 'CI/CD Tools'
+                ],
+                'quadrant': 1
+            },
+            'Data & Analytics': {
+                'areas': [
+                    'Data Storage', 'Data Processing', 'Analytics Tools',
+                    'Machine Learning', 'Visualization'
+                ],
+                'quadrant': 2
+            },
+            'DevOps & Tools': {
+                'areas': [
+                    'Monitoring', 'Logging', 'Security',
+                    'Performance', 'Deployment'
+                ],
+                'quadrant': 3
+            }
+        }
+        
+        # Select a random category and its key areas
+        category_name = random.choice(list(tech_quadrants.keys()))
+        category_info = tech_quadrants[category_name]
+        key_areas = category_info['areas']
+        
+        # Create or update category with radar_quadrant
+        headers = {'Authorization': f'Bearer {self.token}'}
+        category_data = {
+            'name': category_name,
+            'description': f'Technologies related to {category_name.lower()}',
+            'radar_quadrant': category_info['quadrant']
+        }
+        url = f'{BASE_URL}/api/categories'
+        try:
+            debug_request('POST', url, headers=headers, json=category_data)
+            self.session.post(url, json=category_data, headers=headers)
+        except requests.exceptions.RequestException:
+            # Category might already exist, ignore error
+            pass
+        
+        # Generate tags from key areas and some common tech terms
+        selected_areas = random.sample(key_areas, k=random.randint(1, 3))
+        tech_terms = [
+            'Cloud Native', 'DevOps', 'Automation', 'Scalability',
+            'High Availability', 'Security', 'Performance', 'Open Source',
+            'Enterprise', 'Integration', 'Monitoring', 'Analytics'
+        ]
+        tags = selected_areas + random.sample(tech_terms, k=random.randint(1, 3))
         
         solution_data = {
             'name': fake.catch_phrase(),
             'description': fake.text(max_nb_chars=200),
-            'category': fake.word(),  # Primary category
-            'radar_status': random.choice(radar_statuses),
+            'brief': fake.text(max_nb_chars=100).split('.')[0] + '.',  # Ensure it's a single sentence with proper ending
+            'category': category_name,
             'department': fake.company_suffix(),
             'team': fake.job(),
             'team_email': fake.company_email(),
@@ -110,13 +171,15 @@ class TestDataGenerator:
             'documentation_url': fake.url(),
             'demo_url': fake.url(),
             'version': f"{random.randint(1,5)}.{random.randint(0,9)}.{random.randint(0,9)}",
-            'tags': [fake.word() for _ in range(random.randint(2, 5))],
+            'adoption_level': random.choice(adoption_levels),
+            'adoption_user_count': random.randint(0, 1000),  # Generate random user count between 0 and 1000
+            'tags': tags,
             'pros': [fake.sentence() for _ in range(random.randint(2, 4))],
             'cons': [fake.sentence() for _ in range(random.randint(1, 3))],
             'stage': random.choice(stages),
             'recommend_status': random.choice(recommend_statuses)
         }
-        
+
         headers = {'Authorization': f'Bearer {self.token}'}
         url = f'{BASE_URL}/api/solutions/'
         debug_request('POST', url, headers=headers, json=solution_data)
@@ -137,6 +200,23 @@ class TestDataGenerator:
         response.raise_for_status()
         return response.json()
 
+    def update_solution_review_status(self, solution_slug: str) -> Dict:
+        """Update the review status of a solution."""
+        review_statuses = ['APPROVED', 'REJECTED', 'PENDING']
+        # Weight distribution for review status (70% approved, 20% rejected, 10% pending)
+        review_weights = [0.7, 0.2, 0.1]
+        review_status = random.choices(review_statuses, weights=review_weights)[0]
+        update_data = {
+            'review_status': review_status
+        }
+        
+        headers = {'Authorization': f'Bearer {self.token}'}
+        url = f'{BASE_URL}/api/solutions/{solution_slug}'
+        debug_request('PUT', url, headers=headers, json=update_data)
+        response = self.session.put(url, json=update_data, headers=headers)
+        response.raise_for_status()
+        return response.json()
+
     def create_rating(self, solution_slug: str) -> Dict:
         """Create a new rating for a solution."""
         rating_data = {
@@ -153,8 +233,8 @@ class TestDataGenerator:
 
     def generate_test_data(
         self,
-        num_solutions: int = 5,
-        num_comments_per_solution: int = 4,
+        num_solutions: int = 10,
+        num_comments_per_solution: int = 3,
         num_ratings_per_solution: int = 1
     ):
         """Generate complete test dataset."""
@@ -163,7 +243,7 @@ class TestDataGenerator:
         # Create/login test user
         self.create_test_user()
         if not self.token:
-            self.login_user('test', 'test')
+            self.login_user(user_data['username'], user_data['password'])
 
         # Create solutions
         print(f"Creating {num_solutions} solutions...")
@@ -182,8 +262,12 @@ class TestDataGenerator:
             # Add ratings
             for _ in range(num_ratings_per_solution):
                 self.create_rating(solution['slug'])
+            
+            # Update review status from weighted distribution
+            self.update_solution_review_status(solution['slug'])
 
         print("Test data generation completed successfully!")
+
 
 def main():
     try:

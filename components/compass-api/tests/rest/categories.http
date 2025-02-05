@@ -1,12 +1,20 @@
 @baseUrl = http://127.0.0.1:8000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
 
-### Get all categories
+### Get all categories (default sorted by radar_quadrant ascending)
 GET {{baseUrl}}/categories
 Content-Type: application/json
 
-### Get all categories with pagination
+### Get all categories with pagination (default sorted by radar_quadrant ascending)
 GET {{baseUrl}}/categories?skip=0&limit=5
+Content-Type: application/json
+
+### Get all categories with custom sorting (override default radar_quadrant sorting)
+GET {{baseUrl}}/categories?sort=name
+Content-Type: application/json
+
+### Get all categories sorted by radar_quadrant descending
+GET {{baseUrl}}/categories?sort=-radar_quadrant
 Content-Type: application/json
 
 ### Get specific category by name
@@ -20,7 +28,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "Development",
-    "description": "Tools and platforms for software development"
+    "description": "Tools and platforms for software development",
+    "radar_quadrant": 1
 }
 
 ### Create category with empty description (should succeed)
@@ -30,7 +39,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "Testing",
-    "description": ""
+    "description": "",
+    "radar_quadrant": 0
 }
 
 ### Create category with whitespace description (should succeed, will be trimmed)
@@ -40,7 +50,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "Infrastructure",
-    "description": "    "
+    "description": "    ",
+    "radar_quadrant": 2
 }
 
 ### Update category (requires auth)
@@ -50,7 +61,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "Development",
-    "description": "Updated description for development tools category"
+    "description": "Updated description for development tools category",
+    "radar_quadrant": 3
 }
 
 ### Update category with empty description (should succeed)
@@ -59,7 +71,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "description": ""
+    "description": "",
+    "radar_quadrant": 4
 }
 
 ### Delete category (requires auth)
@@ -75,7 +88,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "",
-    "description": "This should fail validation"
+    "description": "This should fail validation",
+    "radar_quadrant": 0
 }
 
 ### Try to create category with only whitespace name (should fail)
@@ -85,7 +99,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "    ",
-    "description": "This should fail validation"
+    "description": "This should fail validation",
+    "radar_quadrant": 1
 }
 
 ### Try to create category with too long name (>100 chars, should fail)
@@ -95,7 +110,19 @@ Authorization: Bearer {{token}}
 
 {
     "name": "This is a very very very very very very very very very very very very very very very very very very very very long name",
-    "description": "This should fail validation"
+    "description": "This should fail validation",
+    "radar_quadrant": 2
+}
+
+### Try to create category with invalid radar_quadrant (should fail)
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Quadrant",
+    "description": "This should fail validation",
+    "radar_quadrant": 5
 }
 
 ### Try to get non-existent category (should return 404)
@@ -109,7 +136,8 @@ Authorization: Bearer {{token}}
 
 {
     "name": "Development",
-    "description": "This should fail if category already exists"
+    "description": "This should fail if category already exists",
+    "radar_quadrant": 1
 }
 
 ### Try to update without auth token (should fail)
@@ -118,7 +146,8 @@ Content-Type: application/json
 
 {
     "name": "Development",
-    "description": "This should fail without token"
+    "description": "This should fail without token",
+    "radar_quadrant": 2
 }
 
 ### Try to update with empty name (should fail)
@@ -128,18 +157,30 @@ Authorization: Bearer {{token}}
 
 {
     "name": "",
-    "description": "This should fail validation"
+    "description": "This should fail validation",
+    "radar_quadrant": 3
 }
 
 ### Example responses:
 
-# Get all categories response
+# Get all categories response (sorted by radar_quadrant ascending)
 # {
 #     "success": true,
 #     "data": [
 #         {
+#             "name": "Testing",
+#             "description": "Testing and quality assurance",
+#             "radar_quadrant": 0,
+#             "id": "65ae1234b5c3e1234567890c",
+#             "created_at": "2024-01-22T10:40:00",
+#             "created_by": "test",
+#             "updated_at": "2024-01-22T10:40:00",
+#             "updated_by": "test"
+#         },
+#         {
 #             "name": "Development",
 #             "description": "Tools and platforms for software development",
+#             "radar_quadrant": 1,
 #             "id": "65ae1234b5c3e1234567890a",
 #             "created_at": "2024-01-22T10:30:00",
 #             "created_by": "test",
@@ -148,7 +189,8 @@ Authorization: Bearer {{token}}
 #         },
 #         {
 #             "name": "Infrastructure",
-#             "description": "",
+#             "description": "Cloud and infrastructure services",
+#             "radar_quadrant": 2,
 #             "id": "65ae1234b5c3e1234567890b",
 #             "created_at": "2024-01-22T10:35:00",
 #             "created_by": "test",
@@ -156,7 +198,7 @@ Authorization: Bearer {{token}}
 #             "updated_by": "test"
 #         }
 #     ],
-#     "total": 2,
+#     "total": 3,
 #     "skip": 0,
 #     "limit": 100
 # }
@@ -167,6 +209,7 @@ Authorization: Bearer {{token}}
 #     "data": {
 #         "name": "Development",
 #         "description": "Tools and platforms for software development",
+#         "radar_quadrant": 1,
 #         "id": "65ae1234b5c3e1234567890a",
 #         "created_at": "2024-01-22T10:30:00",
 #         "created_by": "test",
@@ -195,4 +238,9 @@ Authorization: Bearer {{token}}
 # Authentication error 401
 # {
 #     "detail": "Not authenticated"
+# }
+
+# Invalid radar_quadrant error 400
+# {
+#     "detail": "Radar quadrant must be between 0 and 4"
 # } 

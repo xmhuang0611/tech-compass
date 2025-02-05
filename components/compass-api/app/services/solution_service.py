@@ -33,58 +33,216 @@ class SolutionService:
         self.tag_service = TagService()
         self.rating_service = RatingService()
 
-    async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
+    async def _get_user_info(self, username: str) -> Optional[dict]:
+        """Get user information from users collection
+        
+        Args:
+            username: The username to look up
+            
+        Returns:
+            User document if found, None otherwise
+        """
+        return await self.db.users.find_one({"username": username})
+
+    async def _process_category(
+        self,
+        category_name: str,
+        username: Optional[str] = None
+    ) -> str:
+        """Process category creation/update
+        
+        Args:
+            category_name: The category name to process
+            username: The username performing the operation
+            
+        Returns:
+            The processed category name
+        """
+        category = await self.category_service.get_or_create_category(category_name, username)
+        return category.name
+
+    async def _process_tags(
+        self,
+        tags: List[str],
+        username: Optional[str] = None
+    ) -> List[str]:
+        """Process tags creation/update
+        
+        Args:
+            tags: List of tag names to process
+            username: The username performing the operation
+            
+        Returns:
+            List of processed tag names
+        """
+        formatted_tags = []
+        # Get unique tags first
+        unique_tags = list(set(tags))
+        for tag_name in unique_tags:
+            # Create tag if it doesn't exist
+            tag = await self.tag_service.get_tag_by_name(tag_name)
+            if not tag:
+                from app.models.tag import TagCreate
+                tag_create = TagCreate(
+                    name=tag_name,
+                    description=f"Tag for {tag_name}"
+                )
+                tag = await self.tag_service.create_tag(tag_create, username)
+            formatted_tags.append(tag.name)
+        return formatted_tags
+
+    async def _update_maintainer_fields(
+        self,
+        update_dict: dict,
+        username: Optional[str] = None
+    ) -> None:
+        """Update maintainer related fields in the update dictionary
+        
+        Args:
+            update_dict: The dictionary to update
+            username: The username performing the operation
+        """
+        if not username:
+            return
+
+        # Set maintainer ID if not provided
+        if not update_dict.get("maintainer_id"):
+            update_dict["maintainer_id"] = username
+
+        # Try to get user's info
+        user = await self._get_user_info(username if not update_dict.get("maintainer_id") else update_dict["maintainer_id"])
+        if user:
+            if not update_dict.get("maintainer_name"):
+                update_dict["maintainer_name"] = user.get("full_name")
+            if not update_dict.get("maintainer_email"):
+                update_dict["maintainer_email"] = user.get("email")
+
+    async def _process_solution_update(
+        self,
+        update_dict: dict,
+        username: Optional[str] = None
+    ) -> None:
+        """Process common solution update operations
+        
+        Args:
+            update_dict: The update dictionary to process
+            username: The username performing the operation
+        """
+        # Handle category update
+        if "category" in update_dict:
+            update_dict["category"] = await self._process_category(update_dict["category"], username)
+
+        # Handle tags update
+        if "tags" in update_dict:
+            update_dict["tags"] = await self._process_tags(update_dict["tags"], username)
+
+        # Update maintainer fields
+        await self._update_maintainer_fields(update_dict, username)
+
+        # Update timestamp and user fields
+        update_dict["updated_at"] = datetime.utcnow()
+        if username:
+            update_dict["updated_by"] = username
+
+    async def check_name_exists(self, name: str) -> tuple[bool, int]:
+        """Check if a solution name exists and count how many solutions have similar names
+        
+        Args:
+            name: The solution name to check
+            
+        Returns:
+            A tuple of (exists: bool, count: int) where:
+            - exists: True if the exact name exists
+            - count: Number of solutions with similar names (case-insensitive)
+        """
+        # Check for exact match
+        exact_match = await self.collection.find_one({"name": name})
+        exists = exact_match is not None
+        
+        # Count similar names (case-insensitive)
+        similar_count = await self.collection.count_documents(
+            {"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}
+        )
+        
+        return exists, similar_count
+
+    async def delete_solutions_by_name(self, name: str) -> int:
+        """Delete all solutions with the exact name (case-sensitive)
+        
+        Args:
+            name: The solution name to delete
+            
+        Returns:
+            Number of solutions deleted
+        """
+        result = await self.collection.delete_many({"name": name})
+        return result.deleted_count
+
+    async def update_solutions_by_name(
+        self,
+        name: str,
+        solution_update: SolutionUpdate,
+        username: Optional[str] = None
+    ) -> List[SolutionInDB]:
+        """Update all solutions with the exact name (case-sensitive)
+        
+        Args:
+            name: The solution name to update
+            solution_update: The update data
+            username: The username of the user making the update
+            
+        Returns:
+            List of updated solutions
+        """
+        update_dict = solution_update.model_dump(exclude_unset=True)
+        
+        # Handle slug update if name changes
+        if "name" in update_dict:
+            solutions = await self.collection.find({"name": name}).to_list(None)
+            for solution in solutions:
+                base_slug = generate_slug(update_dict["name"])
+                unique_slug = await self.ensure_unique_slug(base_slug, str(solution["_id"]))
+                # Update each solution with its unique slug
+                await self.collection.update_one(
+                    {"_id": solution["_id"]},
+                    {"$set": {"slug": unique_slug}}
+                )
+
+        # Process common update operations
+        await self._process_solution_update(update_dict, username)
+
+        # Update all matching solutions
+        await self.collection.update_many(
+            {"name": name},
+            {"$set": update_dict}
+        )
+
+        # Return all updated solutions
+        updated_solutions = await self.collection.find(
+            {"name": name if "name" not in update_dict else update_dict["name"]}
+        ).to_list(None)
+        return [SolutionInDB(**solution) for solution in updated_solutions]
+
+    async def create_solution(
+        self,
+        solution: SolutionCreate,
+        username: Optional[str] = None
+    ) -> SolutionInDB:
         """Create a new solution"""
         solution_dict = solution.model_dump(exclude_unset=True)
-        
-        # Handle category creation if provided
-        if solution_dict.get("category"):
-            category = await self.category_service.get_or_create_category(solution_dict["category"], username)
-            solution_dict["category_id"] = category.id
-            # Keep category name in the response
-            solution_dict["category"] = category.name
+        solution_dict["review_status"] = "PENDING"
         
         # Generate and ensure unique slug
         base_slug = generate_slug(solution_dict["name"])
         solution_dict["slug"] = await self.ensure_unique_slug(base_slug)
-            
-        # Set maintainer fields if not provided
-        if not solution_dict.get("maintainer_id") and username:
-            solution_dict["maintainer_id"] = username
-        if not solution_dict.get("maintainer_name") and username:
-            # Try to get user's full name from users collection
-            user = await self.db.users.find_one({"username": username})
-            if user and user.get("full_name"):
-                solution_dict["maintainer_name"] = user["full_name"]
-        if not solution_dict.get("maintainer_email") and username:
-            # Try to get user's email from users collection
-            user = await self.db.users.find_one({"username": username})
-            if user and user.get("email"):
-                solution_dict["maintainer_email"] = user["email"]
-
-        # Handle tags
-        if "tags" in solution_dict:
-            formatted_tags = []
-            # Get unique tags first
-            unique_tags = list(set(solution_dict["tags"]))
-            for tag_name in unique_tags:
-                # Create tag if it doesn't exist
-                tag = await self.tag_service.get_tag_by_name(tag_name)
-                if not tag:
-                    from app.models.tag import TagCreate
-                    tag_create = TagCreate(
-                        name=tag_name,
-                        description=f"Tag for {tag_name}"
-                    )
-                    tag = await self.tag_service.create_tag(tag_create, username)
-                formatted_tags.append(tag.name)
-            solution_dict["tags"] = formatted_tags
-
-        solution_dict["created_at"] = datetime.utcnow()
-        solution_dict["updated_at"] = datetime.utcnow()
+        
+        # Process common solution fields
+        await self._process_solution_update(solution_dict, username)
+        
+        # Set creation timestamp
+        solution_dict["created_at"] = solution_dict["updated_at"]
         if username:
             solution_dict["created_by"] = username
-            solution_dict["updated_by"] = username
 
         result = await self.collection.insert_one(solution_dict)
         return await self.get_solution_by_id(str(result.inserted_id))
@@ -93,11 +251,6 @@ class SolutionService:
         """Get a solution by ID"""
         solution = await self.collection.find_one({"_id": ObjectId(solution_id)})
         if solution:
-            # Get category details if category_id exists
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
             return SolutionInDB(**solution)
         return None
 
@@ -109,8 +262,9 @@ class SolutionService:
         department: Optional[str] = None,
         team: Optional[str] = None,
         recommend_status: Optional[str] = None,
-        radar_status: Optional[str] = None,
         stage: Optional[str] = None,
+        review_status: Optional[str] = None,
+        tags: Optional[List[str]] = None,
         sort: str = "name"
     ) -> List[SolutionInDB]:
         """Get all solutions with filtering and pagination"""
@@ -118,20 +272,20 @@ class SolutionService:
         
         # Add filters if provided
         if category:
-            # Get category by name
-            category_obj = await self.category_service.get_category_by_name(category)
-            if category_obj:
-                query["category_id"] = category_obj.id
+            query["category"] = category
         if department:
             query["department"] = department
         if team:
             query["team"] = team
         if recommend_status:
             query["recommend_status"] = recommend_status
-        if radar_status:
-            query["radar_status"] = radar_status
         if stage:
             query["stage"] = stage
+        if review_status:
+            query["review_status"] = review_status
+        if tags:
+            # Match solutions that have all the specified tags
+            query["tags"] = {"$all": tags}
 
         # Parse sort parameter
         sort_field = "name"
@@ -149,25 +303,12 @@ class SolutionService:
 
         cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
-        
-        # Populate category names
-        for solution in solutions:
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
-
         return [SolutionInDB(**solution) for solution in solutions]
 
     async def get_solution_by_slug(self, slug: str) -> Optional[SolutionInDB]:
         """Get a solution by slug"""
         solution = await self.collection.find_one({"slug": slug})
         if solution:
-            # Get category details if category_id exists
-            if solution.get("category_id"):
-                category = await self.category_service.get_category_by_id(str(solution["category_id"]))
-                if category:
-                    solution["category"] = category.name
             return SolutionInDB(**solution)
         return None
 
@@ -199,9 +340,8 @@ class SolutionService:
         # Handle category update
         if "category" in update_dict:
             category = await self.category_service.get_or_create_category(update_dict["category"], username)
-            update_dict["category_id"] = category.id
             # Keep category name in the response
-            update_dict["category"] = update_dict["category"]
+            update_dict["category"] = category.name
 
         # Handle slug update if name changes
         if "name" in update_dict:
@@ -293,11 +433,12 @@ class SolutionService:
         department: Optional[str] = None,
         team: Optional[str] = None,
         recommend_status: Optional[str] = None,
-        radar_status: Optional[str] = None,
         stage: Optional[str] = None,
+        review_status: Optional[str] = None,
+        tags: Optional[List[str]] = None,
         sort: str = "name"
     ) -> List[Solution]:
-        """Get all solutions with ratings"""
+        """Get solutions with ratings"""
         solutions = await self.get_solutions(
             skip=skip,
             limit=limit,
@@ -305,8 +446,9 @@ class SolutionService:
             department=department,
             team=team,
             recommend_status=recommend_status,
-            radar_status=radar_status,
             stage=stage,
+            review_status=review_status,
+            tags=tags,
             sort=sort
         )
         
@@ -345,3 +487,59 @@ class SolutionService:
             solution_dict["rating_count"] = rating_summary["count"]
             return Solution(**solution_dict)
         return None
+
+    async def search_solutions(self, keyword: str, limit: int = 6) -> List[Solution]:
+        """Search solutions by keyword using text similarity
+        Searches across:
+        - name (highest weight)
+        - brief
+        - description
+        - category
+        - department
+        - team
+        - maintainer_name
+        - pros and cons
+        Returns top matches sorted by text relevance score
+        """
+        # Create text index with field weights if it doesn't exist
+        await self.collection.create_index([
+            ("name", "text"),
+            ("brief", "text"),
+            ("description", "text"),
+            ("category", "text"),
+            ("department", "text"),
+            ("team", "text"),
+            ("maintainer_name", "text"),
+            ("pros", "text"),
+            ("cons", "text")
+        ], weights={
+            "name": 10,        # Highest priority
+            "brief": 8,        # Second priority
+            "description": 5,  # Third priority
+            "category": 3,
+            "department": 3,
+            "team": 3,
+            "maintainer_name": 2,
+            "pros": 1,
+            "cons": 1
+        })
+
+        # Perform text search with score
+        cursor = self.collection.find(
+            {"$text": {"$search": keyword}},
+            {"score": {"$meta": "textScore"}}
+        ).sort([("score", {"$meta": "textScore"})]).limit(limit)
+
+        solutions = await cursor.to_list(length=limit)
+        
+        # Convert to Solution model with ratings
+        result = []
+        for solution in solutions:            
+            # Add rating information
+            solution_model = SolutionInDB(**solution)
+            rating_summary = await self.rating_service.get_rating_summary(solution_model.slug)
+            solution["rating"] = rating_summary["average"]
+            solution["rating_count"] = rating_summary["count"]
+            result.append(Solution(**solution))
+            
+        return result

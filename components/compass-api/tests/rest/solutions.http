@@ -10,7 +10,19 @@ GET {{baseUrl}}/solutions?skip=0&limit=5
 Content-Type: application/json
 
 ### Get solutions with filters
-GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&radar_status=ADOPT&recommend_status=BUY&stage=PRODUCTION&sort=-created_at
+GET {{baseUrl}}/solutions?category=Development&department=Engineering&team=Platform&recommend_status=ADOPT&stage=PRODUCTION&review_status=APPROVED&sort=-created_at
+Content-Type: application/json
+
+### Get solutions filtered by single tag
+GET {{baseUrl}}/solutions?tags=docker
+Content-Type: application/json
+
+### Get solutions filtered by multiple tags (AND relationship)
+GET {{baseUrl}}/solutions?tags=docker,kubernetes,cloud
+Content-Type: application/json
+
+### Get solutions with combined filters (tags and other filters)
+GET {{baseUrl}}/solutions?tags=python,api&department=Engineering&stage=PRODUCTION&sort=-created_at
 Content-Type: application/json
 
 ### Get all departments
@@ -27,24 +39,25 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "My Solution",
-    "description": "A comprehensive solution for testing",
-    "category": "Development",
-    "radar_status": "ADOPT",
+    "name": "Docker Container Service",
+    "brief": "Enterprise container platform",
+    "description": "Docker container service for enterprise applications",
+    "category": "Infrastructure",
     "department": "Engineering",
     "team": "Platform",
     "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
     "maintainer_name": "John Doe",
     "maintainer_email": "john@company.com",
-    "official_website": "https://solution.com",
-    "documentation_url": "https://docs.solution.com",
-    "demo_url": "https://demo.solution.com",
-    "version": "1.0.0",
-    "tags": ["testing", "development"],
-    "pros": ["Easy to use", "Well documented"],
-    "cons": ["Learning curve"],
-    "stage": "DEVELOPING",
-    "recommend_status": "BUY"
+    "official_website": "https://docker.com",
+    "documentation_url": "https://docs.docker.com",
+    "demo_url": "https://demo.docker.com",
+    "version": "24.0.7",
+    "tags": ["docker", "container", "infrastructure"],
+    "pros": ["Industry standard", "Easy to use", "Well documented"],
+    "cons": ["Resource intensive"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
 }
 
 ### Update solution (requires auth)
@@ -54,7 +67,10 @@ Authorization: Bearer {{token}}
 
 {
     "description": "Updated description",
-    "radar_status": "TRIAL",
+    "brief": "Updated brief overview",
+    "adoption_level": "ENTERPRISE",
+    "adoption_user_count": 300,
+    "recommend_status": "TRIAL",
     "stage": "UAT",
     "tags": ["testing", "development", "updated"]
 }
@@ -71,18 +87,31 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Invalid Solution"
+    "name": "Invalid Solution",
+    "description": "Missing brief field"
 }
 
-### Try to create solution with invalid radar status
+### Try to create solution with missing brief field
 POST {{baseUrl}}/solutions
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
     "name": "Invalid Solution",
-    "description": "Testing invalid radar status",
-    "radar_status": "INVALID",
+    "description": "Solution without brief field",
+    "department": "Engineering",
+    "team": "Platform"
+}
+
+### Try to create solution with invalid recommend status
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Testing invalid recommend status",
+    "recommend_status": "INVALID",
     "department": "Engineering",
     "team": "Platform"
 }
@@ -95,7 +124,7 @@ Authorization: Bearer {{token}}
 {
     "name": "Invalid Solution",
     "description": "Testing invalid stage",
-    "radar_status": "ADOPT",
+    "recommend_status": "ADOPT",
     "department": "Engineering",
     "team": "Platform",
     "stage": "INVALID"
@@ -104,6 +133,15 @@ Authorization: Bearer {{token}}
 ### Try to get non-existent solution
 GET {{baseUrl}}/solutions/non-existent-solution
 Content-Type: application/json
+
+### Try to update review status as non-superuser (should fail)
+PUT {{baseUrl}}/solutions/my-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "review_status": "APPROVED"
+}
 
 ### Try to update without auth token
 PUT {{baseUrl}}/solutions/my-solution
@@ -126,6 +164,98 @@ Authorization: Bearer {{token}}
 DELETE {{baseUrl}}/solutions/non-existent-solution
 Authorization: Bearer {{token}}
 
+### Try to create solution with invalid adoption level
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Invalid Solution",
+    "description": "Testing invalid adoption level",
+    "brief": "A brief overview",
+    "adoption_level": "INVALID",
+    "department": "Engineering",
+    "team": "Platform"
+}
+
+### Create test solutions with different tag combinations (requires auth)
+
+### Solution with docker tag only
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Docker Basic Service",
+    "brief": "Basic docker service",
+    "description": "Basic docker container service",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Solution with docker and kubernetes tags
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Docker Kubernetes Service",
+    "brief": "Docker with Kubernetes",
+    "description": "Docker container service with Kubernetes orchestration",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker", "kubernetes"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Solution with all three tags
+POST {{baseUrl}}/solutions
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Cloud Container Platform",
+    "brief": "Complete cloud container platform",
+    "description": "Cloud-based container platform with Kubernetes orchestration",
+    "category": "Infrastructure",
+    "department": "Engineering",
+    "team": "Platform",
+    "team_email": "platform@company.com",
+    "maintainer_id": "johndoe",
+    "maintainer_name": "John Doe",
+    "maintainer_email": "john@company.com",
+    "tags": ["docker", "kubernetes", "cloud"],
+    "stage": "PRODUCTION",
+    "recommend_status": "ADOPT"
+}
+
+### Verify AND relationship:
+# 1. This should return all solutions with docker tag
+GET {{baseUrl}}/solutions?tags=docker
+Content-Type: application/json
+
+# 2. This should return only solutions with both docker and kubernetes tags
+GET {{baseUrl}}/solutions?tags=docker,kubernetes
+Content-Type: application/json
+
+# 3. This should return only the solution with all three tags
+GET {{baseUrl}}/solutions?tags=docker,kubernetes,cloud
+Content-Type: application/json
+
 ### Example responses:
 
 # Get all solutions response
@@ -136,10 +266,10 @@ Authorization: Bearer {{token}}
 #             "name": "My Solution",
 #             "description": "A comprehensive solution for testing",
 #             "category": "Development",
-#             "radar_status": "ADOPT",
 #             "department": "Engineering",
 #             "team": "Platform",
 #             "team_email": "platform@company.com",
+#             "maintainer_id": "johndoe",
 #             "maintainer_name": "John Doe",
 #             "maintainer_email": "john@company.com",
 #             "official_website": "https://solution.com",
@@ -150,7 +280,8 @@ Authorization: Bearer {{token}}
 #             "pros": ["Easy to use", "Well documented"],
 #             "cons": ["Learning curve"],
 #             "stage": "DEVELOPING",
-#             "recommend_status": "BUY",
+#             "recommend_status": "ADOPT",
+#             "review_status": "PENDING",
 #             "id": "...",
 #             "slug": "my-solution",
 #             "created_at": "2024-01-22T00:00:00",
@@ -167,4 +298,4 @@ Authorization: Bearer {{token}}
 # Error response example
 # {
 #     "detail": "Solution not found"
-# } 
+# }

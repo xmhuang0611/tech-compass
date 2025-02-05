@@ -12,99 +12,113 @@
       <p-button 
         label="Submit Your Tech Solution"
         icon="pi pi-plus"
-        routerLink="/submit-solution"
+        routerLink="/solutions/new"
         styleClass="p-button-primary">
       </p-button>
     </div>
     <div class="filters-row">
-      <div class="left-group">
-        <div class="filter-item">
-          <label>Sort By</label>
-          <p-dropdown 
-            [options]="sortOptions" 
-            [(ngModel)]="filters.sort"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            placeholder="Select Sort Order">
-          </p-dropdown>
-        </div>
-
-        <div class="filter-item">
-          <label>Category</label>
-          <p-dropdown 
-            [options]="categoryOptions" 
-            [(ngModel)]="filters.category"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            [tooltip]="getSelectedCategoryTooltip()"
-            tooltipPosition="bottom"
-            placeholder="Select Category">
-            <ng-template pTemplate="item" let-option>
-              <div [attr.title]="option.title">{{ option.label }}</div>
-            </ng-template>
-          </p-dropdown>
-        </div>
-
-        <div class="filter-item">
-          <label>Department</label>
-          <p-dropdown 
-            [options]="departmentOptions" 
-            [(ngModel)]="filters.department"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Department">
-          </p-dropdown>
-        </div>
+      <div class="filter-item">
+        <label>Search</label>
+        <span class="p-input-icon-left search-input">
+          <i class="pi pi-search"></i>
+          <input type="text" pInputText [(ngModel)]="searchKeyword" 
+                 (input)="onSearch($event)" 
+                 placeholder="Search solutions...">
+        </span>
       </div>
 
-      <div class="right-group">
-        <div class="filter-item">
-          <label>Recommend Status</label>
-          <p-dropdown 
-            [options]="recommendStatusOptions" 
-            [(ngModel)]="filters.recommend_status"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Status">
-          </p-dropdown>
-        </div>
-
-        <div class="filter-item">
-          <label>Radar Status</label>
-          <p-dropdown 
-            [options]="radarStatusOptions" 
-            [(ngModel)]="filters.radar_status"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Status">
-          </p-dropdown>
-        </div>
-
-        <div class="filter-item">
-          <label>Stage</label>
-          <p-dropdown 
-            [options]="stageOptions" 
-            [(ngModel)]="filters.stage"
-            (onChange)="onFilterChange()"
-            [style]="{'width':'100%'}"
-            [showClear]="true"
-            placeholder="Select Stage">
-          </p-dropdown>
-        </div>
+      <div class="filter-item">
+        <label>Category</label>
+        <p-dropdown 
+          [options]="categoryOptions" 
+          [(ngModel)]="filters.category"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          [tooltip]="getSelectedCategoryTooltip()"
+          tooltipPosition="bottom"
+          placeholder="Select Category">
+          <ng-template pTemplate="item" let-option>
+            <div [attr.title]="option.title">{{ option.label }}</div>
+          </ng-template>
+        </p-dropdown>
       </div>
+
+      <div class="filter-item">
+        <label>Department</label>
+        <p-dropdown 
+          [options]="departmentOptions" 
+          [(ngModel)]="filters.department"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          placeholder="Select Department">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Recommend Status</label>
+        <p-dropdown 
+          [options]="recommendStatusOptions" 
+          [(ngModel)]="filters.recommend_status"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          placeholder="Select Status">
+        </p-dropdown>
+      </div>
+
+      <div class="filter-item">
+        <label>Sort By</label>
+        <p-dropdown 
+          [options]="sortOptions" 
+          [(ngModel)]="filters.sort"
+          (onChange)="onFilterChange()"
+          [style]="{'width':'100%'}"
+          placeholder="Select Sort Order">
+        </p-dropdown>
+      </div>
+    </div>
+
+    <div class="tags-section" *ngIf="!loadingTags">
+      <div class="tags-container">
+        <p-chip *ngFor="let tag of tags" 
+                [label]="tag.name + ' (' + tag.usage_count + ')'"
+                [removable]="false"
+                [styleClass]="isTagSelected(tag) ? 'selected' : ''"
+                (click)="onTagClick(tag)">
+        </p-chip>
+      </div>
+    </div>
+
+    <div class="loading-state" *ngIf="loadingTags">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading tags...</p>
+    </div>
+
+    <div class="error-state" *ngIf="tagsError">
+      <p-message severity="error" [text]="tagsError"></p-message>
     </div>
   </div>
 
   <div class="solutions-content">
-    <div class="solutions-grid" *ngIf="!loading || solutions.length > 0">
+    <div class="solutions-grid" *ngIf="!loading && solutions.length > 0">
       <app-solution-card 
         *ngFor="let solution of solutions" 
         [solution]="solution">
       </app-solution-card>
+    </div>
+
+    <div class="no-results" *ngIf="!loading && !error && solutions.length === 0">
+      <i class="pi pi-info-circle"></i>
+      <h3>No Solutions Found</h3>
+      <p *ngIf="searchKeyword">No solutions match your search "{{ searchKeyword }}"</p>
+      <p *ngIf="!searchKeyword && (selectedTags.length > 0 || filters.category || filters.department || filters.recommend_status)">
+        No solutions match your selected filters
+      </p>
+      <p *ngIf="!searchKeyword && !selectedTags.length && !filters.category && !filters.department && !filters.recommend_status">
+        No solutions available at the moment
+      </p>
     </div>
 
     <div class="loading-more" *ngIf="loadingMore">
