@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
@@ -192,3 +192,21 @@ async def delete_solution(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Solution not found"
         )
+
+@router.get("/check-name/{name}", response_model=StandardResponse[Tuple[bool, int]])
+async def check_solution_name(
+    name: str,
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Check if a solution name exists and get count of similar names.
+    
+    Returns:
+    - exists: True if the exact name exists
+    - count: Number of solutions with similar names (case-insensitive)
+    """
+    try:
+        exists, count = await solution_service.check_name_exists(name)
+        return StandardResponse.of((exists, count))
+    except Exception as e:
+        logger.error(f"Error checking solution name: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error checking solution name: {str(e)}")

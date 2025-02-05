@@ -385,3 +385,25 @@ class SolutionService:
             result.append(Solution(**solution))
             
         return result
+
+    async def check_name_exists(self, name: str) -> tuple[bool, int]:
+        """Check if a solution name exists and count how many solutions have similar names
+        
+        Args:
+            name: The solution name to check
+            
+        Returns:
+            A tuple of (exists: bool, count: int) where:
+            - exists: True if the exact name exists
+            - count: Number of solutions with similar names (case-insensitive)
+        """
+        # Check for exact match
+        exact_match = await self.collection.find_one({"name": name})
+        exists = exact_match is not None
+        
+        # Count similar names (case-insensitive)
+        similar_count = await self.collection.count_documents(
+            {"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}
+        )
+        
+        return exists, similar_count
