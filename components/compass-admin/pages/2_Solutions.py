@@ -607,13 +607,6 @@ def main():
             df = pd.DataFrame(solutions)  # Create DataFrame from solutions
             df = df[columns]  # Reorder columns to desired order
 
-            # Format dates
-            for date_col in ["created_at", "updated_at"]:
-                if date_col in df.columns:
-                    df[date_col] = pd.to_datetime(df[date_col]).dt.strftime(
-                        "%Y-%m-%d %H:%M"
-                    )
-
             # Format lists to string
             # Format tags with commas, pros and cons with newlines
             if "tags" in df.columns:
