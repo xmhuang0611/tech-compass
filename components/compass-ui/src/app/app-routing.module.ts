@@ -1,8 +1,8 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes, TitleStrategy } from '@angular/router';
-import { Title } from '@angular/platform-browser';
-import { Injectable } from '@angular/core';
-import { siteConfig } from './core/config/site.config';
+import { NgModule } from "@angular/core";
+import { RouterModule, Routes, TitleStrategy } from "@angular/router";
+import { Title } from "@angular/platform-browser";
+import { Injectable } from "@angular/core";
+import { siteConfig } from "./core/config/site.config";
 
 @Injectable()
 class CustomTitleStrategy extends TitleStrategy {
@@ -22,57 +22,67 @@ class CustomTitleStrategy extends TitleStrategy {
 
 const routes: Routes = [
   {
-    path: '',
+    path: "",
     children: [
       {
-        path: '',
-        title: 'Home',
-        loadComponent: () => import('./features/home/home.component').then(m => m.HomeComponent)
+        path: "",
+        title: "Home",
+        loadComponent: () =>
+          import("./features/home/home.component").then((m) => m.HomeComponent),
       },
       {
-        path: 'tech-radar',
-        title: 'Tech Radar',
-        loadComponent: () => import('./features/tech-radar/tech-radar.component').then(m => m.TechRadarComponent)
+        path: "radar",
+        title: "Tech Radar",
+        loadComponent: () =>
+          import("./features/tech-radar/tech-radar.component").then(
+            (m) => m.TechRadarComponent
+          ),
       },
       {
-        path: 'solutions/new',
-        title: 'Submit Solution',
-        loadChildren: () => import('./features/submit-solution/submit-solution.module')
-          .then(m => m.SubmitSolutionModule)
+        path: "solutions/new",
+        title: "Submit Solution",
+        loadChildren: () =>
+          import("./features/submit-solution/submit-solution.module").then(
+            (m) => m.SubmitSolutionModule
+          ),
       },
       {
-        path: 'solutions',
-        title: 'Solution Catalog',
-        loadComponent: () => import('./features/solution-catalog/solution-catalog.component')
-          .then(m => m.SolutionCatalogComponent)
+        path: "solutions",
+        title: "Solution Catalog",
+        loadComponent: () =>
+          import("./features/solution-catalog/solution-catalog.component").then(
+            (m) => m.SolutionCatalogComponent
+          ),
       },
       {
-        path: 'solutions/:slug',
-        title: 'Solution Details',
-        loadComponent: () => import('./features/solution-detail/solution-detail.component')
-          .then(m => m.SolutionDetailComponent)
+        path: "solutions/:slug",
+        title: "Solution Details",
+        loadComponent: () =>
+          import("./features/solution-detail/solution-detail.component").then(
+            (m) => m.SolutionDetailComponent
+          ),
       },
       {
-        path: 'categories',
-        title: 'Categories',
-        loadChildren: () => import('./features/categories/categories.module')
-          .then(m => m.CategoriesModule)
+        path: "categories",
+        title: "Categories",
+        loadChildren: () =>
+          import("./features/categories/categories.module").then(
+            (m) => m.CategoriesModule
+          ),
       },
       {
-        path: 'about',
-        title: 'About',
-        loadChildren: () => import('./features/about/about.module')
-          .then(m => m.AboutModule)
-      }
-    ]
-  }
+        path: "about",
+        title: "About",
+        loadChildren: () =>
+          import("./features/about/about.module").then((m) => m.AboutModule),
+      },
+    ],
+  },
 ];
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
-  providers: [
-    { provide: TitleStrategy, useClass: CustomTitleStrategy }
-  ]
+  providers: [{ provide: TitleStrategy, useClass: CustomTitleStrategy }],
 })
-export class AppRoutingModule { }
+export class AppRoutingModule {}

@@ -47,7 +47,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
   private readonly SCRIPT_LOAD_DELAY = 100; // Script load delay (milliseconds)
   private readonly RING_COLORS = {
     ADOPT: "#00af68",
-    TRIAL: "#255be3", 
+    TRIAL: "#255be3",
     ASSESS: "#ffcd00",
     HOLD: "#ff3c28",
   };

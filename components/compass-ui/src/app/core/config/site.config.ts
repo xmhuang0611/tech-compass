@@ -280,7 +280,7 @@ export const siteConfig = {
     {
       label: "Tech Radar",
       icon: "pi pi-wave-pulse",
-      path: "/tech-radar",
+      path: "/radar",
     },
     {
       label: "Useful Links",
