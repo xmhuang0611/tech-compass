@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from app.core.mongodb import get_database
 from app.core.password import get_password_hash, verify_password
-from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserList
+from app.models.user import User, UserCreate, UserUpdate, UserInDB
 from app.core.config import settings
 
 
@@ -50,13 +50,13 @@ class UserService:
             return None
         return User.model_validate(user)
 
-    async def get_users(self, skip: int = 0, limit: int = 10) -> UserList:
+    async def get_users(self, skip: int = 0, limit: int = 10) -> list[User]:
         """Get all users with pagination."""
         cursor = self.collection.find().sort("username", 1).skip(skip).limit(limit)
         users = []
         async for user_dict in cursor:
             users.append(User(**user_dict))
-        return UserList(users=users)
+        return users
 
     async def get_user_for_api(self, username: str) -> Optional[User]:
         """Get a user by username for API response."""

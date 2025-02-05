@@ -31,7 +31,7 @@ async def get_users(
     users = await user_service.get_users(skip=skip, limit=limit)
     total = await user_service.count_users()
     return StandardResponse.paginated(
-        data=users.users,
+        data=users,
         total=total,
         skip=skip,
         limit=limit

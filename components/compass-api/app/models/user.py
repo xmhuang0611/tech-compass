@@ -27,20 +27,10 @@ class UserUpdate(UserBase):
     """User update model"""
     pass
 
-class UserInDB(UserBase,AuditModel):
+class UserInDB(UserBase, AuditModel):
     """User model as stored in database"""
     hashed_password: str = Field(..., description="Hashed password")
 
-class User(UserInDB):
+class User(UserBase, AuditModel):
     """User model for API responses - excludes password fields"""
     pass
-
-class UserList(BaseModel):
-    """API response model for list of users"""
-    users: list[User]
-
-    model_config = ConfigDict(
-        populate_by_name=True,
-        arbitrary_types_allowed=True,
-        json_encoders={PyObjectId: str}
-    )
