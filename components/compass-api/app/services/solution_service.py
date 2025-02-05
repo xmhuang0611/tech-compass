@@ -33,58 +33,216 @@ class SolutionService:
         self.tag_service = TagService()
         self.rating_service = RatingService()
 
-    async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
+    async def _get_user_info(self, username: str) -> Optional[dict]:
+        """Get user information from users collection
+        
+        Args:
+            username: The username to look up
+            
+        Returns:
+            User document if found, None otherwise
+        """
+        return await self.db.users.find_one({"username": username})
+
+    async def _process_category(
+        self,
+        category_name: str,
+        username: Optional[str] = None
+    ) -> str:
+        """Process category creation/update
+        
+        Args:
+            category_name: The category name to process
+            username: The username performing the operation
+            
+        Returns:
+            The processed category name
+        """
+        category = await self.category_service.get_or_create_category(category_name, username)
+        return category.name
+
+    async def _process_tags(
+        self,
+        tags: List[str],
+        username: Optional[str] = None
+    ) -> List[str]:
+        """Process tags creation/update
+        
+        Args:
+            tags: List of tag names to process
+            username: The username performing the operation
+            
+        Returns:
+            List of processed tag names
+        """
+        formatted_tags = []
+        # Get unique tags first
+        unique_tags = list(set(tags))
+        for tag_name in unique_tags:
+            # Create tag if it doesn't exist
+            tag = await self.tag_service.get_tag_by_name(tag_name)
+            if not tag:
+                from app.models.tag import TagCreate
+                tag_create = TagCreate(
+                    name=tag_name,
+                    description=f"Tag for {tag_name}"
+                )
+                tag = await self.tag_service.create_tag(tag_create, username)
+            formatted_tags.append(tag.name)
+        return formatted_tags
+
+    async def _update_maintainer_fields(
+        self,
+        update_dict: dict,
+        username: Optional[str] = None
+    ) -> None:
+        """Update maintainer related fields in the update dictionary
+        
+        Args:
+            update_dict: The dictionary to update
+            username: The username performing the operation
+        """
+        if not username:
+            return
+
+        # Set maintainer ID if not provided
+        if not update_dict.get("maintainer_id"):
+            update_dict["maintainer_id"] = username
+
+        # Try to get user's info
+        user = await self._get_user_info(username if not update_dict.get("maintainer_id") else update_dict["maintainer_id"])
+        if user:
+            if not update_dict.get("maintainer_name"):
+                update_dict["maintainer_name"] = user.get("full_name")
+            if not update_dict.get("maintainer_email"):
+                update_dict["maintainer_email"] = user.get("email")
+
+    async def _process_solution_update(
+        self,
+        update_dict: dict,
+        username: Optional[str] = None
+    ) -> None:
+        """Process common solution update operations
+        
+        Args:
+            update_dict: The update dictionary to process
+            username: The username performing the operation
+        """
+        # Handle category update
+        if "category" in update_dict:
+            update_dict["category"] = await self._process_category(update_dict["category"], username)
+
+        # Handle tags update
+        if "tags" in update_dict:
+            update_dict["tags"] = await self._process_tags(update_dict["tags"], username)
+
+        # Update maintainer fields
+        await self._update_maintainer_fields(update_dict, username)
+
+        # Update timestamp and user fields
+        update_dict["updated_at"] = datetime.utcnow()
+        if username:
+            update_dict["updated_by"] = username
+
+    async def check_name_exists(self, name: str) -> tuple[bool, int]:
+        """Check if a solution name exists and count how many solutions have similar names
+        
+        Args:
+            name: The solution name to check
+            
+        Returns:
+            A tuple of (exists: bool, count: int) where:
+            - exists: True if the exact name exists
+            - count: Number of solutions with similar names (case-insensitive)
+        """
+        # Check for exact match
+        exact_match = await self.collection.find_one({"name": name})
+        exists = exact_match is not None
+        
+        # Count similar names (case-insensitive)
+        similar_count = await self.collection.count_documents(
+            {"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}
+        )
+        
+        return exists, similar_count
+
+    async def delete_solutions_by_name(self, name: str) -> int:
+        """Delete all solutions with the exact name (case-sensitive)
+        
+        Args:
+            name: The solution name to delete
+            
+        Returns:
+            Number of solutions deleted
+        """
+        result = await self.collection.delete_many({"name": name})
+        return result.deleted_count
+
+    async def update_solutions_by_name(
+        self,
+        name: str,
+        solution_update: SolutionUpdate,
+        username: Optional[str] = None
+    ) -> List[SolutionInDB]:
+        """Update all solutions with the exact name (case-sensitive)
+        
+        Args:
+            name: The solution name to update
+            solution_update: The update data
+            username: The username of the user making the update
+            
+        Returns:
+            List of updated solutions
+        """
+        update_dict = solution_update.model_dump(exclude_unset=True)
+        
+        # Handle slug update if name changes
+        if "name" in update_dict:
+            solutions = await self.collection.find({"name": name}).to_list(None)
+            for solution in solutions:
+                base_slug = generate_slug(update_dict["name"])
+                unique_slug = await self.ensure_unique_slug(base_slug, str(solution["_id"]))
+                # Update each solution with its unique slug
+                await self.collection.update_one(
+                    {"_id": solution["_id"]},
+                    {"$set": {"slug": unique_slug}}
+                )
+
+        # Process common update operations
+        await self._process_solution_update(update_dict, username)
+
+        # Update all matching solutions
+        await self.collection.update_many(
+            {"name": name},
+            {"$set": update_dict}
+        )
+
+        # Return all updated solutions
+        updated_solutions = await self.collection.find(
+            {"name": name if "name" not in update_dict else update_dict["name"]}
+        ).to_list(None)
+        return [SolutionInDB(**solution) for solution in updated_solutions]
+
+    async def create_solution(
+        self,
+        solution: SolutionCreate,
+        username: Optional[str] = None
+    ) -> SolutionInDB:
         """Create a new solution"""
         solution_dict = solution.model_dump(exclude_unset=True)
         solution_dict["review_status"] = "PENDING"
         
-        # Handle category creation if provided
-        if solution_dict.get("category"):
-            category = await self.category_service.get_or_create_category(solution_dict["category"], username)
-            # Keep category name in the response
-            solution_dict["category"] = category.name
-        
         # Generate and ensure unique slug
         base_slug = generate_slug(solution_dict["name"])
         solution_dict["slug"] = await self.ensure_unique_slug(base_slug)
-            
-        # Set maintainer fields if not provided
-        if not solution_dict.get("maintainer_id") and username:
-            solution_dict["maintainer_id"] = username
-        if not solution_dict.get("maintainer_name") and username:
-            # Try to get user's full name from users collection
-            user = await self.db.users.find_one({"username": username})
-            if user and user.get("full_name"):
-                solution_dict["maintainer_name"] = user["full_name"]
-        if not solution_dict.get("maintainer_email") and username:
-            # Try to get user's email from users collection
-            user = await self.db.users.find_one({"username": username})
-            if user and user.get("email"):
-                solution_dict["maintainer_email"] = user["email"]
-
-        # Handle tags
-        if "tags" in solution_dict:
-            formatted_tags = []
-            # Get unique tags first
-            unique_tags = list(set(solution_dict["tags"]))
-            for tag_name in unique_tags:
-                # Create tag if it doesn't exist
-                tag = await self.tag_service.get_tag_by_name(tag_name)
-                if not tag:
-                    from app.models.tag import TagCreate
-                    tag_create = TagCreate(
-                        name=tag_name,
-                        description=f"Tag for {tag_name}"
-                    )
-                    tag = await self.tag_service.create_tag(tag_create, username)
-                formatted_tags.append(tag.name)
-            solution_dict["tags"] = formatted_tags
-
-        solution_dict["created_at"] = datetime.utcnow()
-        solution_dict["updated_at"] = datetime.utcnow()
+        
+        # Process common solution fields
+        await self._process_solution_update(solution_dict, username)
+        
+        # Set creation timestamp
+        solution_dict["created_at"] = solution_dict["updated_at"]
         if username:
             solution_dict["created_by"] = username
-            solution_dict["updated_by"] = username
 
         result = await self.collection.insert_one(solution_dict)
         return await self.get_solution_by_id(str(result.inserted_id))
@@ -183,7 +341,7 @@ class SolutionService:
         if "category" in update_dict:
             category = await self.category_service.get_or_create_category(update_dict["category"], username)
             # Keep category name in the response
-            update_dict["category"] = update_dict["category"]
+            update_dict["category"] = category.name
 
         # Handle slug update if name changes
         if "name" in update_dict:
@@ -385,115 +543,3 @@ class SolutionService:
             result.append(Solution(**solution))
             
         return result
-
-    async def check_name_exists(self, name: str) -> tuple[bool, int]:
-        """Check if a solution name exists and count how many solutions have similar names
-        
-        Args:
-            name: The solution name to check
-            
-        Returns:
-            A tuple of (exists: bool, count: int) where:
-            - exists: True if the exact name exists
-            - count: Number of solutions with similar names (case-insensitive)
-        """
-        # Check for exact match
-        exact_match = await self.collection.find_one({"name": name})
-        exists = exact_match is not None
-        
-        # Count similar names (case-insensitive)
-        similar_count = await self.collection.count_documents(
-            {"name": {"$regex": f"^{re.escape(name)}$", "$options": "i"}}
-        )
-        
-        return exists, similar_count
-
-    async def delete_solutions_by_name(self, name: str) -> int:
-        """Delete all solutions with the exact name (case-sensitive)
-        
-        Args:
-            name: The solution name to delete
-            
-        Returns:
-            Number of solutions deleted
-        """
-        result = await self.collection.delete_many({"name": name})
-        return result.deleted_count
-
-    async def update_solutions_by_name(
-        self,
-        name: str,
-        solution_update: SolutionUpdate,
-        username: Optional[str] = None
-    ) -> List[SolutionInDB]:
-        """Update all solutions with the exact name (case-sensitive)
-        
-        Args:
-            name: The solution name to update
-            solution_update: The update data
-            username: The username of the user making the update
-            
-        Returns:
-            List of updated solutions
-        """
-        update_dict = solution_update.model_dump(exclude_unset=True)
-        
-        # Handle category update if provided
-        if "category" in update_dict:
-            category = await self.category_service.get_or_create_category(update_dict["category"], username)
-            update_dict["category"] = category.name
-
-        # Handle slug update if name changes
-        if "name" in update_dict:
-            # For each solution being updated, we need to generate a unique slug
-            solutions = await self.collection.find({"name": name}).to_list(None)
-            for solution in solutions:
-                base_slug = generate_slug(update_dict["name"])
-                unique_slug = await self.ensure_unique_slug(base_slug, str(solution["_id"]))
-                # Update each solution with its unique slug
-                await self.collection.update_one(
-                    {"_id": solution["_id"]},
-                    {"$set": {"slug": unique_slug}}
-                )
-
-        # Handle tags update
-        if "tags" in update_dict:
-            # Get distinct tags first
-            distinct_tags = list(set(update_dict["tags"]))
-            formatted_tags = []
-            for tag_name in distinct_tags:
-                # Create tag if it doesn't exist
-                tag = await self.tag_service.get_tag_by_name(tag_name)
-                if not tag:
-                    from app.models.tag import TagCreate
-                    tag_create = TagCreate(
-                        name=tag_name,
-                        description=f"Tag for {tag_name}"
-                    )
-                    tag = await self.tag_service.create_tag(tag_create, username)
-                formatted_tags.append(tag.name)
-            update_dict["tags"] = formatted_tags
-
-        # Update maintainer fields if provided
-        if "maintainer_id" in update_dict and username:
-            # Try to get user's info from users collection
-            user = await self.db.users.find_one({"username": update_dict["maintainer_id"]})
-            if user:
-                if not update_dict.get("maintainer_name"):
-                    update_dict["maintainer_name"] = user.get("full_name")
-                if not update_dict.get("maintainer_email"):
-                    update_dict["maintainer_email"] = user.get("email")
-
-        update_dict["updated_at"] = datetime.utcnow()
-        if username:
-            update_dict["updated_by"] = username
-
-        # Update all matching solutions
-        await self.collection.update_many(
-            {"name": name},
-            {"$set": update_dict}
-        )
-
-        # Return all updated solutions
-        updated_solutions = await self.collection.find({"name": name if "name" not in update_dict else update_dict["name"]}).to_list(None)
-        return [SolutionInDB(**solution) for solution in updated_solutions]
