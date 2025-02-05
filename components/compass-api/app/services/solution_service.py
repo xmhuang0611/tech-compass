@@ -407,3 +407,15 @@ class SolutionService:
         )
         
         return exists, similar_count
+
+    async def delete_solutions_by_name(self, name: str) -> int:
+        """Delete all solutions with the exact name (case-sensitive)
+        
+        Args:
+            name: The solution name to delete
+            
+        Returns:
+            Number of solutions deleted
+        """
+        result = await self.collection.delete_many({"name": name})
+        return result.deleted_count

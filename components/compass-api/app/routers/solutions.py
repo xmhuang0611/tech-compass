@@ -210,3 +210,21 @@ async def check_solution_name(
     except Exception as e:
         logger.error(f"Error checking solution name: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error checking solution name: {str(e)}")
+
+@router.delete("/by-name/{name}", status_code=status.HTTP_200_OK)
+async def delete_solutions_by_name(
+    name: str,
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Delete all solutions with the exact name (case-sensitive).
+    
+    Returns:
+    - Number of solutions deleted
+    """
+    try:
+        deleted_count = await solution_service.delete_solutions_by_name(name)
+        return StandardResponse.of(deleted_count)
+    except Exception as e:
+        logger.error(f"Error deleting solutions by name: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting solutions by name: {str(e)}")
