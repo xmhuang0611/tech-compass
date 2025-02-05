@@ -228,3 +228,39 @@ async def delete_solutions_by_name(
     except Exception as e:
         logger.error(f"Error deleting solutions by name: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error deleting solutions by name: {str(e)}")
+
+@router.put("/by-name/{name}", response_model=StandardResponse[List[SolutionInDB]])
+async def update_solutions_by_name(
+    name: str,
+    solution_update: SolutionUpdate,
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Update all solutions with the exact name (case-sensitive).
+    
+    Returns:
+    - List of updated solutions
+    """
+    try:
+        # Check if review_status is being updated and user is not a superuser
+        if solution_update.review_status is not None and not current_user.is_superuser:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only superusers can modify the review status"
+            )
+
+        # Check if any solutions exist with this name
+        exists, _ = await solution_service.check_name_exists(name)
+        if not exists:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No solutions found with this name"
+            )
+
+        updated_solutions = await solution_service.update_solutions_by_name(name, solution_update, current_user.username)
+        return StandardResponse.of(updated_solutions)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        logger.error(f"Error updating solutions by name: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error updating solutions by name: {str(e)}")
