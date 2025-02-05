@@ -20,15 +20,20 @@ class UserService:
             raise ValueError("DEFAULT_ADMIN_USERNAME is not set")
         if not settings.DEFAULT_ADMIN_PASSWORD:
             raise ValueError("DEFAULT_ADMIN_PASSWORD is not set")
-        admin_username = getattr(settings, "DEFAULT_ADMIN_USERNAME")
+        if not settings.DEFAULT_ADMIN_EMAIL:
+            raise ValueError("DEFAULT_ADMIN_EMAIL is not set")
+        if not settings.DEFAULT_ADMIN_FULLNAME:
+            raise ValueError("DEFAULT_ADMIN_FULLNAME is not set")
+
+        admin_username = settings.DEFAULT_ADMIN_USERNAME
         admin = await self.get_user_by_username(admin_username)
         
         if not admin:
             admin_user = UserCreate(
                 username=admin_username,
-                email=getattr(settings, "DEFAULT_ADMIN_EMAIL", "admin@techcompass.com"),
-                password=getattr(settings, "DEFAULT_ADMIN_PASSWORD"),
-                full_name="System Admin",
+                email=settings.DEFAULT_ADMIN_EMAIL,
+                password=settings.DEFAULT_ADMIN_PASSWORD,
+                full_name=settings.DEFAULT_ADMIN_FULLNAME,
                 is_active=True,
                 is_superuser=True
             )

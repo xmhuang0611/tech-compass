@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     DEFAULT_ADMIN_USERNAME: str = "admin"
     DEFAULT_ADMIN_PASSWORD: str = "admin123"
     DEFAULT_ADMIN_EMAIL: str = "admin@techcompass.com"
+    DEFAULT_ADMIN_FULLNAME: str = "System Admin"
     
     # Rate limiting
     RATE_LIMIT_PER_MINUTE: int = 100
