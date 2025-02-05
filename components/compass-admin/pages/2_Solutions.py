@@ -181,8 +181,8 @@ def render_solution_form(solution_data):
         with col2:
             adoption_user_count = st.number_input(
                 "Adoption User Count",
-                min_value=1,
-                value=solution_data.get("adoption_user_count", 1),
+                min_value=0,
+                value=solution_data.get("adoption_user_count", 0),
                 help="Number of users adopting this solution",
             )
 
@@ -403,7 +403,7 @@ def render_add_solution_form():
         with col2:
             adoption_user_count = st.number_input(
                 "Adoption User Count",
-                min_value=1,
+                min_value=0,
                 value=1,
                 help="Number of users adopting this solution",
             )
