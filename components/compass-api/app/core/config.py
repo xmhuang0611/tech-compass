@@ -5,7 +5,7 @@ from typing import Optional, Literal
 class Settings(BaseSettings):
     # MongoDB settings
     MONGODB_URL: str = "mongodb://localhost:27017"
-    DATABASE_NAME: str = "tc"
+    DATABASE_NAME: str = "compass"
     MONGODB_TLS_CERT_PATH: Optional[str] = None
     MONGODB_TLS_CA_PATH: Optional[str] = None
     MONGODB_TLS_KEY_PATH: Optional[str] = None
