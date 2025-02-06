@@ -1,7 +1,8 @@
 from app.core.database import get_database
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import settings
@@ -35,7 +36,7 @@ async def get_current_user(
             "username": username,
             "is_active": True  # For development, assume all users are active
         }
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception
 
 async def get_current_active_user(

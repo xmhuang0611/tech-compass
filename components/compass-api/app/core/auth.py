@@ -1,6 +1,7 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 
 from app.core.config import settings
 from app.models import UserInDB
@@ -21,7 +22,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInDB:
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception
     
     user_service = UserService()

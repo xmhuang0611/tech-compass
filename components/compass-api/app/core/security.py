@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 import httpx
-from jose import jwt
+import jwt
 
 from app.core.config import settings
 from app.core.password import verify_password
