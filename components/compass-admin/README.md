@@ -1,53 +1,79 @@
 # Tech Compass Admin
 
-Admin dashboard component for Tech Compass, built with Streamlit. This application provides an interface for managing content, user ratings, comments, tags, and site configuration.
+A Streamlit-based admin dashboard for managing Tech Compass platform content, including solutions, categories, tags, and user interactions.
 
-## Prerequisites
+## Requirements
 
-- Python 3.9+
-- pip (Python package manager)
+- Python 3.12+
+- pip (Package manager)
+- Virtual environment (venv recommended)
 
-## Setup
+## Quick Start
 
-1. Create and activate a virtual environment (recommended):
+### 1. Clone Repository
+
 ```bash
+git clone [your-repository-url]
 cd compass-admin
-python -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
 ```
 
-2. Install dependencies:
+### 2. Set Up Virtual Environment
+
+```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate on macOS/Linux
+source venv/bin/activate
+
+# Activate on Windows
+# .\venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## Development
+### 4. Environment Configuration
 
-To run the application locally:
+Create a `.env` file in the root directory:
+
+```bash
+# API Configuration
+API_BASE_URL=http://localhost:8000/api  # Replace with actual API URL
+```
+
+### 5. Launch Application
 
 ```bash
 streamlit run Home.py
 ```
 
-The application will be available at `http://localhost:8501`
+The application will be available at http://localhost:8501
 
 ## Project Structure
 
-- `app.py` - Main application entry point
-- `Home.py` - Home page component
-- `pages/` - Directory containing different sections of the admin panel
-- `utils/` - Utility functions for authentication and API calls
-- `requirements.txt` - Python dependencies
+```
+compass-admin/
+├── Home.py                 # Main entry point
+├── pages/                  # Page components
+│   ├── 2_Solutions.py     # Solutions management
+│   ├── 3_Categories.py    # Categories management
+│   ├── 4_Tags.py         # Tags management
+│   └── ...               # Other management pages
+├── utils/                  # Utility modules
+│   ├── api.py             # API client
+│   ├── auth.py            # Authentication
+│   └── common.py          # Shared utilities
+└── requirements.txt        # Dependencies
+```
 
-## Deployment
+## Development Guidelines
 
-1. Ensure all dependencies are listed in `requirements.txt`
-2. Deploy using your preferred hosting platform (e.g., Streamlit Cloud, Docker, or custom server)
-
-## Features
-
-- Authentication system
-- Content management (Solutions, Categories)
-- User interaction management (Comments, Ratings)
-- Tag management
-- Site configuration 
+1. Follow PEP 8 style guide
+2. Add type hints for new functions
+3. Keep dependencies updated
+4. Use feature branches for development
+5. Write descriptive commit messages

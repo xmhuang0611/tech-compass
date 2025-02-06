@@ -38,7 +38,7 @@ A platform for discovering, evaluating, and sharing technology solutions within 
 The project follows a microservices architecture with the following components:
 
 - `components/compass-api`: Backend API service built with Python FastAPI
-- `components/compass-web`: Frontend web application built with Angular + PrimeNG
+- `components/compass-ui`: Frontend web application built with Angular + PrimeNG
 - `components/compass-admin`: Admin panel built with Python Streamlit
 - `components/compass-radar`: Technology radar visualization
 
@@ -157,7 +157,7 @@ cd components/compass-api
 pytest
 
 # Frontend tests
-cd components/compass-web
+cd components/compass-ui
 ng test
 ```
 
