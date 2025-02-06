@@ -24,13 +24,19 @@ load_dotenv()
 BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
 fake = faker.Faker()
 user_data = {
-    'username': 'admin',
-    'email': 'admin@example.com',
-    'password': 'admin123',
-    'full_name': 'Admin User',
+    'username': os.getenv('DEFAULT_ADMIN_USERNAME'),
+    'email': os.getenv('DEFAULT_ADMIN_EMAIL'),
+    'password': os.getenv('DEFAULT_ADMIN_PASSWORD'),
+    'full_name': os.getenv('DEFAULT_ADMIN_FULLNAME'),
     'is_active': True,
     'is_superuser': True
 }
+
+# Validate required environment variables
+required_env_vars = ['DEFAULT_ADMIN_USERNAME', 'DEFAULT_ADMIN_EMAIL', 'DEFAULT_ADMIN_PASSWORD', 'DEFAULT_ADMIN_FULLNAME']
+missing_vars = [var for var in required_env_vars if not os.getenv(var)]
+if missing_vars:
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 def debug_request(method: str, url: str, **kwargs):
     """Print request details for debugging."""
