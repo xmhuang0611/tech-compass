@@ -250,42 +250,44 @@ class UserService:
     ) -> Optional[User]:
         """Admin level update for user information.
         This method allows superusers to update all user fields including password.
-        For external users, only is_active and is_superuser fields can be updated."""
+        For external users, ONLY is_active and is_superuser fields can be updated.
+        Will throw error if any other fields are provided for external users."""
         # Get existing user
         existing_user = await self.get_user_by_username(username)
         if not existing_user:
             return None
 
-        # Only include non-None fields in the update
-        update_data = {}
-        user_dict = user_update.model_dump(exclude_unset=True)
-        
-        # Check username uniqueness if being updated
-        if "username" in user_dict and user_dict["username"] != username:
-            other_user = await self.get_user_by_username(user_dict["username"])
-            if other_user:
-                raise ValueError(f"Username '{user_dict['username']}' is already in use")
-
         # Check if user is an external user (empty hashed_password)
         is_external = not existing_user.hashed_password
+        user_dict = user_update.model_dump(exclude_unset=True)
 
         if is_external:
             # For external users, only allow updating is_active and is_superuser
             allowed_fields = {"is_active", "is_superuser"}
-            for field in user_dict:
-                if field in allowed_fields:
-                    update_data[field] = user_dict[field]
-            if new_password is not None:
+            provided_fields = set(user_dict.keys())
+            
+            # Check if any non-allowed fields are being updated
+            invalid_fields = provided_fields - allowed_fields
+            if invalid_fields or new_password is not None:
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Cannot set password for external users"
+                    detail=f"External users can only update is_active and is_superuser fields. Invalid fields provided: {', '.join(invalid_fields)}"
                 )
+            
+            # Add allowed fields to update_data
+            update_data = {k: v for k, v in user_dict.items() if k in allowed_fields}
         else:
             # For local users, allow updating all fields
             update_data = user_dict
             # Handle password update if provided
             if new_password is not None:
                 update_data["hashed_password"] = get_password_hash(new_password)
+
+            # Check username uniqueness if being updated
+            if "username" in update_data and update_data["username"] != username:
+                other_user = await self.get_user_by_username(update_data["username"])
+                if other_user:
+                    raise ValueError(f"Username '{update_data['username']}' is already in use")
 
         if not update_data:
             # If no fields to update, return existing user
