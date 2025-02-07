@@ -3,7 +3,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 
-from app.core.auth import get_current_active_user
+from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.tag import Tag, TagCreate, TagUpdate, TagInDB
 from app.models.user import User
 from app.models.response import StandardResponse
@@ -16,10 +16,10 @@ router = APIRouter()
 @router.post("/", response_model=StandardResponse[Tag], status_code=status.HTTP_201_CREATED)
 async def create_tag(
     tag: TagCreate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     tag_service: TagService = Depends()
 ) -> Any:
-    """Create a new tag."""
+    """Create a new tag (superuser only)."""
     try:
         result = await tag_service.create_tag(tag, current_user.username)
         tag_with_usage = await tag_service.get_tag_with_usage(result)
@@ -69,10 +69,10 @@ async def get_tag(
 async def update_tag(
     name: str,
     tag_update: TagUpdate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     tag_service: TagService = Depends()
 ) -> Any:
-    """Update a tag by name. If tag name is changed, all tagged solutions will be updated."""
+    """Update a tag by name (superuser only). If tag name is changed, all tagged solutions will be updated."""
     try:
         # If name is being updated, check if new name already exists
         if tag_update.name and tag_update.name != name:
@@ -88,7 +88,7 @@ async def update_tag(
             name=name,
             tag_update=tag_update,
             username=current_user.username,
-            update_solutions=True  # This flag tells the service to update solutions
+            update_solutions=True
         )
         if not tag:
             raise HTTPException(
@@ -108,10 +108,10 @@ async def update_tag(
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_tag(
     name: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     tag_service: TagService = Depends()
 ) -> None:
-    """Delete a tag by name. Will return 400 error if tag is being used by any solutions."""
+    """Delete a tag by name (superuser only). Will return 400 error if tag is being used by any solutions."""
     try:
         success = await tag_service.delete_tag_by_name(name)
         if not success:

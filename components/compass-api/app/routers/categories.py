@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from fastapi.responses import Response
 
-from app.core.auth import get_current_active_user
+from app.core.auth import get_current_superuser
 from app.models.category import Category, CategoryCreate, CategoryUpdate, CategoryInDB
 from app.models.user import User
 from app.models.response import StandardResponse
@@ -14,10 +14,10 @@ router = APIRouter()
 @router.post("/", response_model=StandardResponse[Category], status_code=status.HTTP_201_CREATED)
 async def create_category(
     category: CategoryCreate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     category_service: CategoryService = Depends()
 ) -> StandardResponse[Category]:
-    """Create a new category."""
+    """Create a new category (superuser only)."""
     try:
         result = await category_service.create_category(category, current_user.username)
         category_with_usage = await category_service.get_category_with_usage(result)
@@ -68,10 +68,10 @@ async def get_category(
 async def update_category(
     name: str,
     category_update: CategoryUpdate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     category_service: CategoryService = Depends()
 ) -> StandardResponse[Category]:
-    """Update a category by name."""
+    """Update a category by name (superuser only)."""
     try:
         category = await category_service.update_category_by_name(name, category_update, current_user.username)
         if not category:
@@ -87,10 +87,10 @@ async def update_category(
 @router.delete("/{name}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_category(
     name: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     category_service: CategoryService = Depends()
 ) -> None:
-    """Delete a category by name. Will return 400 error if category is being used by any solutions."""
+    """Delete a category by name (superuser only). Will return 400 error if category is being used by any solutions."""
     try:
         success = await category_service.delete_category_by_name(name)
         if not success:

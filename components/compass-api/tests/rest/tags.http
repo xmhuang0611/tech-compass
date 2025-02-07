@@ -1,7 +1,8 @@
 @baseUrl = http://127.0.0.1:8000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjA1MzIyNjk3M30.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
 
-### Get all tags
+### Get all tags (no auth required)
 GET {{baseUrl}}/tags
 Content-Type: application/json
 
@@ -9,14 +10,24 @@ Content-Type: application/json
 GET {{baseUrl}}/tags?skip=0&limit=5
 Content-Type: application/json
 
-### Get specific tag by name
+### Get specific tag by name (no auth required)
 GET {{baseUrl}}/tags/python
 Content-Type: application/json
 
-### Create new tag (requires auth)
+### Try to create tag as non-superuser (should fail)
 POST {{baseUrl}}/tags
 Content-Type: application/json
 Authorization: Bearer {{token}}
+
+{
+    "name": "Python",
+    "description": "Python programming language and ecosystem"
+}
+
+### Create tag as superuser
+POST {{baseUrl}}/tags
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "Python",
@@ -32,10 +43,19 @@ Authorization: Bearer {{token}}
     "name": "FastAPI"
 }
 
-### Update tag (requires auth)
+### Try to update tag as non-superuser (should fail)
 PUT {{baseUrl}}/tags/python
 Content-Type: application/json
 Authorization: Bearer {{token}}
+
+{
+    "description": "Updated description for Python ecosystem"
+}
+
+### Update tag as superuser
+PUT {{baseUrl}}/tags/python
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
 
 {
     "description": "Updated description for Python ecosystem"
@@ -51,9 +71,13 @@ Authorization: Bearer {{token}}
     "description": "Modern Python web framework"
 }
 
-### Delete tag (requires auth)
+### Try to delete tag as non-superuser (should fail)
 DELETE {{baseUrl}}/tags/python
 Authorization: Bearer {{token}}
+
+### Delete tag as superuser
+DELETE {{baseUrl}}/tags/python
+Authorization: Bearer {{adminToken}}
 
 ### Solution Tag Operations
 
@@ -216,4 +240,12 @@ Authorization: Bearer {{token}}
 # {
 #     "success": false,
 #     "error": "Tag 'python-3' is already added to this solution"
+# }
+
+### Example error responses for superuser-only operations:
+
+# Non-superuser access denied error
+# {
+#     "success": false,
+#     "error": "Not enough permissions"
 # } 

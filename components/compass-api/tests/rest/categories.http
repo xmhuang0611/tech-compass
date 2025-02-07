@@ -1,204 +1,128 @@
 @baseUrl = http://127.0.0.1:8000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjA1MzIyNjk3M30.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
 
-### Get all categories (default sorted by radar_quadrant ascending)
+### Get all categories (no auth required)
 GET {{baseUrl}}/categories
 Content-Type: application/json
 
-### Get all categories with pagination (default sorted by radar_quadrant ascending)
-GET {{baseUrl}}/categories?skip=0&limit=5
+### Get all categories with pagination and sorting
+GET {{baseUrl}}/categories?skip=0&limit=5&sort=name
 Content-Type: application/json
 
-### Get all categories with custom sorting (override default radar_quadrant sorting)
-GET {{baseUrl}}/categories?sort=name
+### Get specific category by name (no auth required)
+GET {{baseUrl}}/categories/infrastructure
 Content-Type: application/json
 
-### Get all categories sorted by radar_quadrant descending
-GET {{baseUrl}}/categories?sort=-radar_quadrant
-Content-Type: application/json
-
-### Get specific category by name
-GET {{baseUrl}}/categories/Development
-Content-Type: application/json
-
-### Create new category (requires auth)
-POST {{baseUrl}}/categories
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-    "name": "Development",
-    "description": "Tools and platforms for software development",
-    "radar_quadrant": 1
-}
-
-### Create category with empty description (should succeed)
-POST {{baseUrl}}/categories
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-    "name": "Testing",
-    "description": "",
-    "radar_quadrant": 0
-}
-
-### Create category with whitespace description (should succeed, will be trimmed)
+### Try to create category as non-superuser (should fail)
 POST {{baseUrl}}/categories
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
     "name": "Infrastructure",
-    "description": "    ",
-    "radar_quadrant": 2
+    "description": "Infrastructure and platform solutions",
+    "radar_quadrant": "PLATFORMS"
 }
 
-### Update category (requires auth)
-PUT {{baseUrl}}/categories/Development
+### Create category as superuser
+POST {{baseUrl}}/categories
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "name": "Infrastructure",
+    "description": "Infrastructure and platform solutions",
+    "radar_quadrant": "PLATFORMS"
+}
+
+### Try to update category as non-superuser (should fail)
+PUT {{baseUrl}}/categories/infrastructure
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Development",
-    "description": "Updated description for development tools category",
-    "radar_quadrant": 3
+    "description": "Updated description for infrastructure category",
+    "radar_quadrant": "TOOLS"
 }
 
-### Update category with empty description (should succeed)
-PUT {{baseUrl}}/categories/Testing
+### Update category as superuser
+PUT {{baseUrl}}/categories/infrastructure
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "description": "",
-    "radar_quadrant": 4
+    "description": "Updated description for infrastructure category",
+    "radar_quadrant": "TOOLS"
 }
 
-### Delete category (requires auth)
-DELETE {{baseUrl}}/categories/Development
+### Try to delete category as non-superuser (should fail)
+DELETE {{baseUrl}}/categories/infrastructure
 Authorization: Bearer {{token}}
+
+### Delete category as superuser
+DELETE {{baseUrl}}/categories/infrastructure
+Authorization: Bearer {{adminToken}}
 
 ### Test error cases
 
-### Try to create category with empty name (should fail)
+### Try to create category with invalid radar quadrant
 POST {{baseUrl}}/categories
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "name": "",
-    "description": "This should fail validation",
-    "radar_quadrant": 0
+    "name": "Invalid Category",
+    "description": "Testing invalid radar quadrant",
+    "radar_quadrant": "INVALID"
 }
 
-### Try to create category with only whitespace name (should fail)
+### Try to create duplicate category
 POST {{baseUrl}}/categories
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "name": "    ",
-    "description": "This should fail validation",
-    "radar_quadrant": 1
+    "name": "infrastructure",
+    "description": "This should fail if category exists"
 }
 
-### Try to create category with too long name (>100 chars, should fail)
-POST {{baseUrl}}/categories
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-    "name": "This is a very very very very very very very very very very very very very very very very very very very very long name",
-    "description": "This should fail validation",
-    "radar_quadrant": 2
-}
-
-### Try to create category with invalid radar_quadrant (should fail)
-POST {{baseUrl}}/categories
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-    "name": "Invalid Quadrant",
-    "description": "This should fail validation",
-    "radar_quadrant": 5
-}
-
-### Try to get non-existent category (should return 404)
+### Try to get non-existent category
 GET {{baseUrl}}/categories/non-existent-category
 Content-Type: application/json
 
-### Try to create duplicate category (should fail)
-POST {{baseUrl}}/categories
+### Try to update non-existent category
+PUT {{baseUrl}}/categories/non-existent-category
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "name": "Development",
-    "description": "This should fail if category already exists",
-    "radar_quadrant": 1
+    "description": "This should fail with 404"
 }
 
-### Try to update without auth token (should fail)
-PUT {{baseUrl}}/categories/development
-Content-Type: application/json
-
-{
-    "name": "Development",
-    "description": "This should fail without token",
-    "radar_quadrant": 2
-}
-
-### Try to update with empty name (should fail)
-PUT {{baseUrl}}/categories/Development
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-    "name": "",
-    "description": "This should fail validation",
-    "radar_quadrant": 3
-}
+### Try to delete non-existent category
+DELETE {{baseUrl}}/categories/non-existent-category
+Authorization: Bearer {{adminToken}}
 
 ### Example responses:
 
-# Get all categories response (sorted by radar_quadrant ascending)
+# Get all categories response
 # {
 #     "success": true,
 #     "data": [
 #         {
-#             "name": "Testing",
-#             "description": "Testing and quality assurance",
-#             "radar_quadrant": 0,
-#             "id": "65ae1234b5c3e1234567890c",
-#             "created_at": "2024-01-22T10:40:00",
-#             "created_by": "test",
-#             "updated_at": "2024-01-22T10:40:00",
-#             "updated_by": "test"
-#         },
-#         {
-#             "name": "Development",
-#             "description": "Tools and platforms for software development",
-#             "radar_quadrant": 1,
+#             "name": "infrastructure",
+#             "description": "Infrastructure and platform solutions",
+#             "radar_quadrant": "PLATFORMS",
 #             "id": "65ae1234b5c3e1234567890a",
 #             "created_at": "2024-01-22T10:30:00",
-#             "created_by": "test",
+#             "created_by": "admin",
 #             "updated_at": "2024-01-22T10:30:00",
-#             "updated_by": "test"
-#         },
-#         {
-#             "name": "Infrastructure",
-#             "description": "Cloud and infrastructure services",
-#             "radar_quadrant": 2,
-#             "id": "65ae1234b5c3e1234567890b",
-#             "created_at": "2024-01-22T10:35:00",
-#             "created_by": "test",
-#             "updated_at": "2024-01-22T10:35:00",
-#             "updated_by": "test"
+#             "updated_by": "admin",
+#             "usage_count": 5
 #         }
 #     ],
-#     "total": 3,
+#     "total": 1,
 #     "skip": 0,
 #     "limit": 100
 # }
@@ -207,40 +131,46 @@ Authorization: Bearer {{token}}
 # {
 #     "success": true,
 #     "data": {
-#         "name": "Development",
-#         "description": "Tools and platforms for software development",
-#         "radar_quadrant": 1,
+#         "name": "infrastructure",
+#         "description": "Infrastructure and platform solutions",
+#         "radar_quadrant": "PLATFORMS",
 #         "id": "65ae1234b5c3e1234567890a",
 #         "created_at": "2024-01-22T10:30:00",
-#         "created_by": "test",
+#         "created_by": "admin",
 #         "updated_at": "2024-01-22T10:30:00",
-#         "updated_by": "test"
+#         "updated_by": "admin",
+#         "usage_count": 5
 #     }
 # }
 
 # Error responses examples:
 
-# Not found error 404
+# Not found error
 # {
-#     "detail": "Category not found"
+#     "success": false,
+#     "error": "Category not found"
 # }
 
-# Validation error 400
+# Validation error
 # {
-#     "detail": "Category name cannot be empty"
+#     "success": false,
+#     "error": "Invalid radar_quadrant. Must be one of: TECHNIQUES, PLATFORMS, TOOLS, LANGUAGES"
 # }
 
-# Duplicate error 400
+# Duplicate error
 # {
-#     "detail": "Category with name 'Development' already exists"
+#     "success": false,
+#     "error": "Category name 'infrastructure' already exists"
 # }
 
-# Authentication error 401
+# Non-superuser access denied error
 # {
-#     "detail": "Not authenticated"
+#     "success": false,
+#     "error": "Not enough permissions"
 # }
 
-# Invalid radar_quadrant error 400
+# Category in use error
 # {
-#     "detail": "Radar quadrant must be between 0 and 4"
+#     "success": false,
+#     "error": "Cannot delete category 'infrastructure' as it is being used by solutions"
 # } 
