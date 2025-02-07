@@ -86,47 +86,61 @@
     .footer-container {
       max-width: 1400px;
       margin: 0 auto;
-      padding: 0 1rem;
+      padding: 0 2rem;
 
       .footer-content {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         gap: 2rem;
 
         .about-text {
+          flex: 1;
           color: var(--text-dark-color);
-          margin-bottom: 1rem;
+          margin: 0;
+          padding: 1rem 0;
+          display: flex;
+          align-items: center;
 
-          ::ng-deep a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 400;
+          ::ng-deep {
+            p {
+              margin: 0;
+            }
+            
+            a {
+              color: var(--primary-color);
+              text-decoration: none;
+              font-weight: 400;
 
-            &:hover {
-              color: var(--primary-600);
-              text-decoration: underline;
+              &:hover {
+                color: var(--primary-600);
+                text-decoration: underline;
+              }
             }
           }
         }
 
         .quick-links {
           list-style: none;
-          padding: 0;
-          margin: 15px;
+          padding: 1rem 0;
+          margin: 0;
           display: flex;
-          gap: 1rem;
+          gap: 1.5rem;
           flex-wrap: wrap;
           justify-content: flex-end;
+          align-items: center;
 
           li {
             color: var(--text-dark-color);
+            margin: 0;
 
             a {
               color: var(--secondary-color);
               text-decoration: none;
+              white-space: nowrap;
 
               &:hover {
-                text-decoration: none;
+                text-decoration: underline;
               }
             }
           }
