@@ -3,6 +3,7 @@ from typing import Dict, List
 from app.core.database import get_database
 from app.models.tech_radar import TechRadarEntry, TechRadarData
 from app.models.category import CategoryInDB
+from app.models.solution import RecommendStatusEnum
 
 
 class TechRadarService:
@@ -18,8 +19,8 @@ class TechRadarService:
         # Get all approved solutions
         cursor = self.solutions.find({"review_status": "APPROVED"})
         
-        # Status to ring mapping (1-based as per requirements)
-        status_to_ring: Dict[str, int] = {
+        # Status to ring mapping (0-based index)
+        status_to_ring: Dict[RecommendStatusEnum, int] = {
             "ADOPT": 0,
             "TRIAL": 1,
             "ASSESS": 2,
@@ -77,10 +78,4 @@ class TechRadarService:
 
     def get_radar_rings(self) -> List[Dict[str, str]]:
         """Get radar rings in order (ADOPT, TRIAL, ASSESS, HOLD)."""
-        rings = [
-            {"name": "ADOPT"},
-            {"name": "TRIAL"},
-            {"name": "ASSESS"},
-            {"name": "HOLD"}
-        ]
-        return rings 
+        return [{"name": status} for status in RecommendStatusEnum.__args__] 
