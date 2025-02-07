@@ -78,14 +78,22 @@ class UserService:
                 detail="Username already exists"
             )
 
-        user_dict = user.model_dump()
-        # Only hash password if it's not empty (for external auth users)
-        if user_dict["password"]:
-            user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
+        # Create user dict without password field
+        user_dict = {
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "is_superuser": user.is_superuser,
+            "created_at": datetime.utcnow(),
+            "updated_at": datetime.utcnow()
+        }
+
+        # Handle password hashing
+        if user.password:
+            user_dict["hashed_password"] = get_password_hash(user.password)
         else:
             user_dict["hashed_password"] = ""  # Empty hash for external auth users
-        user_dict["created_at"] = datetime.utcnow()
-        user_dict["updated_at"] = user_dict["created_at"]
 
         result = await self.collection.insert_one(user_dict)
         user_dict["_id"] = result.inserted_id
