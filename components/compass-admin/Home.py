@@ -1,17 +1,11 @@
 import streamlit as st
-from utils.auth import login
+
 from utils.api import APIClient
-import os
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(page_title=ADMIN_TITLE, page_icon="🧭", layout="wide")
-
-# Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
+from utils.common import (
+    initialize_page,
+    format_datetime,
+    show_error_message,
+)
 
 
 def load_dashboard_stats():
@@ -63,7 +57,7 @@ def load_dashboard_stats():
             default_stats["total_ratings"] = total_ratings
 
     except Exception as e:
-        st.error(f"Failed to load some statistics: {str(e)}")
+        show_error_message(f"Failed to load some statistics: {str(e)}")
 
     return default_stats
 
@@ -75,14 +69,13 @@ def get_current_user():
         if user_info and user_info.get("status_code") == 200:
             return user_info.get("data", {}).get("full_name", "")
     except Exception as e:
-        st.error(f"Failed to load user information: {str(e)}")
+        show_error_message(f"Failed to load user information: {str(e)}")
     return ""
 
 
 def main():
-    if not st.session_state.authenticated:
-        login()
-        return
+    # Initialize page with common settings
+    initialize_page("Home", "🧭", {})
 
     st.title("Tech Compass Admin")
 
@@ -133,7 +126,7 @@ def main():
             if solutions:
                 for solution in solutions:
                     st.text(
-                        f"{solution.get('updated_at', '')} - Updated: {solution.get('name', '')}"
+                        f"{format_datetime(solution.get('updated_at', ''))} - Updated: {solution.get('name', '')}"
                     )
             else:
                 st.info("No recent activity")

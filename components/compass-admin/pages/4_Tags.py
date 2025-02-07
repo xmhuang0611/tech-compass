@@ -1,30 +1,22 @@
-import streamlit as st
-from utils.auth import login
-from utils.api import APIClient
 import pandas as pd
-import os
+import streamlit as st
+from utils.api import APIClient
+from utils.auth import login
 from utils.common import (
-    initialize_page_state,
+    initialize_page,
     render_grid,
     show_success_toast,
     show_error_message,
     show_success_message,
     confirm_delete_dialog,
     format_dataframe_dates,
-)
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(
-    page_title=f"Tags - {ADMIN_TITLE}",
-    page_icon="🏷️",
-    layout="wide"
+    handle_api_response,
+    get_page_size_and_skip,
+    COMMON_COLUMN_DEFS,
 )
 
 # Initialize session state
-initialize_page_state({
+initialize_page("Tags", "🏷️", {
     "authenticated": False,
     "tags_page": 0,
     "tags_per_page": 100,
@@ -45,10 +37,7 @@ COLUMN_DEFS = {
     "name": {"width": 150, "headerName": "Name"},
     "description": {"width": 300, "headerName": "Description"},
     "usage_count": {"width": 120, "headerName": "Usage Count"},
-    "created_at": {"width": 140, "headerName": "Created At"},
-    "created_by": {"width": 100, "headerName": "Created By"},
-    "updated_at": {"width": 140, "headerName": "Updated At"},
-    "updated_by": {"width": 100, "headerName": "Updated By"},
+    **COMMON_COLUMN_DEFS  # Include common columns
 }
 
 def load_tags(skip=0, limit=10):
@@ -70,23 +59,18 @@ def update_tag(tag_name, data):
     """Update tag"""
     try:
         response = APIClient.put(f"tags/{tag_name}", data)
-        if response and response.get("status_code") == 200:
-            st.session_state.show_success_message = True
-            return True
-        else:
-            st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
-            return False
+        return handle_api_response(response, "Tag updated successfully")
     except Exception as e:
-        st.session_state.show_error_message = str(e)
+        show_error_message(str(e))
         return False
 
 def delete_tag(tag_name):
-        """Delete tag"""
-        response = APIClient.delete(f"tags/{tag_name}")
-        if response and response.get("status_code") == 204:
-            return
-        else:
-            return response.get("detail", "Unknown error occurred")
+    """Delete tag"""
+    response = APIClient.delete(f"tags/{tag_name}")
+    if response and response.get("status_code") == 204:
+        return
+    else:
+        return response.get("detail", "Unknown error occurred")
 
 def render_tag_form(tag_data):
     """Render form for editing tag"""
@@ -135,19 +119,21 @@ def render_tag_form(tag_data):
                 st.rerun()
         
         if st.session_state.show_success_message:
-            st.success("✅ Tag updated successfully!")
+            show_success_message("Tag updated successfully!")
             st.session_state.show_success_message = False
 
         if st.session_state.show_error_message:
-            st.error(f"❌ Failed to update tag: {st.session_state.show_error_message}")
+            show_error_message(f"Failed to update tag: {st.session_state.show_error_message}")
             st.session_state.show_error_message = None
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        confirm_delete_dialog(f"tag '{tag_data['name']}'", lambda: delete_tag(tag_data["name"]), delete_success_callback)
+        confirm_delete_dialog(f"tag '{tag_data['name']}'", 
+                              lambda: delete_tag(tag_data["name"]), 
+                              delete_success_callback)
 
 def delete_success_callback():
-    st.toast("Tag deleted successfully!", icon="✅")
+    show_success_toast("Tag deleted successfully!")
     st.session_state.show_delete_success_toast = True
     st.session_state.selected_tag = None
     if "tag_grid" in st.session_state:
@@ -183,14 +169,10 @@ def render_add_tag_form():
 
             try:
                 response = APIClient.post("tags/", tag_data)
-                if response and response.get("status_code") == 201:
-                    st.session_state.show_success_message = True
-                    st.rerun()
-                else:
-                    st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
+                if handle_api_response(response, "Tag added successfully"):
                     st.rerun()
             except Exception as e:
-                st.session_state.show_error_message = str(e)
+                show_error_message(str(e))
                 st.rerun()
 
 def main():
@@ -205,14 +187,13 @@ def main():
     list_tab, add_tab = st.tabs(["Tags List", "Add New Tag"])
 
     with list_tab:
-        page_size = 100
-        skip = (st.session_state.page - 1) * page_size
+        page_size, skip = get_page_size_and_skip()
         tags, meta = load_tags(skip=skip, limit=page_size)
 
         if tags:
             # Create DataFrame with explicit column order
             df = pd.DataFrame(tags)[COLUMN_DEFS.keys()]
-            df = format_dataframe_dates(df, ["created_at", "updated_at"])
+            df = format_dataframe_dates(df)  # Using default date columns
 
             # Render grid
             grid_response = render_grid(df, COLUMN_DEFS, "tag_grid", page_size)

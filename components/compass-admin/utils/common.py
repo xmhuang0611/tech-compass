@@ -1,7 +1,46 @@
+import os
+
+import pandas as pd
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
-import pandas as pd
-from datetime import datetime
+
+# Environment variables
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api")
+ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
+
+# Common constants
+COMMON_DATE_COLUMNS = ["created_at", "updated_at"]
+COMMON_COLUMN_DEFS = {
+    "created_at": {"width": 140, "headerName": "Created At"},
+    "created_by": {"width": 100, "headerName": "Created By"},
+    "updated_at": {"width": 140, "headerName": "Updated At"},
+    "updated_by": {"width": 100, "headerName": "Updated By"},
+}
+
+# Status options
+REVIEW_STATUS_OPTIONS = ["PENDING", "APPROVED", "REJECTED"]
+RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
+STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
+ADOPTION_LEVEL_OPTIONS = ["PILOT", "TEAM", "DEPARTMENT", "ENTERPRISE", "INDUSTRY"]
+
+def initialize_page(title: str, icon: str, state_vars: dict = None):
+    """Initialize page with common settings"""
+    # Page configuration
+    st.set_page_config(
+        page_title=f"{title} - {ADMIN_TITLE}" if title != "Home" else ADMIN_TITLE,
+        page_icon=icon,
+        layout="wide"
+    )
+
+    # Initialize session state
+    if state_vars:
+        initialize_page_state(state_vars)
+
+    # Check authentication
+    if not st.session_state.get("authenticated", False):
+        from utils.auth import login
+        login()
+        st.stop()
 
 def format_datetime(dt_str: str) -> str:
     """Format datetime string to a consistent format"""
@@ -62,7 +101,18 @@ def format_list_to_string(items: list, separator: str = ", ") -> str:
 
 def initialize_page_state(state_vars: dict):
     """Initialize multiple session state variables"""
-    for var, default in state_vars.items():
+    default_state = {
+        "authenticated": False,
+        "page": 1,
+        "show_success_message": False,
+        "show_error_message": None,
+        "show_delete_success_toast": False,
+    }
+    # Update with provided state variables
+    default_state.update(state_vars)
+    
+    # Initialize all state variables
+    for var, default in default_state.items():
         if var not in st.session_state:
             st.session_state[var] = default
 
@@ -94,9 +144,33 @@ def confirm_delete_dialog(item_name: str, delete_callback, success_callback):
         return True
     return False
 
-def format_dataframe_dates(df: pd.DataFrame, date_columns: list) -> pd.DataFrame:
+def format_dataframe_dates(df: pd.DataFrame, date_columns: list = None) -> pd.DataFrame:
     """Format date columns in a DataFrame"""
+    if date_columns is None:
+        date_columns = COMMON_DATE_COLUMNS
+    
     for col in date_columns:
         if col in df.columns:
             df[col] = df[col].apply(format_datetime)
-    return df 
+    return df
+
+def handle_api_response(response: dict, success_message: str = None) -> bool:
+    """Handle common API response patterns"""
+    if not response:
+        show_error_message("No response from server")
+        return False
+
+    if response.get("status_code") in [200, 201, 204]:
+        if success_message:
+            st.session_state.show_success_message = True
+        return True
+    else:
+        st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
+        return False
+
+def get_page_size_and_skip(page_size: int = 100) -> tuple:
+    """Get common pagination parameters"""
+    if "page" not in st.session_state:
+        st.session_state.page = 1
+    skip = (st.session_state.page - 1) * page_size
+    return page_size, skip 

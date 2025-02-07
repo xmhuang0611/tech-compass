@@ -1,7 +1,10 @@
-import requests
 from typing import Optional, Dict, Any
+
+import requests
 import streamlit as st
+
 from .auth import get_auth_header, API_BASE_URL
+
 
 class APIClient:
     @staticmethod

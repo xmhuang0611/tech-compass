@@ -1,35 +1,35 @@
-import streamlit as st
-from utils.auth import login
-from utils.api import APIClient
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import pandas as pd
-import os
-
-from utils.common import confirm_delete_dialog
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(
-    page_title=f"Solutions - {ADMIN_TITLE}", page_icon="💡", layout="wide"
+import streamlit as st
+from utils.api import APIClient
+from utils.auth import login
+from utils.common import (
+    initialize_page,
+    render_grid,
+    show_success_toast,
+    show_error_message,
+    show_success_message,
+    confirm_delete_dialog,
+    format_dataframe_dates,
+    handle_api_response,
+    get_page_size_and_skip,
+    COMMON_COLUMN_DEFS,
+    REVIEW_STATUS_OPTIONS,
+    RECOMMEND_STATUS_OPTIONS,
+    STAGE_OPTIONS,
+    ADOPTION_LEVEL_OPTIONS,
 )
 
 # Initialize session state
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-if "solutions_page" not in st.session_state:
-    st.session_state.solutions_page = 0
-if "solutions_per_page" not in st.session_state:
-    st.session_state.solutions_per_page = 100
-if "selected_solution" not in st.session_state:
-    st.session_state.selected_solution = None
-if "show_success_message" not in st.session_state:
-    st.session_state.show_success_message = False
-if "show_error_message" not in st.session_state:
-    st.session_state.show_error_message = None
-if "show_delete_success_toast" not in st.session_state:
-    st.session_state.show_delete_success_toast = False
+initialize_page("Solutions", "💡", {
+    "authenticated": False,
+    "solutions_page": 0,
+    "solutions_per_page": 100,
+    "selected_solution": None,
+    "show_success_message": False,
+    "show_error_message": None,
+    "show_delete_success_toast": False,
+    "page": 1
+})
 
 # Check authentication
 if not st.session_state.authenticated:
@@ -37,11 +37,29 @@ if not st.session_state.authenticated:
     st.stop()
 
 # Constants
-RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
-STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
-ADOPTION_LEVEL_OPTIONS = ["PILOT", "TEAM", "DEPARTMENT", "ENTERPRISE", "INDUSTRY"]
-REVIEW_STATUS_OPTIONS = ["PENDING", "APPROVED", "REJECTED"]
-
+COLUMN_DEFS = {
+    "name": {"width": 150, "headerName": "Name"},
+    "description": {"width": 200, "headerName": "Description"},
+    "category": {"width": 120, "headerName": "Category"},
+    "stage": {"width": 100, "headerName": "Stage"},
+    "recommend_status": {"width": 120, "headerName": "Recommend"},
+    "adoption_level": {"width": 120, "headerName": "Adoption Level"},
+    "adoption_user_count": {"width": 120, "headerName": "User Count"},
+    "department": {"width": 120, "headerName": "Department"},
+    "team": {"width": 120, "headerName": "Team"},
+    "team_email": {"width": 150, "headerName": "Team Email"},
+    "maintainer_id": {"width": 120, "headerName": "Maintainer ID"},
+    "maintainer_name": {"width": 120, "headerName": "Maintainer Name"},
+    "maintainer_email": {"width": 150, "headerName": "Maintainer Email"},
+    "version": {"width": 100, "headerName": "Version"},
+    "tags": {"width": 150, "headerName": "Tags"},
+    "official_website": {"width": 150, "headerName": "Official Website"},
+    "documentation_url": {"width": 150, "headerName": "Documentation URL"},
+    "demo_url": {"width": 150, "headerName": "Demo URL"},
+    "pros": {"width": 200, "headerName": "Pros"},
+    "cons": {"width": 200, "headerName": "Cons"},
+    **COMMON_COLUMN_DEFS
+}
 
 def load_categories():
     """Load all categories"""
@@ -50,9 +68,8 @@ def load_categories():
         if response and isinstance(response, dict):
             return response.get("data", [])
     except Exception as e:
-        st.error(f"Failed to load categories: {str(e)}")
+        show_error_message(f"Failed to load categories: {str(e)}")
     return []
-
 
 def load_solutions(skip=0, limit=10, **filters):
     """Load solutions with pagination and filters"""
@@ -66,25 +83,20 @@ def load_solutions(skip=0, limit=10, **filters):
                 "limit": response.get("limit", 10),
             }
     except Exception as e:
-        st.error(f"Failed to load solutions: {str(e)}")
+        show_error_message(f"Failed to load solutions: {str(e)}")
     return [], {"total": 0, "skip": 0, "limit": 10}
-
 
 def update_solution(solution_slug, data):
     """Update solution"""
     try:
         response = APIClient.put(f"solutions/{solution_slug}", data)
-        if response:
-            st.session_state.show_success_message = True
-            return True
+        return handle_api_response(response, "Solution updated successfully")
     except Exception as e:
-        st.session_state.show_error_message = str(e)
-    return False
-
+        show_error_message(str(e))
+        return False
 
 def delete_solution(solution_slug):
     """Delete solution"""
-    # For DELETE requests with 204 response, APIClient.delete returns None
     response = APIClient.delete(f"solutions/{solution_slug}")
     if response and response.get("status_code") == 204:
         return
@@ -305,13 +317,11 @@ def render_solution_form(solution_data):
 
         # Show update messages inside form
         if st.session_state.show_success_message:
-            st.success("✅ Solution updated successfully!")
+            show_success_message("Solution updated successfully!")
             st.session_state.show_success_message = False
 
         if st.session_state.show_error_message:
-            st.error(
-                f"❌ Failed to update solution: {st.session_state.show_error_message}"
-            )
+            show_error_message(f"Failed to update solution: {st.session_state.show_error_message}")
             st.session_state.show_error_message = None
 
         if submitted:
@@ -350,7 +360,7 @@ def render_solution_form(solution_data):
         confirm_delete_dialog("this solution", lambda: delete_solution(solution_data["slug"]), delete_success_callback)
 
 def delete_success_callback():
-    st.toast("Solution deleted successfully!", icon="✅")
+    show_success_toast("Solution deleted successfully!")
     st.session_state.show_delete_success_toast = True
     st.session_state.selected_solution = None
     if "solution_grid" in st.session_state:
@@ -481,13 +491,11 @@ def render_add_solution_form():
 
         # Show messages right below the button
         if st.session_state.show_success_message:
-            st.success("✅ Solution added successfully!")
+            show_success_message("Solution added successfully!")
             st.session_state.show_success_message = False
 
         if st.session_state.show_error_message:
-            st.error(
-                f"❌ Failed to add solution: {st.session_state.show_error_message}"
-            )
+            show_error_message(f"Failed to add solution: {st.session_state.show_error_message}")
             st.session_state.show_error_message = None
 
         if submitted:
@@ -518,25 +526,18 @@ def render_add_solution_form():
 
             try:
                 response = APIClient.post("solutions/", solution_data)
-                if response and response.get("status_code") == 201:
-                    st.session_state.show_success_message = True
-                    st.rerun()
-                else:
-                    # Get error message from response
-                    error_msg = response.get("detail", "Unknown error occurred")
-                    st.session_state.show_error_message = error_msg
+                if handle_api_response(response, "Solution added successfully"):
                     st.rerun()
             except Exception as e:
-                st.session_state.show_error_message = str(e)
+                show_error_message(str(e))
                 st.rerun()
-
 
 def main():
     st.title("💡 Solutions")
 
     # Show toast message if deletion was successful
     if st.session_state.show_delete_success_toast:
-        st.toast("Solution deleted successfully!", icon="✅")
+        show_success_toast("Solution deleted successfully!")
         st.session_state.show_delete_success_toast = False
 
     # Create tabs
@@ -574,128 +575,20 @@ def main():
         if recommend_status != "All":
             filters["recommend_status"] = recommend_status
 
-        # Get page from session state
-        if "page" not in st.session_state:
-            st.session_state.page = 1
-        page_size = 100
-        skip = (st.session_state.page - 1) * page_size
-
+        page_size, skip = get_page_size_and_skip()
         solutions, meta = load_solutions(skip=skip, limit=page_size, **filters)
 
-        # Convert solutions to DataFrame for AgGrid
         if solutions:
             # Create DataFrame with explicit column order
-            columns = [
-                "name",
-                "category",
-                "review_status",
-                "stage",
-                "recommend_status",
-                "adoption_level",
-                "adoption_user_count",
-                "department",
-                "team",
-                "team_email",
-                "maintainer_id",
-                "maintainer_name",
-                "maintainer_email",
-                "version",
-                "tags",
-                "slug",
-                "logo",
-                "official_website",
-                "documentation_url",
-                "demo_url",
-                "brief",
-                "description",
-                "pros",
-                "cons",
-                "created_at",
-                "created_by",
-                "updated_at",
-                "updated_by",
-            ]
-            df = pd.DataFrame(solutions)  # Create DataFrame from solutions
-            df = df[columns]  # Reorder columns to desired order
+            df = pd.DataFrame(solutions)[COLUMN_DEFS.keys()]
+            df = format_dataframe_dates(df)  # Using default date columns
 
-            # Format lists to string
-            # Format tags with commas, pros and cons with newlines
-            if "tags" in df.columns:
-                df["tags"] = df["tags"].apply(
-                    lambda x: ", ".join(x) if isinstance(x, list) else ""
-                )
-            for list_col in ["pros", "cons"]:
-                if list_col in df.columns:
-                    df[list_col] = df[list_col].apply(
-                        lambda x: "\n".join(x) if isinstance(x, list) else ""
-                    )
-            # Configure grid options
-            gb = GridOptionsBuilder.from_dataframe(df)
-            gb.configure_selection(
-                selection_mode="single", use_checkbox=False, pre_selected_rows=[]
-            )
-            gb.configure_pagination(
-                enabled=True, paginationAutoPageSize=False, paginationPageSize=page_size
-            )
-
-            # Configure column properties
-            column_defs = {
-                "slug": {"width": 120, "headerName": "Slug"},
-                "name": {"width": 150, "headerName": "Name"},
-                "description": {"width": 200, "headerName": "Description"},
-                "category": {"width": 120, "headerName": "Category"},
-                "stage": {"width": 100, "headerName": "Stage"},
-                "recommend_status": {"width": 120, "headerName": "Recommend"},
-                "adoption_level": {"width": 120, "headerName": "Adoption Level"},
-                "adoption_user_count": {"width": 120, "headerName": "User Count"},
-                "department": {"width": 120, "headerName": "Department"},
-                "team": {"width": 120, "headerName": "Team"},
-                "team_email": {"width": 150, "headerName": "Team Email"},
-                "maintainer_id": {"width": 120, "headerName": "Maintainer ID"},
-                "maintainer_name": {"width": 120, "headerName": "Maintainer Name"},
-                "maintainer_email": {"width": 150, "headerName": "Maintainer Email"},
-                "version": {"width": 100, "headerName": "Version"},
-                "tags": {"width": 150, "headerName": "Tags"},
-                "official_website": {"width": 150, "headerName": "Official Website"},
-                "documentation_url": {"width": 150, "headerName": "Documentation URL"},
-                "demo_url": {"width": 150, "headerName": "Demo URL"},
-                "pros": {"width": 200, "headerName": "Pros"},
-                "cons": {"width": 200, "headerName": "Cons"},
-                "created_at": {"width": 140, "headerName": "Created At"},
-                "created_by": {"width": 100, "headerName": "Created By"},
-                "updated_at": {"width": 140, "headerName": "Updated At"},
-                "updated_by": {"width": 100, "headerName": "Updated By"},
-            }
-
-            # Apply column configurations
-            for col, props in column_defs.items():
-                gb.configure_column(field=col, **props)
-
-            gb.configure_grid_options(
-                rowStyle={"cursor": "pointer"},
-                enableBrowserTooltips=True,
-                rowSelection="single",  # Enforce single row selection
-                suppressRowDeselection=False,  # Allow deselecting a row
-            )
-
-            # Create grid
-            grid_response = AgGrid(
-                df,
-                gridOptions=gb.build(),
-                update_mode=GridUpdateMode.SELECTION_CHANGED,
-                allow_unsafe_jscode=True,
-                theme="streamlit",
-                key="solution_grid",
-            )
-
-            # Handle selection - always use first selected row if any
+            # Render grid
+            grid_response = render_grid(df, COLUMN_DEFS, "solution_grid", page_size)
             selected_rows = grid_response.get("selected_rows", [])
 
             # Show edit form only if we have selected rows and no deletion just happened
-            if (
-                selected_rows is not None
-                and not st.session_state.show_delete_success_toast
-            ):
+            if selected_rows is not None and not st.session_state.show_delete_success_toast:
                 selected_solution = selected_rows.iloc[0].to_dict()
                 st.session_state.selected_solution = selected_solution
                 render_solution_form(selected_solution)
@@ -704,7 +597,6 @@ def main():
 
     with add_tab:
         render_add_solution_form()
-
 
 if __name__ == "__main__":
     main()

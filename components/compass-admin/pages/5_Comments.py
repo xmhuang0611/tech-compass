@@ -1,30 +1,21 @@
-import streamlit as st
-from utils.auth import login
-from utils.api import APIClient
 import pandas as pd
-import os
+import streamlit as st
+from utils.api import APIClient
+from utils.auth import login
 from utils.common import (
-    initialize_page_state,
+    initialize_page,
     render_grid,
     show_success_toast,
     show_error_message,
     show_success_message,
     confirm_delete_dialog,
     format_dataframe_dates,
-)
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(
-    page_title=f"Comments - {ADMIN_TITLE}",
-    page_icon="💬",
-    layout="wide"
+    handle_api_response,
+    COMMON_COLUMN_DEFS,
 )
 
 # Initialize session state
-initialize_page_state({
+initialize_page("Comments", "💬", {
     "authenticated": False,
     "selected_comment": None,
     "show_success_message": False,
@@ -45,8 +36,7 @@ COLUMN_DEFS = {
     "content": {"width": 400, "headerName": "Content"},
     "username": {"width": 120, "headerName": "Username"},
     "full_name": {"width": 150, "headerName": "Full Name"},
-    "created_at": {"width": 140, "headerName": "Created At"},
-    "updated_at": {"width": 140, "headerName": "Updated At"},
+    **COMMON_COLUMN_DEFS
 }
 
 def load_solutions():
@@ -88,12 +78,10 @@ def update_comment(comment_id, data):
     """Update comment"""
     try:
         response = APIClient.put(f"comments/{comment_id}", data)
-        if response and response.get("success"):
-            st.session_state.show_success_message = True
-            return True
+        return handle_api_response(response, "Comment updated successfully")
     except Exception as e:
-        st.session_state.show_error_message = str(e)
-    return False
+        show_error_message(str(e))
+        return False
 
 def delete_comment(comment_id):
     """Delete comment"""
@@ -178,7 +166,7 @@ def render_comment_form(comment_data):
         confirm_delete_dialog("this comment", lambda: delete_comment(comment_data["_id"]), delete_success_callback)
 
 def delete_success_callback():
-    st.toast("Comment deleted successfully!", icon="✅")
+    show_success_toast("Comment deleted successfully!")
     st.session_state.show_delete_success_toast = True
     st.session_state.selected_comment = None
     if "comment_grid" in st.session_state:
@@ -219,7 +207,7 @@ def main():
     if comments:
         # Create DataFrame with explicit column order
         df = pd.DataFrame(comments)[COLUMN_DEFS.keys()]
-        df = format_dataframe_dates(df, ["created_at", "updated_at"])
+        df = format_dataframe_dates(df)  # Using default date columns
 
         # Render grid
         grid_response = render_grid(df, COLUMN_DEFS, "comment_grid", page_size)

@@ -1,30 +1,17 @@
-import streamlit as st
-from utils.auth import login
-from utils.api import APIClient
 import pandas as pd
-import os
+import streamlit as st
+from utils.api import APIClient
+from utils.auth import login
 from utils.common import (
-    initialize_page_state,
+    initialize_page,
     render_grid,
-    show_success_toast,
     show_error_message,
-    show_success_message,
-    confirm_delete_dialog,
     format_dataframe_dates,
-)
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(
-    page_title=f"Ratings - {ADMIN_TITLE}",
-    page_icon="⭐",
-    layout="wide"
+    COMMON_COLUMN_DEFS,
 )
 
 # Initialize session state
-initialize_page_state({
+initialize_page("Ratings", "⭐", {
     "authenticated": False,
     "selected_rating": None,
     "show_success_message": False,
@@ -46,8 +33,7 @@ COLUMN_DEFS = {
     "comment": {"width": 400, "headerName": "Comment"},
     "username": {"width": 120, "headerName": "Username"},
     "full_name": {"width": 150, "headerName": "Full Name"},
-    "created_at": {"width": 140, "headerName": "Created At"},
-    "updated_at": {"width": 140, "headerName": "Updated At"},
+    **COMMON_COLUMN_DEFS
 }
 
 def load_solutions():
@@ -203,7 +189,7 @@ def main():
     if ratings:
         # Create DataFrame with explicit column order
         df = pd.DataFrame(ratings)[COLUMN_DEFS.keys()]
-        df = format_dataframe_dates(df, ["created_at", "updated_at"])
+        df = format_dataframe_dates(df)  # Using default date columns
 
         # Render grid
         grid_response = render_grid(df, COLUMN_DEFS, "rating_grid", page_size)

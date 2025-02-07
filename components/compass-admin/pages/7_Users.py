@@ -1,30 +1,22 @@
-import streamlit as st
-from utils.auth import login
-from utils.api import APIClient
 import pandas as pd
-import os
+import streamlit as st
+from utils.api import APIClient
+from utils.auth import login
 from utils.common import (
-    initialize_page_state,
+    initialize_page,
     render_grid,
     show_success_toast,
     show_error_message,
     show_success_message,
     confirm_delete_dialog,
     format_dataframe_dates,
-)
-
-# Environment variables
-ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
-
-# Page configuration
-st.set_page_config(
-    page_title=f"Users - {ADMIN_TITLE}",
-    page_icon="👥",
-    layout="wide"
+    handle_api_response,
+    get_page_size_and_skip,
+    COMMON_COLUMN_DEFS,
 )
 
 # Initialize session state
-initialize_page_state({
+initialize_page("Users", "👥", {
     "authenticated": False,
     "users_page": 0,
     "users_per_page": 100,
@@ -47,10 +39,7 @@ COLUMN_DEFS = {
     "full_name": {"width": 200, "headerName": "Full Name"},
     "is_active": {"width": 100, "headerName": "Active"},
     "is_superuser": {"width": 100, "headerName": "Admin"},
-    "created_at": {"width": 140, "headerName": "Created At"},
-    "created_by": {"width": 100, "headerName": "Created By"},
-    "updated_at": {"width": 140, "headerName": "Updated At"},
-    "updated_by": {"width": 100, "headerName": "Updated By"},
+    **COMMON_COLUMN_DEFS
 }
 
 def load_users(skip=0, limit=10):
@@ -72,14 +61,9 @@ def update_user(username, data):
     """Update user"""
     try:
         response = APIClient.put(f"users/manage/{username}", data)
-        if response and response.get("status_code") == 200:
-            st.session_state.show_success_message = True
-            return True
-        else:
-            st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
-            return False
+        return handle_api_response(response, "User updated successfully")
     except Exception as e:
-        st.session_state.show_error_message = str(e)
+        show_error_message(str(e))
         return False
 
 def delete_user(username):
@@ -164,21 +148,19 @@ def render_user_form(user_data):
                 st.rerun()
         
         if st.session_state.show_success_message:
-            st.success("✅ User updated successfully!")
+            show_success_message("User updated successfully!")
             st.session_state.show_success_message = False
 
         if st.session_state.show_error_message:
-            st.error(f"❌ Failed to update user: {st.session_state.show_error_message}")
+            show_error_message(f"Failed to update user: {st.session_state.show_error_message}")
             st.session_state.show_error_message = None
 
     # Show delete confirmation dialog when delete button is clicked
     if delete_clicked:
-        confirm_delete_dialog(f"user '{username}'", 
-                              lambda: delete_user(username), 
-                              delete_success_callback)
+        confirm_delete_dialog(f"user '{username}'", lambda: delete_user(username), delete_success_callback)
 
 def delete_success_callback():
-    st.toast("User deleted successfully!", icon="✅")
+    show_success_toast("User deleted successfully!")
     st.session_state.show_delete_success_toast = True
     st.session_state.selected_user = None
     if "user_grid" in st.session_state:
@@ -227,14 +209,10 @@ def render_add_user_form():
 
             try:
                 response = APIClient.post("users/", user_data)
-                if response and response.get("status_code") == 201:
-                    st.session_state.show_success_message = True
-                    st.rerun()
-                else:
-                    st.session_state.show_error_message = response.get("detail", "Unknown error occurred")
+                if handle_api_response(response, "User added successfully"):
                     st.rerun()
             except Exception as e:
-                st.session_state.show_error_message = str(e)
+                show_error_message(str(e))
                 st.rerun()
 
 def main():
@@ -249,14 +227,13 @@ def main():
     list_tab, add_tab = st.tabs(["Users List", "Add New User"])
 
     with list_tab:
-        page_size = 100
-        skip = (st.session_state.page - 1) * page_size
+        page_size, skip = get_page_size_and_skip()
         users, meta = load_users(skip=skip, limit=page_size)
 
         if users:
             # Create DataFrame with explicit column order
             df = pd.DataFrame(users)[COLUMN_DEFS.keys()]
-            df = format_dataframe_dates(df, ["created_at", "updated_at"])
+            df = format_dataframe_dates(df)  # Using default date columns
 
             # Render grid
             grid_response = render_grid(df, COLUMN_DEFS, "user_grid", page_size)
