@@ -32,7 +32,9 @@ async def verify_credentials(username: str, password: str) -> bool:
         return verify_password(password, user.hashed_password)
     
     try:
-        async with httpx.AsyncClient() as client:
+        # Create a transport that skips SSL verification
+        transport = httpx.AsyncHTTPTransport(verify=False)
+        async with httpx.AsyncClient(transport=transport) as client:
             data = {
                 settings.AUTH_SERVER_USERNAME_FIELD: username,
                 settings.AUTH_SERVER_PASSWORD_FIELD: password
