@@ -1,104 +1,165 @@
-@baseUrl = http://127.0.0.1:8000/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+@baseUrl = http://localhost:8000/api
+@adminToken = ''
+@userToken = ''
+
+### Login as admin
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username=admin&password=admin123
+
+### Store admin token
+@adminToken = {{login.response.body.access_token}}
+
+### Admin: Create a new local user
+POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "username": "testuser",
+    "email": "test@example.com",
+    "full_name": "Test User",
+    "password": "testpass123"
+}
+
+### Try to create user without admin privileges (should fail)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+    "username": "testuser2",
+    "email": "test2@example.com",
+    "full_name": "Test User 2",
+    "password": "testpass123"
+}
+
+### Login as test user
+# @name userLogin
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username=testuser&password=testpass123
+
+### Store user token
+@userToken = {{userLogin.response.body.access_token}}
+
+### Get current user info
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{userToken}}
+
+### Get user by username
+GET {{baseUrl}}/users/testuser
+Authorization: Bearer {{userToken}}
 
 ### Get all users (with pagination)
 GET {{baseUrl}}/users?skip=0&limit=10
+Authorization: Bearer {{userToken}}
+
+### Update user's own information
+PUT {{baseUrl}}/users/testuser
+Authorization: Bearer {{userToken}}
 Content-Type: application/json
-
-### Get current user's profile
-GET {{baseUrl}}/users/me
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-### Get specific user by username
-GET {{baseUrl}}/users/newuser
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-### Create test user
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-    "username": "test",
-    "email": "test@example.com",
-    "password": "test",
-    "full_name": "Test User"
-}
-
-### Create new user
-POST {{baseUrl}}/users
-Content-Type: application/json
-
-{
-    "username": "newuser",
-    "email": "newuser@example.com",
-    "password": "password123",
-    "full_name": "New User",
-    "role": "USER"
-}
-
-### Update user (requires auth, can only update own profile)
-PUT {{baseUrl}}/users/newuser
-Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
     "email": "updated@example.com",
-    "full_name": "Updated Name",
-    "password": "newpassword123"
+    "full_name": "Updated User"
 }
 
-### Delete user (requires auth, can only delete own profile)
-DELETE {{baseUrl}}/users/newuser
-Authorization: Bearer {{token}}
+### Update user's password
+PUT {{baseUrl}}/users/testuser/password
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
 
-### Test error cases
+{
+    "current_password": "testpass123",
+    "new_password": "newpass123"
+}
 
-### Try to create user with existing username (should fail with 400)
+### Try to update another user's info (should fail)
+PUT {{baseUrl}}/users/admin
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+    "email": "hack@example.com"
+}
+
+### Admin: Update user information
+PUT {{baseUrl}}/users/manage/testuser
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "email": "admin.updated@example.com",
+    "full_name": "Admin Updated User",
+    "is_active": true,
+    "is_superuser": false,
+    "password": "adminpass123"
+}
+
+### Admin: Update only user's status
+PUT {{baseUrl}}/users/manage/testuser
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "is_active": false
+}
+
+### Admin: Delete user
+DELETE {{baseUrl}}/users/manage/testuser
+Authorization: Bearer {{adminToken}}
+
+### Try to delete admin account (should fail)
+DELETE {{baseUrl}}/users/manage/admin
+Authorization: Bearer {{adminToken}}
+
+### Admin: Create an external user
 POST {{baseUrl}}/users
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
-    "username": "newuser",
-    "email": "newuser@example.com",
-    "password": "password123",
-    "full_name": "New User",
-    "role": "USER"
+    "username": "external_user",
+    "email": "external@example.com",
+    "full_name": "External User",
+    "password": ""
 }
 
-### Try to get non-existent user (should fail with 404)
-GET {{baseUrl}}/users/nonexistent
+### Try to update external user info (should fail)
+PUT {{baseUrl}}/users/external_user
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
-
-### Try to update non-existent user (should fail with 404)
-PUT {{baseUrl}}/users/nonexistent
-Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-    "email": "new@example.com",
-    "full_name": "New Name"
+    "email": "new.external@example.com"
 }
 
-### Try to update another user's profile (should fail with 403)
-PUT {{baseUrl}}/users/other-user
+### Try to update external user password (should fail)
+PUT {{baseUrl}}/users/external_user/password
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
-Authorization: Bearer {{token}}
 
 {
-    "email": "new@example.com",
-    "full_name": "New Name"
+    "current_password": "",
+    "new_password": "newpass"
 }
 
-### Try to delete another user's profile (should fail with 403)
-DELETE {{baseUrl}}/users/other-user
-Authorization: Bearer {{token}}
-
-### Try to access protected endpoint without auth (should fail with 401)
-GET {{baseUrl}}/users/me
+### Admin: Try to update external user (should fail)
+PUT {{baseUrl}}/users/manage/external_user
+Authorization: Bearer {{adminToken}}
 Content-Type: application/json
+
+{
+    "email": "admin.external@example.com",
+    "is_active": false
+}
+
+### Admin: Try to delete external user (should fail)
+DELETE {{baseUrl}}/users/manage/external_user
+Authorization: Bearer {{adminToken}}
 
 ### Example responses:
 

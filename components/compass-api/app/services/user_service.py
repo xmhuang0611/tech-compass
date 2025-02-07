@@ -172,6 +172,8 @@ class UserService:
                 detail="External users cannot update their information"
             )
 
+        # Only include non-None fields in the update
+        update_data = {}
         user_dict = user_update.model_dump(exclude_unset=True)
         
         # Check username uniqueness if being updated
@@ -180,12 +182,21 @@ class UserService:
             if other_user:
                 raise ValueError(f"Username '{user_dict['username']}' is already in use")
 
-        user_dict["updated_at"] = datetime.utcnow()
-        user_dict["updated_by"] = current_username
+        # Add all non-None fields to update_data
+        for field, value in user_dict.items():
+            if value is not None:
+                update_data[field] = value
+
+        if not update_data:
+            # If no fields to update, return existing user
+            return User.model_validate(existing_user)
+
+        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_by"] = current_username
 
         result = await self.collection.find_one_and_update(
             {"username": username},
-            {"$set": user_dict},
+            {"$set": update_data},
             return_document=True
         )
         if result:
@@ -229,3 +240,88 @@ class UserService:
     async def count_users(self) -> int:
         """Get total number of users"""
         return await self.collection.count_documents({})
+
+    async def admin_update_user(
+        self,
+        username: str,
+        user_update: UserUpdate,
+        admin_username: str,
+        new_password: Optional[str] = None
+    ) -> Optional[User]:
+        """Admin level update for user information.
+        This method allows superusers to update all user fields including password."""
+        # Get existing user
+        existing_user = await self.get_user_by_username(username)
+        if not existing_user:
+            return None
+
+        # Check if user is an external user (empty hashed_password)
+        if not existing_user.hashed_password:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="External users cannot be modified, their information is managed by the external auth system"
+            )
+
+        # Only include non-None fields in the update
+        update_data = {}
+        user_dict = user_update.model_dump(exclude_unset=True)
+        
+        # Check username uniqueness if being updated
+        if "username" in user_dict and user_dict["username"] != username:
+            other_user = await self.get_user_by_username(user_dict["username"])
+            if other_user:
+                raise ValueError(f"Username '{user_dict['username']}' is already in use")
+
+        # Add all non-None fields to update_data
+        for field, value in user_dict.items():
+            if value is not None:
+                update_data[field] = value
+
+        # Handle password update if provided
+        if new_password is not None:
+            update_data["hashed_password"] = get_password_hash(new_password)
+
+        if not update_data:
+            # If no fields to update, return existing user
+            return User.model_validate(existing_user)
+
+        update_data["updated_at"] = datetime.utcnow()
+        update_data["updated_by"] = admin_username
+
+        result = await self.collection.find_one_and_update(
+            {"username": username},
+            {"$set": update_data},
+            return_document=True
+        )
+        if result:
+            return User(**result)
+        return None
+
+    async def admin_delete_user(
+        self,
+        username: str,
+        admin_username: str
+    ) -> bool:
+        """Admin level delete for users.
+        This method allows superusers to delete any user except themselves and external users."""
+        # Prevent admin from deleting themselves
+        if username == admin_username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Administrators cannot delete their own account"
+            )
+
+        # Check if user exists
+        user = await self.get_user_by_username(username)
+        if not user:
+            return False
+
+        # Check if user is an external user (empty hashed_password)
+        if not user.hashed_password:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="External users cannot be deleted, they are managed by the external auth system"
+            )
+
+        result = await self.collection.delete_one({"username": username})
+        return result.deleted_count > 0
