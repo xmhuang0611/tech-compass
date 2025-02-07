@@ -5,6 +5,7 @@ from utils.common import (
     initialize_page,
     format_datetime,
     show_error_message,
+    ADMIN_TITLE,
 )
 
 
@@ -77,14 +78,14 @@ def main():
     # Initialize page with common settings
     initialize_page("Home", "🧭", {})
 
-    st.title("Tech Compass Admin")
+    st.title(ADMIN_TITLE)
 
     # Welcome message with user's name
     user_name = get_current_user()
     welcome_msg = (
-        f"Welcome to Tech Compass Admin, {user_name}! 👋"
+        f"Welcome to {ADMIN_TITLE}, {user_name}! 👋"
         if user_name
-        else "Welcome to Tech Compass Admin! 👋"
+        else f"Welcome to {ADMIN_TITLE}! 👋"
     )
     st.markdown(welcome_msg)
 
