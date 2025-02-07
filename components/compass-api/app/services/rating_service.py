@@ -6,19 +6,21 @@ from fastapi import HTTPException, status
 
 from app.core.database import get_database
 from app.models.rating import RatingCreate, RatingInDB, Rating
+from app.services.user_service import UserService
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
 
 class RatingService:
     def __init__(self):
         self.db = get_database()
+        self.user_service = UserService()
 
     async def _convert_to_rating(self, rating_data: dict) -> Rating:
         """Private helper method to convert rating data to Rating model with full name"""
-        # Get user's full name from users collection
-        user = await self.db.users.find_one({"username": rating_data["username"]}, {"full_name": 1})
-        if user:
-            rating_data["full_name"] = user["full_name"]
+        # Get user's full name from user service
+        user_info = await self.user_service.get_user_info(rating_data["username"])
+        if user_info:
+            rating_data["full_name"] = user_info["full_name"]
         return Rating(**rating_data)
 
     async def get_ratings(

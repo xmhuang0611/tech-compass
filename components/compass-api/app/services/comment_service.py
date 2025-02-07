@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 
 from app.core.database import get_database
 from app.models.comment import CommentCreate, CommentInDB, Comment, CommentUpdate
+from app.services.user_service import UserService
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at'}
 
@@ -13,13 +14,14 @@ class CommentService:
     def __init__(self):
         self.db = get_database()
         self.collection = self.db.comments
+        self.user_service = UserService()
 
     async def _convert_to_comment(self, comment_data: dict) -> Comment:
         """Private helper method to convert comment data to Comment model with full name"""
-        # Get user's full name from users collection
-        user = await self.db.users.find_one({"username": comment_data["username"]}, {"full_name": 1})
-        if user:
-            comment_data["full_name"] = user["full_name"]
+        # Get user's full name from user service
+        user_info = await self.user_service.get_user_info(comment_data["username"])
+        if user_info:
+            comment_data["full_name"] = user_info["full_name"]
         return Comment(**comment_data)
 
     async def get_comments(
@@ -61,7 +63,24 @@ class CommentService:
         query = {"solution_slug": solution_slug}
         sort_field = sort_by
         cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
-        comments = [await self._convert_to_comment(comment) async for comment in cursor]
+        
+        # Convert to CommentInDB objects, using created_by as fallback for username
+        comments_in_db = []
+        async for comment in cursor:
+            # If username is missing, use created_by as fallback
+            if "username" not in comment:
+                comment["username"] = comment["created_by"]
+            comments_in_db.append(CommentInDB(**comment))
+        
+        # Then convert to Comment objects with user full names
+        comments = []
+        for comment in comments_in_db:
+            user_info = await self.user_service.get_user_info(comment.username)
+            comment_dict = comment.model_dump()
+            if user_info:
+                comment_dict["full_name"] = user_info["full_name"]
+            comments.append(Comment(**comment_dict))
+            
         total = await self.collection.count_documents(query)
         return comments, total
 
@@ -125,6 +144,7 @@ class CommentService:
         comment_dict = comment.model_dump()
         comment_dict.update({
             "solution_slug": solution_slug,
+            "username": username,
             "created_at": now,
             "updated_at": now,
             "created_by": username,

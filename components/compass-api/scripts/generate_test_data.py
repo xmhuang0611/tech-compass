@@ -146,7 +146,7 @@ class TestDataGenerator:
             'description': f'Technologies related to {category_name.lower()}',
             'radar_quadrant': category_info['quadrant']
         }
-        url = f'{BASE_URL}/api/categories'
+        url = f'{BASE_URL}/api/categories/'
         try:
             debug_request('POST', url, headers=headers, json=category_data)
             self.session.post(url, json=category_data, headers=headers)

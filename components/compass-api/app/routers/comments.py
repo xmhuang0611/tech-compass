@@ -37,7 +37,7 @@ async def get_solution_comments(
     )
     return StandardResponse.paginated(comments, total, skip, page_size)
 
-@router.post("/solution/{solution_slug}/comment", response_model=StandardResponse[CommentInDB])
+@router.post("/solution/{solution_slug}", response_model=StandardResponse[CommentInDB])
 async def create_comment(
     solution_slug: str,
     comment: CommentCreate,
@@ -61,7 +61,7 @@ async def create_comment(
     )
     return StandardResponse.of(result)
 
-@router.get("/solution/{solution_slug}/comments", response_model=StandardResponse[List[CommentInDB]])
+@router.get("/solution/{solution_slug}", response_model=StandardResponse[List[CommentInDB]])
 async def get_solution_comments(
     solution_slug: str,
     skip: int = 0,
