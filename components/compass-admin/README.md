@@ -43,6 +43,7 @@ Create a `.env` file in the root directory:
 ```bash
 # API Configuration
 API_BASE_URL=http://localhost:8000/api  # Replace with actual API URL
+ADMIN_TITLE=Tech Compass Admin          # Custom admin interface title
 ```
 
 ### 5. Launch Application

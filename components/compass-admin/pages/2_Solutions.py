@@ -3,12 +3,16 @@ from utils.auth import login
 from utils.api import APIClient
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import pandas as pd
+import os
 
 from utils.common import confirm_delete_dialog
 
+# Environment variables
+ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
+
 # Page configuration
 st.set_page_config(
-    page_title="Solutions - Tech Compass Admin", page_icon="💡", layout="wide"
+    page_title=f"Solutions - {ADMIN_TITLE}", page_icon="💡", layout="wide"
 )
 
 # Initialize session state

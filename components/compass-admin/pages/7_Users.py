@@ -2,6 +2,7 @@ import streamlit as st
 from utils.auth import login
 from utils.api import APIClient
 import pandas as pd
+import os
 from utils.common import (
     initialize_page_state,
     render_grid,
@@ -12,9 +13,12 @@ from utils.common import (
     format_dataframe_dates,
 )
 
+# Environment variables
+ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
+
 # Page configuration
 st.set_page_config(
-    page_title="Users - Tech Compass Admin",
+    page_title=f"Users - {ADMIN_TITLE}",
     page_icon="👥",
     layout="wide"
 )

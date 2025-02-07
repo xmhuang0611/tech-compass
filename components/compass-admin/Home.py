@@ -1,9 +1,13 @@
 import streamlit as st
 from utils.auth import login
 from utils.api import APIClient
+import os
+
+# Environment variables
+ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
 
 # Page configuration
-st.set_page_config(page_title="Tech Compass Admin", page_icon="🧭", layout="wide")
+st.set_page_config(page_title=ADMIN_TITLE, page_icon="🧭", layout="wide")
 
 # Initialize session state
 if "authenticated" not in st.session_state:

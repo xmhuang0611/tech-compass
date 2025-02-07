@@ -3,14 +3,16 @@ import streamlit as st
 import requests
 from typing import Optional
 
+# Environment variables
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api")
+ADMIN_TITLE = os.getenv("ADMIN_TITLE", "Tech Compass Admin")
 
 
 def login() -> None:
     """Display login form and handle authentication"""
 
     st.markdown(
-        "<h1 style='text-align: center;'>Tech Compass Admin</h1>",
+        f"<h1 style='text-align: center;'>{ADMIN_TITLE}</h1>",
         unsafe_allow_html=True,
     )
     # Center the login form
