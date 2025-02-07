@@ -32,7 +32,7 @@ def login() -> None:
 
 
 def check_auth(username: str, password: str) -> bool:
-    """Verify user credentials against the API"""
+    """Verify user credentials against the API and check if user is superuser"""
     try:
         headers = {
             "accept": "application/json",
@@ -55,8 +55,27 @@ def check_auth(username: str, password: str) -> bool:
         if response.status_code == 200:
             data = response.json()
             if data.get("access_token"):
-                st.session_state.token = data["access_token"]
-                return True
+                # Store the token temporarily
+                token = data["access_token"]
+                
+                # Check if user is superuser
+                headers = {
+                    "Authorization": f"Bearer {token}",
+                    "Accept": "application/json",
+                }
+                user_response = requests.get(f"{API_BASE_URL}/users/me", headers=headers)
+                
+                if user_response.status_code == 200:
+                    user_data = user_response.json()
+                    if user_data.get("success") and user_data.get("data", {}).get("is_superuser"):
+                        st.session_state.token = token
+                        return True
+                    else:
+                        st.error("Access denied. Only superusers can access the admin panel.")
+                        return False
+                else:
+                    st.error("Failed to verify user permissions")
+                    return False
             else:
                 st.error("Invalid response format from server")
         elif response.status_code == 422:
