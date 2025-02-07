@@ -109,17 +109,25 @@ async def update_user(
 @router.delete("/{username}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK)
 async def delete_user(
     username: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     user_service: UserService = Depends()
 ) -> Any:
-    """Delete a user by username."""
-    success = await user_service.delete_user_by_username(username)
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+    """Delete a user by username (superuser only)."""
+    try:
+        success = await user_service.admin_delete_user(
+            username=username,
+            admin_username=current_user.username
         )
-    return StandardResponse.of({"message": "User deleted successfully"})
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return StandardResponse.of({"message": "User deleted successfully"})
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/manage/{username}", response_model=StandardResponse[User])
 async def admin_update_user(

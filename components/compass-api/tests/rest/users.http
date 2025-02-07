@@ -112,8 +112,16 @@ Content-Type: application/json
 DELETE {{baseUrl}}/users/manage/testuser
 Authorization: Bearer {{adminToken}}
 
+### Try to delete user as non-superuser (should fail)
+DELETE {{baseUrl}}/users/testuser
+Authorization: Bearer {{userToken}}
+
+### Delete user as superuser
+DELETE {{baseUrl}}/users/testuser
+Authorization: Bearer {{adminToken}}
+
 ### Try to delete admin account (should fail)
-DELETE {{baseUrl}}/users/manage/admin
+DELETE {{baseUrl}}/users/admin
 Authorization: Bearer {{adminToken}}
 
 ### Admin: Create an external user
