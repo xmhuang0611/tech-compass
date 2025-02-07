@@ -5,13 +5,14 @@ from pymongo import DESCENDING, ASCENDING
 from fastapi import HTTPException, status
 
 from app.core.database import get_database
-from app.models.comment import CommentCreate, CommentInDB, Comment
+from app.models.comment import CommentCreate, CommentInDB, Comment, CommentUpdate
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at'}
 
 class CommentService:
     def __init__(self):
         self.db = get_database()
+        self.collection = self.db.comments
 
     async def _convert_to_comment(self, comment_data: dict) -> Comment:
         """Private helper method to convert comment data to Comment model with full name"""
@@ -42,9 +43,9 @@ class CommentService:
             raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Execute query with sort
-        cursor = self.db.comments.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+        cursor = self.collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
         comments = [await self._convert_to_comment(comment) async for comment in cursor]
-        total = await self.db.comments.count_documents({})
+        total = await self.collection.count_documents({})
         
         return comments, total
 
@@ -59,24 +60,58 @@ class CommentService:
         Comments are sorted by created_at in descending order (newest first)."""
         query = {"solution_slug": solution_slug}
         sort_field = sort_by
-        cursor = self.db.comments.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
+        cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
         comments = [await self._convert_to_comment(comment) async for comment in cursor]
-        total = await self.db.comments.count_documents(query)
+        total = await self.collection.count_documents(query)
         return comments, total
 
     async def get_comment_by_id(self, comment_id: str) -> Optional[Comment]:
         """Get a specific comment by ID"""
-        comment = await self.db.comments.find_one({"_id": ObjectId(comment_id)})
+        comment = await self.collection.find_one({"_id": ObjectId(comment_id)})
         if comment:
             return await self._convert_to_comment(comment)
         return None
+
+    async def _get_comment_or_404(self, comment_id: str) -> CommentInDB:
+        """Get a comment by ID or raise 404 if not found."""
+        try:
+            comment = await self.collection.find_one({"_id": ObjectId(comment_id)})
+            if not comment:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Comment not found"
+                )
+            return CommentInDB(**comment)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Invalid comment ID"
+            )
+
+    def check_comment_permission(
+        self,
+        comment: CommentInDB,
+        username: str,
+        is_superuser: bool
+    ) -> bool:
+        """Check if user has permission to modify the comment.
+        
+        Args:
+            comment: The comment to check
+            username: The username of the user
+            is_superuser: Whether the user is a superuser
+            
+        Returns:
+            True if user has permission, False otherwise
+        """
+        return is_superuser or comment.created_by == username
 
     async def create_comment(
         self,
         solution_slug: str,
         comment: CommentCreate,
         username: str
-    ) -> Comment:
+    ) -> CommentInDB:
         """Create a new comment"""
         # Check if solution exists
         solution = await self.db.solutions.find_one({"slug": solution_slug})
@@ -88,54 +123,68 @@ class CommentService:
 
         now = datetime.utcnow()
         comment_dict = comment.model_dump()
-        new_comment = {
+        comment_dict.update({
             "solution_slug": solution_slug,
-            "username": username,
-            "content": comment_dict["content"],
             "created_at": now,
-            "updated_at": now
-        }
-        await self.db.comments.insert_one(new_comment)
-        return Comment(**new_comment)
+            "updated_at": now,
+            "created_by": username,
+            "updated_by": username
+        })
+        result = await self.collection.insert_one(comment_dict)
+        comment_dict["_id"] = result.inserted_id
+        return CommentInDB(**comment_dict)
 
     async def update_comment(
         self,
         comment_id: str,
-        content: str,
-        username: str
-    ) -> Optional[Comment]:
-        """Update a comment's content"""
-        id = ObjectId(comment_id)
-        # First check if comment exists and verify ownership
-        existing_comment = await self.db.comments.find_one({"_id": id})
-        if not existing_comment:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Comment not found"
-            )
+        comment_update: CommentUpdate,
+        username: str,
+        is_superuser: bool
+    ) -> Optional[CommentInDB]:
+        """Update a comment.
+        Only the comment creator or superusers can update it."""
+        comment = await self._get_comment_or_404(comment_id)
         
-        if existing_comment["username"] != username:
+        # Check permission
+        if not self.check_comment_permission(comment, username, is_superuser):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="You don't have permission to update this comment"
             )
 
-        now = datetime.utcnow()
-        await self.db.comments.update_one(
-            {"_id": id, "username": username},  # Double-check ownership
-            {
-                "$set": {
-                    "content": content,
-                    "updated_at": now
-                }
-            }
-        )
-        return await self.get_comment_by_id(comment_id)
-
-    async def delete_comment(self, comment_id: str, username: str) -> bool:
-        """Delete a comment"""
-        result = await self.db.comments.delete_one({
-            "_id": ObjectId(comment_id),
-            "username": username  # Only allow deletion by comment author
+        update_dict = comment_update.model_dump(exclude_unset=True)
+        update_dict.update({
+            "updated_at": datetime.utcnow(),
+            "updated_by": username
         })
+
+        result = await self.collection.find_one_and_update(
+            {"_id": ObjectId(comment_id)},
+            {"$set": update_dict},
+            return_document=True
+        )
+        return CommentInDB(**result) if result else None
+
+    async def delete_comment(
+        self,
+        comment_id: str,
+        username: str,
+        is_superuser: bool
+    ) -> bool:
+        """Delete a comment.
+        Only the comment creator or superusers can delete it."""
+        comment = await self._get_comment_or_404(comment_id)
+        
+        # Check permission
+        if not self.check_comment_permission(comment, username, is_superuser):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to delete this comment"
+            )
+
+        result = await self.collection.delete_one({"_id": ObjectId(comment_id)})
         return result.deleted_count > 0
+
+    async def count_solution_comments(self, solution_slug: str) -> int:
+        """Get total number of comments for a solution."""
+        return await self.collection.count_documents({"solution_slug": solution_slug})

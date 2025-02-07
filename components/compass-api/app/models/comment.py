@@ -29,6 +29,10 @@ class CommentCreate(CommentBase):
     """Model for creating a comment"""
     pass
 
+class CommentUpdate(CommentBase):
+    """Model for updating a comment"""
+    content: Optional[str] = Field(None, min_length=1, max_length=1000, description="Updated comment content")
+
 class CommentInDB(CommentBase, AuditModel):
     """Model for comment in database"""
     solution_slug: str = Field(..., description="Slug of the solution this comment belongs to")

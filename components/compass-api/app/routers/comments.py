@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -6,7 +6,8 @@ from app.core.auth import get_current_active_user
 from app.models.response import StandardResponse
 from app.models.user import User
 from app.services.comment_service import CommentService
-from app.models.comment import CommentCreate, Comment
+from app.models.comment import CommentCreate, Comment, CommentUpdate, CommentInDB
+from app.services.solution_service import SolutionService
 
 router = APIRouter()
 
@@ -36,81 +37,100 @@ async def get_solution_comments(
     )
     return StandardResponse.paginated(comments, total, skip, page_size)
 
-@router.post("/solution/{solution_slug}", response_model=StandardResponse[Comment], status_code=status.HTTP_201_CREATED, tags=["comments"])
+@router.post("/solution/{solution_slug}/comment", response_model=StandardResponse[CommentInDB])
 async def create_comment(
     solution_slug: str,
     comment: CommentCreate,
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Create a new comment for a solution.
-    
-    - **solution_slug**: Unique identifier of the solution
-    - **comment**: Comment details including content
-    """
-    comment_service = CommentService()
-    try:
-        new_comment = await comment_service.create_comment(
-            solution_slug=solution_slug,
-            comment=comment,
-            username=current_user.username
-        )
-        return StandardResponse.of(new_comment)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating comment: {str(e)}"
-        )
-
-@router.put("/{comment_id}",
-            response_model=StandardResponse[Comment], 
-            tags=["comments"])
-async def update_comment(
-    comment_id: str,
-    comment: CommentCreate,
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Update a comment's content.
-    - **comment_id**: Unique identifier of the comment
-    - **comment**: Updated comment content
-    """
-    comment_service = CommentService()
-    updated_comment = await comment_service.update_comment(
-        comment_id=comment_id,
-        content=comment.content,
-        username=current_user.username
-    )
-    if not updated_comment:
+    current_user: User = Depends(get_current_active_user),
+    comment_service: CommentService = Depends(),
+    solution_service: SolutionService = Depends()
+) -> StandardResponse[CommentInDB]:
+    """Create a new comment on a solution."""
+    # Verify solution exists
+    solution = await solution_service.get_solution_by_slug(solution_slug)
+    if not solution:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Comment not found or you don't have permission to update it"
+            detail="Solution not found"
         )
-    return StandardResponse.of(updated_comment)
 
-@router.delete("/{comment_id}", 
-            status_code=status.HTTP_204_NO_CONTENT, 
-            tags=["comments"])
+    result = await comment_service.create_comment(
+        solution_slug=solution_slug,
+        comment=comment,
+        username=current_user.username
+    )
+    return StandardResponse.of(result)
+
+@router.get("/solution/{solution_slug}/comments", response_model=StandardResponse[List[CommentInDB]])
+async def get_solution_comments(
+    solution_slug: str,
+    skip: int = 0,
+    limit: int = 100,
+    comment_service: CommentService = Depends(),
+    solution_service: SolutionService = Depends()
+) -> StandardResponse[List[CommentInDB]]:
+    """Get all comments for a solution."""
+    # Verify solution exists
+    solution = await solution_service.get_solution_by_slug(solution_slug)
+    if not solution:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solution not found"
+        )
+
+    comments = await comment_service.get_solution_comments(
+        solution_slug=solution_slug,
+        skip=skip,
+        limit=limit
+    )
+    total = await comment_service.count_solution_comments(solution_slug)
+    return StandardResponse.paginated(
+        data=comments,
+        total=total,
+        skip=skip,
+        limit=limit
+    )
+
+@router.put("/{comment_id}", response_model=StandardResponse[CommentInDB])
+async def update_comment(
+    comment_id: str,
+    comment_update: CommentUpdate,
+    current_user: User = Depends(get_current_active_user),
+    comment_service: CommentService = Depends()
+) -> StandardResponse[CommentInDB]:
+    """Update a comment.
+    
+    Only the comment creator or superusers can update it.
+    """
+    result = await comment_service.update_comment(
+        comment_id=comment_id,
+        comment_update=comment_update,
+        username=current_user.username,
+        is_superuser=current_user.is_superuser
+    )
+    return StandardResponse.of(result)
+
+@router.delete("/{comment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_comment(
     comment_id: str,
-    current_user: User = Depends(get_current_active_user)
-):
-    """
-    Delete a comment.
+    current_user: User = Depends(get_current_active_user),
+    comment_service: CommentService = Depends()
+) -> None:
+    """Delete a comment.
     
-    - **comment_id**: Unique identifier of the comment
+    Only the comment creator or superusers can delete it.
     """
-    comment_service = CommentService()
     success = await comment_service.delete_comment(
         comment_id=comment_id,
-        username=current_user.username
+        username=current_user.username,
+        is_superuser=current_user.is_superuser
     )
     if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Comment not found or you don't have permission to delete it"
+            detail="Comment not found"
         )
-    return StandardResponse.of(None)
+
 @router.get("/", response_model=StandardResponse[list[Comment]], tags=["comments"])
 async def get_all_comments(
     page: int = Query(1, ge=1),
