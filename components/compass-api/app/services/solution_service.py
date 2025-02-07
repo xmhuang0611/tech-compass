@@ -608,3 +608,24 @@ class SolutionService:
             ]
         }
         return await self.collection.count_documents(query)
+
+    async def check_user_solution_permission(
+        self,
+        solution: SolutionInDB,
+        username: str,
+        is_superuser: bool
+    ) -> bool:
+        """Check if user has permission to modify the solution.
+        
+        Args:
+            solution: The solution to check
+            username: The username of the user
+            is_superuser: Whether the user is a superuser
+            
+        Returns:
+            True if user has permission, False otherwise
+        """
+        if is_superuser:
+            return True
+            
+        return solution.created_by == username or solution.maintainer_id == username

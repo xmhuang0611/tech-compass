@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Tuple
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
-from app.core.auth import get_current_active_user
+from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.solution import Solution, SolutionCreate, SolutionUpdate, SolutionInDB
 from app.models.user import User
 from app.models.response import StandardResponse
@@ -190,8 +190,31 @@ async def update_solution(
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> Any:
-    """Update a solution by slug."""
+    """Update a solution by slug.
+    
+    Only superusers or the solution's creator/maintainer can update it.
+    """
     try:
+        # Get existing solution first
+        existing_solution = await solution_service.get_solution_by_slug(slug)
+        if not existing_solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Solution not found"
+            )
+
+        # Check user permission
+        has_permission = await solution_service.check_user_solution_permission(
+            solution=existing_solution,
+            username=current_user.username,
+            is_superuser=current_user.is_superuser
+        )
+        if not has_permission:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to update this solution"
+            )
+
         # Check if review_status is being updated and user is not a superuser
         if solution_update.review_status is not None and not current_user.is_superuser:
             raise HTTPException(
@@ -200,11 +223,6 @@ async def update_solution(
             )
 
         solution_in_db = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
-        if not solution_in_db:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Solution not found"
-            )
         return StandardResponse.of(solution_in_db)
     except HTTPException as e:
         raise e
@@ -218,7 +236,30 @@ async def delete_solution(
     current_user: User = Depends(get_current_active_user),
     solution_service: SolutionService = Depends()
 ) -> None:
-    """Delete a solution by slug."""
+    """Delete a solution by slug.
+    
+    Only superusers or the solution's creator/maintainer can delete it.
+    """
+    # Get existing solution first
+    existing_solution = await solution_service.get_solution_by_slug(slug)
+    if not existing_solution:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Solution not found"
+        )
+
+    # Check user permission
+    has_permission = await solution_service.check_user_solution_permission(
+        solution=existing_solution,
+        username=current_user.username,
+        is_superuser=current_user.is_superuser
+    )
+    if not has_permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this solution"
+        )
+
     success = await solution_service.delete_solution_by_slug(slug)
     if not success:
         raise HTTPException(
@@ -247,13 +288,12 @@ async def check_solution_name(
 @router.delete("/by-name/{name}", status_code=status.HTTP_200_OK)
 async def delete_solutions_by_name(
     name: str,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     solution_service: SolutionService = Depends()
 ) -> Any:
     """Delete all solutions with the exact name (case-sensitive).
     
-    Returns:
-    - Number of solutions deleted
+    This endpoint is restricted to superusers only.
     """
     try:
         deleted_count = await solution_service.delete_solutions_by_name(name)
@@ -266,22 +306,14 @@ async def delete_solutions_by_name(
 async def update_solutions_by_name(
     name: str,
     solution_update: SolutionUpdate,
-    current_user: User = Depends(get_current_active_user),
+    current_user: User = Depends(get_current_superuser),
     solution_service: SolutionService = Depends()
 ) -> Any:
     """Update all solutions with the exact name (case-sensitive).
     
-    Returns:
-    - List of updated solutions
+    This endpoint is restricted to superusers only.
     """
     try:
-        # Check if review_status is being updated and user is not a superuser
-        if solution_update.review_status is not None and not current_user.is_superuser:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only superusers can modify the review status"
-            )
-
         # Check if any solutions exist with this name
         exists, _ = await solution_service.check_name_exists(name)
         if not exists:

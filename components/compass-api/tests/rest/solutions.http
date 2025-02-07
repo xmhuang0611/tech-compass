@@ -1,5 +1,6 @@
 @baseUrl = http://127.0.0.1:8000/api
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
 
 ### Get all solutions (basic)
 GET {{baseUrl}}/solutions
@@ -318,3 +319,86 @@ Authorization: Bearer {{token}}
 ### Try to get my solutions without authentication (should fail)
 GET {{baseUrl}}/solutions/my/
 Content-Type: application/json
+
+### Permission test cases
+
+### Try to update another user's solution (should fail)
+PUT {{baseUrl}}/solutions/other-user-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Try to update someone else's solution",
+    "brief": "This should fail"
+}
+
+### Try to delete another user's solution (should fail)
+DELETE {{baseUrl}}/solutions/other-user-solution
+Authorization: Bearer {{token}}
+
+### Try to update solutions by name without permission (should fail)
+PUT {{baseUrl}}/solutions/by-name/other-user-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Try to update someone else's solutions",
+    "brief": "This should fail"
+}
+
+### Try to delete solutions by name without permission (should fail)
+DELETE {{baseUrl}}/solutions/by-name/other-user-solution
+Authorization: Bearer {{token}}
+
+### Example error responses for permission checks:
+
+# Permission denied error
+# {
+#     "success": false,
+#     "error": "You don't have permission to update this solution"
+# }
+
+# Permission denied for review status
+# {
+#     "success": false,
+#     "error": "Only superusers can modify the review status"
+# }
+
+### Superuser-only endpoints test cases
+
+### Try to update solutions by name as non-superuser (should fail)
+PUT {{baseUrl}}/solutions/by-name/test-solution
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "description": "Try to update solutions by name as non-superuser",
+    "brief": "This should fail"
+}
+
+### Try to delete solutions by name as non-superuser (should fail)
+DELETE {{baseUrl}}/solutions/by-name/test-solution
+Authorization: Bearer {{token}}
+
+### Update solutions by name as superuser
+PUT {{baseUrl}}/solutions/by-name/test-solution
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "description": "Update all solutions with this name",
+    "brief": "Updated by superuser",
+    "review_status": "APPROVED"
+}
+
+### Delete solutions by name as superuser
+DELETE {{baseUrl}}/solutions/by-name/test-solution
+Authorization: Bearer {{adminToken}}
+
+### Example error responses for superuser-only endpoints:
+
+# Non-superuser access denied error
+# {
+#     "success": false,
+#     "error": "Not enough permissions"
+# }
