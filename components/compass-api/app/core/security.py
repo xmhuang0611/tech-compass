@@ -6,7 +6,7 @@ import jwt
 
 from app.core.config import settings
 from app.core.password import verify_password
-from app.models.user import UserInDB
+from app.models.user import UserInDB, UserCreate
 
 async def get_user_from_db(username: str) -> Optional[UserInDB]:
     """Get user from database without circular import."""
@@ -70,7 +70,6 @@ async def verify_credentials(username: str, password: str) -> bool:
                 user_service = UserService()
                 if not user:
                     # Create new user
-                    from app.models.user import UserCreate
                     user_create = UserCreate(
                         username=username,
                         password="",  # Empty password for external auth users
@@ -82,13 +81,12 @@ async def verify_credentials(username: str, password: str) -> bool:
                     await user_service.create_user(user_create)
                 else:
                     # Update existing user's info if changed
-                    from app.models.user import UserUpdate
                     if user.full_name != full_name or user.email != email:
-                        user_update = UserUpdate(
+                        await user_service.update_external_user(
+                            username=username,
                             full_name=full_name,
                             email=email
                         )
-                        await user_service.update_user_by_username(username, user_update, "system")
                 
                 return True
             except (ValueError, KeyError):

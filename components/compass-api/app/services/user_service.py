@@ -184,6 +184,30 @@ class UserService:
             return User(**result)
         return None
 
+    async def update_external_user(
+        self,
+        username: str,
+        full_name: str,
+        email: str
+    ) -> Optional[User]:
+        """System level update for external user information.
+        This method is used to update external user information during authentication."""
+        user_dict = {
+            "full_name": full_name,
+            "email": email,
+            "updated_at": datetime.utcnow(),
+            "updated_by": "system"
+        }
+
+        result = await self.collection.find_one_and_update(
+            {"username": username},
+            {"$set": user_dict},
+            return_document=True
+        )
+        if result:
+            return User(**result)
+        return None
+
     async def delete_user_by_username(self, username: str) -> bool:
         """Delete a user by username."""
         # Check if user exists first
