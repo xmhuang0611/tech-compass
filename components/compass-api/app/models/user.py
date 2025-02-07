@@ -12,8 +12,6 @@ class UserBase(BaseModel):
     email: EmailStr = Field(..., description="User's email address")
     username: str = Field(..., description="Username for login")
     full_name: str = Field(..., description="User's full name")
-    is_active: bool = Field(default=True, description="Whether the user is active")
-    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
 
     model_config = ConfigDict(
         from_attributes=True
@@ -22,15 +20,25 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """User creation model"""
     password: str = Field(..., description="User's password (will be hashed)")
+    is_active: bool = Field(default=True, description="Whether the user is active")
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
+
+class UserPasswordUpdate(BaseModel):
+    """User password update model"""
+    current_password: str = Field(..., description="Current password")
+    new_password: str = Field(..., description="New password")
 
 class UserUpdate(UserBase):
-    """User update model"""
+    """User update model - excludes sensitive fields"""
     pass
 
 class UserInDB(UserBase, AuditModel):
     """User model as stored in database"""
     hashed_password: str = Field(..., description="Hashed password")
+    is_active: bool = Field(default=True, description="Whether the user is active")
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
 
 class User(UserBase, AuditModel):
     """User model for API responses - excludes password fields"""
-    pass
+    is_active: bool = Field(default=True, description="Whether the user is active")
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")

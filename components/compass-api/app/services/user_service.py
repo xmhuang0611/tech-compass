@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from app.core.mongodb import get_database
 from app.core.password import get_password_hash, verify_password
-from app.models.user import User, UserCreate, UserUpdate, UserInDB
+from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserPasswordUpdate
 from app.core.config import settings
 
 
@@ -91,6 +91,53 @@ class UserService:
         user_dict["_id"] = result.inserted_id
         return User(**user_dict)
 
+    async def update_user_password(
+        self,
+        username: str,
+        password_update: UserPasswordUpdate,
+        current_username: str
+    ) -> bool:
+        """Update a user's password."""
+        # Only allow users to update their own password
+        if username != current_username:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only update your own password"
+            )
+
+        # Get existing user
+        existing_user = await self.get_user_by_username(username)
+        if not existing_user:
+            return False
+
+        # Check if user is an external user (empty hashed_password)
+        if not existing_user.hashed_password:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="External users cannot change their password"
+            )
+
+        # Verify current password
+        if not verify_password(password_update.current_password, existing_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect"
+            )
+
+        # Update password
+        new_hashed_password = get_password_hash(password_update.new_password)
+        result = await self.collection.update_one(
+            {"username": username},
+            {
+                "$set": {
+                    "hashed_password": new_hashed_password,
+                    "updated_at": datetime.utcnow(),
+                    "updated_by": current_username
+                }
+            }
+        )
+        return result.modified_count > 0
+
     async def update_user_by_username(
         self,
         username: str,
@@ -103,6 +150,20 @@ class UserService:
         if not existing_user:
             return None
 
+        # Only allow users to update their own information
+        if username != current_username:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only update your own information"
+            )
+
+        # Check if user is an external user (empty hashed_password)
+        if not existing_user.hashed_password:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="External users cannot update their information"
+            )
+
         user_dict = user_update.model_dump(exclude_unset=True)
         
         # Check username uniqueness if being updated
@@ -110,10 +171,6 @@ class UserService:
             other_user = await self.get_user_by_username(user_dict["username"])
             if other_user:
                 raise ValueError(f"Username '{user_dict['username']}' is already in use")
-
-        # Handle password update
-        if "password" in user_dict:
-            user_dict["hashed_password"] = get_password_hash(user_dict.pop("password"))
 
         user_dict["updated_at"] = datetime.utcnow()
         user_dict["updated_by"] = current_username

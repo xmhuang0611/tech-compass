@@ -3,7 +3,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.core.auth import get_current_active_user
-from app.models.user import User, UserCreate, UserUpdate
+from app.models.user import User, UserCreate, UserUpdate, UserPasswordUpdate
 from app.services.user_service import UserService
 from app.models.response import StandardResponse
 
@@ -59,6 +59,29 @@ async def get_user(
         )
     return StandardResponse.of(user)
 
+@router.put("/{username}/password", response_model=StandardResponse[dict])
+async def update_user_password(
+    username: str,
+    password_update: UserPasswordUpdate,
+    current_user: User = Depends(get_current_active_user),
+    user_service: UserService = Depends()
+) -> Any:
+    """Update a user's password."""
+    try:
+        success = await user_service.update_user_password(
+            username=username,
+            password_update=password_update,
+            current_username=current_user.username
+        )
+        if not success:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return StandardResponse.of({"message": "Password updated successfully"})
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.put("/{username}", response_model=StandardResponse[User])
 async def update_user(
     username: str,
@@ -66,7 +89,7 @@ async def update_user(
     current_user: User = Depends(get_current_active_user),
     user_service: UserService = Depends()
 ) -> Any:
-    """Update a user by username."""
+    """Update a user by username. Users can only update their own information."""
     try:
         user = await user_service.update_user_by_username(
             username=username,
