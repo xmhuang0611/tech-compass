@@ -249,18 +249,12 @@ class UserService:
         new_password: Optional[str] = None
     ) -> Optional[User]:
         """Admin level update for user information.
-        This method allows superusers to update all user fields including password."""
+        This method allows superusers to update all user fields including password.
+        For external users, only is_active and is_superuser fields can be updated."""
         # Get existing user
         existing_user = await self.get_user_by_username(username)
         if not existing_user:
             return None
-
-        # Check if user is an external user (empty hashed_password)
-        if not existing_user.hashed_password:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="External users cannot be modified, their information is managed by the external auth system"
-            )
 
         # Only include non-None fields in the update
         update_data = {}
@@ -272,14 +266,26 @@ class UserService:
             if other_user:
                 raise ValueError(f"Username '{user_dict['username']}' is already in use")
 
-        # Add all non-None fields to update_data
-        for field, value in user_dict.items():
-            if value is not None:
-                update_data[field] = value
+        # Check if user is an external user (empty hashed_password)
+        is_external = not existing_user.hashed_password
 
-        # Handle password update if provided
-        if new_password is not None:
-            update_data["hashed_password"] = get_password_hash(new_password)
+        if is_external:
+            # For external users, only allow updating is_active and is_superuser
+            allowed_fields = {"is_active", "is_superuser"}
+            for field in user_dict:
+                if field in allowed_fields:
+                    update_data[field] = user_dict[field]
+            if new_password is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Cannot set password for external users"
+                )
+        else:
+            # For local users, allow updating all fields
+            update_data = user_dict
+            # Handle password update if provided
+            if new_password is not None:
+                update_data["hashed_password"] = get_password_hash(new_password)
 
         if not update_data:
             # If no fields to update, return existing user

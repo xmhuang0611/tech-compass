@@ -155,14 +155,25 @@ Content-Type: application/json
     "new_password": "newpass"
 }
 
-### Admin: Try to update external user (should fail)
+### Admin: Update external user status (should succeed)
+PUT {{baseUrl}}/users/manage/external_user
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "is_active": false,
+    "is_superuser": true
+}
+
+### Admin: Try to update external user other fields (should fail)
 PUT {{baseUrl}}/users/manage/external_user
 Authorization: Bearer {{adminToken}}
 Content-Type: application/json
 
 {
     "email": "admin.external@example.com",
-    "is_active": false
+    "full_name": "Updated External User",
+    "password": "newpass"
 }
 
 ### Admin: Try to delete external user (should fail)
