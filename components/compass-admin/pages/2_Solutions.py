@@ -36,6 +36,7 @@ if not st.session_state.authenticated:
 RECOMMEND_STATUS_OPTIONS = ["ADOPT", "TRIAL", "ASSESS", "HOLD"]
 STAGE_OPTIONS = ["DEVELOPING", "UAT", "PRODUCTION", "DEPRECATED", "RETIRED"]
 ADOPTION_LEVEL_OPTIONS = ["PILOT", "TEAM", "DEPARTMENT", "ENTERPRISE", "INDUSTRY"]
+REVIEW_STATUS_OPTIONS = ["PENDING", "APPROVED", "REJECTED"]
 
 
 def load_categories():
@@ -128,11 +129,11 @@ def render_solution_form(solution_data):
         with col1:
             review_status = st.selectbox(
                 "Review Status",
-                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
+                options=[""] + REVIEW_STATUS_OPTIONS,
                 index=(
                     0
                     if not solution_data.get("review_status")
-                    else ["PENDING", "APPROVED", "REJECTED"].index(
+                    else REVIEW_STATUS_OPTIONS.index(
                         solution_data.get("review_status")
                     )
                     + 1
@@ -388,7 +389,7 @@ def render_add_solution_form():
         with col3:
             review_status = st.selectbox(
                 "Review Status",
-                options=[""] + ["PENDING", "APPROVED", "REJECTED"],
+                options=[""] + REVIEW_STATUS_OPTIONS,
                 help="Select review status",
             )
 
@@ -548,20 +549,26 @@ def main():
                     key="filter_category",
                 )
             with col2:
-                department = st.text_input("Department", key="filter_department")
+                review_status = st.selectbox(
+                    "Review Status",
+                    options=["All"] + REVIEW_STATUS_OPTIONS,
+                    key="filter_review_status"
+                )
             with col3:
-                stage = st.selectbox(
-                    "Stage", options=["All"] + STAGE_OPTIONS, key="filter_stage"
+                recommend_status = st.selectbox(
+                    "Recommend Status",
+                    options=["All"] + RECOMMEND_STATUS_OPTIONS,
+                    key="filter_recommend_status"
                 )
 
         # Load solutions with filters
         filters = {}
         if category != "All":
             filters["category"] = category
-        if department:
-            filters["department"] = department
-        if stage != "All":
-            filters["stage"] = stage
+        if review_status != "All":
+            filters["review_status"] = review_status
+        if recommend_status != "All":
+            filters["recommend_status"] = recommend_status
 
         # Get page from session state
         if "page" not in st.session_state:
