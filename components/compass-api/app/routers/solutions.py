@@ -136,6 +136,39 @@ async def search_solutions(
         logger.error(f"Error searching solutions: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error searching solutions: {str(e)}")
 
+@router.get("/my/", response_model=StandardResponse[List[Solution]])
+async def get_my_solutions(
+    skip: int = 0,
+    limit: int = 10,
+    sort: str = Query("name", description="Sort field (name, category, created_at, updated_at). Prefix with - for descending order"),
+    current_user: User = Depends(get_current_active_user),
+    solution_service: SolutionService = Depends()
+) -> Any:
+    """Get all solutions created by or maintained by the current user with pagination and sorting.
+    
+    Query Parameters:
+    - sort: Sort field (name, category, created_at, updated_at). Prefix with - for descending order
+    """
+    try:
+        solutions = await solution_service.get_user_solutions(
+            username=current_user.username,
+            skip=skip,
+            limit=limit,
+            sort=sort
+        )
+        total = await solution_service.count_user_solutions(current_user.username)
+        return StandardResponse.paginated(
+            data=solutions,
+            total=total,
+            skip=skip,
+            limit=limit
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error listing user solutions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing user solutions: {str(e)}")
+
 @router.get("/{slug}", response_model=StandardResponse[Solution])
 async def get_solution(
     slug: str,

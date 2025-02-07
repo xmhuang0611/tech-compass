@@ -299,3 +299,22 @@ Content-Type: application/json
 # {
 #     "detail": "Solution not found"
 # }
+
+### Get my solutions (default sort by name)
+GET {{baseUrl}}/solutions/my/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my solutions sorted by creation date (newest first)
+GET {{baseUrl}}/solutions/my/?sort=-created_at
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my solutions with pagination
+GET {{baseUrl}}/solutions/my/?skip=0&limit=5
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to get my solutions without authentication (should fail)
+GET {{baseUrl}}/solutions/my/
+Content-Type: application/json

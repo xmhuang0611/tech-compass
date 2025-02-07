@@ -543,3 +543,68 @@ class SolutionService:
             result.append(Solution(**solution))
             
         return result
+
+    async def get_user_solutions(
+        self,
+        username: str,
+        skip: int = 0,
+        limit: int = 100,
+        sort: str = "name"
+    ) -> List[Solution]:
+        """Get solutions created by or maintained by the user
+        
+        Args:
+            username: The username to get solutions for
+            skip: Number of solutions to skip
+            limit: Maximum number of solutions to return
+            sort: Sort field (name, category, created_at, updated_at)
+            
+        Returns:
+            List of solutions created by or maintained by the user
+        """
+        # Query for solutions where user is creator or maintainer
+        query = {
+            "$or": [
+                {"created_by": username},
+                {"maintainer_id": username}
+            ]
+        }
+
+        # Parse sort parameter
+        sort_field = "name"
+        sort_direction = ASCENDING
+
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        solutions = await cursor.to_list(length=limit)
+        
+        # Convert to Solution model and add ratings
+        result = []
+        for solution in solutions:
+            # Convert to dict to allow adding rating fields
+            solution_dict = solution
+            rating_summary = await self.rating_service.get_rating_summary(solution["slug"])
+            solution_dict["rating"] = rating_summary["average"]
+            solution_dict["rating_count"] = rating_summary["count"]
+            result.append(Solution(**solution_dict))
+            
+        return result
+
+    async def count_user_solutions(self, username: str) -> int:
+        """Get total number of solutions created by or maintained by the user"""
+        query = {
+            "$or": [
+                {"created_by": username},
+                {"maintainer_id": username}
+            ]
+        }
+        return await self.collection.count_documents(query)
