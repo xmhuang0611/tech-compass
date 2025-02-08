@@ -52,7 +52,7 @@
           <div class="action-buttons">
             <p-button 
               icon="pi pi-pencil" 
-              [routerLink]="['/manage/solutions/edit', solution.slug]"
+              (click)="editSolution(solution)"
               styleClass="p-button-text p-button-sm">
             </p-button>
             <p-button 

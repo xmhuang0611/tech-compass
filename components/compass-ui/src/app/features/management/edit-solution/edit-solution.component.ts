@@ -51,36 +51,18 @@ export class EditSolutionComponent implements OnInit {
 
   ngOnInit() {
     this.slug = this.route.snapshot.params["slug"];
-    this.loadSolution();
-  }
+    const solution = history.state.solution as Solution;
 
-  private loadSolution() {
-    this.loading = true;
-    this.solutionService.getMySolutions(0, 1).subscribe({
-      next: (response) => {
-        const solution = response.data.find((s) => s.slug === this.slug);
-        if (solution) {
-          this.solutionForm.patchValue(solution);
-        } else {
-          this.messageService.add({
-            severity: "error",
-            summary: "Error",
-            detail: "Solution not found",
-          });
-          this.router.navigate(["/manage/solutions"]);
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        console.error("Error loading solution:", error);
-        this.messageService.add({
-          severity: "error",
-          summary: "Error",
-          detail: "Failed to load solution",
-        });
-        this.loading = false;
-      },
-    });
+    if (solution) {
+      this.solutionForm.patchValue(solution);
+    } else {
+      this.messageService.add({
+        severity: "error",
+        summary: "Error",
+        detail: "No solution data provided",
+      });
+      this.router.navigate(["/manage/solutions"]);
+    }
   }
 
   onSubmit() {

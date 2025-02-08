@@ -1,5 +1,5 @@
 import { Component, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
+import { Router, ActivatedRoute } from "@angular/router";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { SolutionService } from "../../../core/services/solution.service";
 import { Solution } from "../../../shared/interfaces/solution.interface";
@@ -28,6 +28,7 @@ export class MySolutionsComponent implements OnInit {
   constructor(
     private solutionService: SolutionService,
     private router: Router,
+    private route: ActivatedRoute,
     private confirmationService: ConfirmationService,
     private messageService: MessageService
   ) {}
@@ -51,6 +52,12 @@ export class MySolutionsComponent implements OnInit {
         console.error("Error loading solutions:", error);
         this.loading = false;
       },
+    });
+  }
+
+  editSolution(solution: Solution) {
+    this.router.navigate(["/manage/solutions/edit", solution.slug], {
+      state: { solution },
     });
   }
 
@@ -98,12 +105,10 @@ export class MySolutionsComponent implements OnInit {
 
   getStatusSeverity(status: string): TagSeverity {
     const severityMap: { [key: string]: TagSeverity } = {
-      // Recommendation status
       ADOPT: "success",
       TRIAL: "info",
       ASSESS: "warning",
       HOLD: "danger",
-      // Review status
       PENDING: "warning",
       APPROVED: "success",
       REJECTED: "danger",
