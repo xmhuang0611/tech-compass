@@ -137,4 +137,50 @@
       border: 1px solid var(--surface-border);
     }
   }
+}
+
+::ng-deep {
+  .p-menu {
+    background: transparent;
+    border: none;
+    padding: 0;
+    width: 100%;
+
+    .p-menuitem {
+      margin-bottom: 0.25rem;
+
+      .p-menuitem-link {
+        padding: 0.75rem 1rem;
+        border-radius: var(--border-radius);
+        margin: 0 0.5rem;
+        transition: all 0.2s;
+
+        &.p-menuitem-link-active {
+          background: var(--primary-color);
+          
+          .p-menuitem-text,
+          .p-menuitem-icon {
+            color: var(--surface-card);
+          }
+        }
+
+        .p-menuitem-icon {
+          color: var(--text-color-secondary);
+          margin-right: 0.75rem;
+        }
+
+        .p-menuitem-text {
+          color: var(--text-color);
+        }
+
+        &:hover {
+          background: var(--surface-hover);
+        }
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+    }
+  }
 } 
