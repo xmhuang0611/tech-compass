@@ -174,7 +174,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
 
   loadComments(slug: string, loadMore = false) {
     if (!loadMore) {
-      this.commentsPage = 1;
+      this.commentsPage = 0;
       this.comments$.next([]);
       this.hasMoreComments = true;
     }
@@ -184,9 +184,10 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadingComments = true;
+    const skip = this.commentsPage * 10;
 
     this.commentService
-      .getSolutionComments(slug, this.commentsPage, 10)
+      .getSolutionComments(slug, skip, 10)
       .pipe(finalize(() => (this.loadingComments = false)))
       .subscribe({
         next: (response) => {

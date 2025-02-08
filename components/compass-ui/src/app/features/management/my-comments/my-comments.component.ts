@@ -37,11 +37,12 @@ import { ConfirmationService } from "primeng/api";
   providers: [MessageService, ConfirmationService],
 })
 export class MyCommentsComponent implements OnInit {
-  comments$ = new BehaviorSubject<Comment[]>([]);
+  comments: Comment[] = [];
   loading = false;
   totalRecords = 0;
   pageSize = 10;
-  currentPage = 1;
+  currentPage = 0;
+  rowsPerPageOptions: number[] = [5, 10, 20, 50];
 
   editDialogVisible = false;
   editingComment: Partial<Comment> = {};
@@ -56,26 +57,22 @@ export class MyCommentsComponent implements OnInit {
     this.loadComments();
   }
 
-  loadComments(resetPage = false) {
-    if (resetPage) {
-      this.currentPage = 1;
-    }
-
+  loadComments() {
     this.loading = true;
+    const skip = this.currentPage * this.pageSize;
+
     this.commentService
-      .getMyComments(this.currentPage, this.pageSize)
-      .pipe(finalize(() => (this.loading = false)))
+      .getMyComments(skip, this.pageSize)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+        })
+      )
       .subscribe({
         next: (response) => {
           if (response.success) {
-            this.comments$.next(response.data);
+            this.comments = response.data;
             this.totalRecords = response.total;
-
-            // If current page is empty (except first page) after deletion, go to previous page
-            if (response.data.length === 0 && this.currentPage > 1) {
-              this.currentPage--;
-              this.loadComments();
-            }
           }
         },
         error: (error) => {
@@ -88,9 +85,15 @@ export class MyCommentsComponent implements OnInit {
       });
   }
 
+  private resetAndReload() {
+    this.currentPage = 0;
+    this.comments = [];
+    this.loadComments();
+  }
+
   onPageChange(event: any) {
-    this.currentPage = event.first / event.rows + 1;
     this.pageSize = event.rows;
+    this.currentPage = Math.floor(event.first / event.rows);
     this.loadComments();
   }
 
@@ -104,6 +107,7 @@ export class MyCommentsComponent implements OnInit {
       return;
     }
 
+    this.loading = true;
     this.commentService
       .updateComment(this.editingComment._id, this.editingComment.content)
       .subscribe({
@@ -117,6 +121,7 @@ export class MyCommentsComponent implements OnInit {
             this.editDialogVisible = false;
             this.loadComments();
           }
+          this.loading = false;
         },
         error: (error) => {
           this.messageService.add({
@@ -124,6 +129,7 @@ export class MyCommentsComponent implements OnInit {
             summary: "Error",
             detail: error.error?.detail || "Failed to update comment",
           });
+          this.loading = false;
         },
       });
   }
@@ -137,40 +143,18 @@ export class MyCommentsComponent implements OnInit {
     });
   }
 
-  deleteComment(comment: Comment) {
+  private deleteComment(comment: Comment) {
+    this.loading = true;
+
     this.commentService.deleteComment(comment._id).subscribe({
       next: (response) => {
-        if (response.success) {
-          this.messageService.add({
-            severity: "success",
-            summary: "Success",
-            detail: "Comment deleted successfully",
-          });
-
-          // Check if this is the last item on the current page
-          const currentComments = this.comments$.value;
-          const isLastItemOnPage = currentComments.length === 1;
-          const isLastPage =
-            Math.ceil(this.totalRecords / this.pageSize) === this.currentPage;
-
-          if (isLastItemOnPage && isLastPage && this.currentPage > 1) {
-            // If it's the last item on the last page, go to previous page
-            this.currentPage--;
-          }
-
-          // Update current page data immediately
-          const updatedComments = currentComments.filter(
-            (c) => c._id !== comment._id
-          );
-          this.comments$.next(updatedComments);
-          this.totalRecords--;
-
-          // Reload data if current page is empty
-          if (updatedComments.length === 0 && this.currentPage > 1) {
-            this.currentPage--;
-            this.loadComments();
-          }
-        }
+        // 204 response will be null, which is expected for successful deletion
+        this.messageService.add({
+          severity: "success",
+          summary: "Success",
+          detail: "Comment deleted successfully",
+        });
+        this.loadComments();
       },
       error: (error) => {
         this.messageService.add({
@@ -178,6 +162,7 @@ export class MyCommentsComponent implements OnInit {
           summary: "Error",
           detail: error.error?.detail || "Failed to delete comment",
         });
+        this.loading = false;
       },
     });
   }

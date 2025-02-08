@@ -30,21 +30,21 @@ export class CommentService {
   // Get comments for a specific solution
   getSolutionComments(
     slug: string,
-    page: number = 1,
-    pageSize: number = 10
+    skip: number = 0,
+    limit: number = 10
   ): Observable<CommentResponse> {
     return this.http.get<CommentResponse>(
-      `${environment.apiUrl}/comments/solution/${slug}?page=${page}&page_size=${pageSize}`
+      `${environment.apiUrl}/comments/solution/${slug}?skip=${skip}&limit=${limit}`
     );
   }
 
   // Get my comments
   getMyComments(
-    page: number = 1,
-    pageSize: number = 10
+    skip: number = 0,
+    limit: number = 10
   ): Observable<CommentResponse> {
     return this.http.get<CommentResponse>(
-      `${environment.apiUrl}/comments/my/?page=${page}&page_size=${pageSize}`
+      `${environment.apiUrl}/comments/my/?skip=${skip}&limit=${limit}`
     );
   }
 
