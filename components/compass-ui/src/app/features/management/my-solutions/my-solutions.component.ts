@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
 import { Router, ActivatedRoute } from "@angular/router";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { SolutionService } from "../../../core/services/solution.service";
@@ -19,11 +19,14 @@ type TagSeverity =
   providers: [ConfirmationService, MessageService],
 })
 export class MySolutionsComponent implements OnInit {
+  @ViewChild("scrollContainer") scrollContainer!: ElementRef;
+
   solutions: Solution[] = [];
   totalRecords: number = 0;
   loading: boolean = true;
-  first: number = 0;
-  rows: number = 10;
+  pageSize: number = 10;
+  currentPage: number = 0;
+  rowsPerPageOptions: number[] = [5, 10, 20, 50];
 
   constructor(
     private solutionService: SolutionService,
@@ -37,16 +40,29 @@ export class MySolutionsComponent implements OnInit {
     this.loadSolutions();
   }
 
-  loadSolutions(event?: any) {
+  loadSolutions() {
     this.loading = true;
-    const skip = event?.first || 0;
-    const limit = event?.rows || this.rows;
+    const skip = this.currentPage * this.pageSize;
+    console.log("Loading solutions:", {
+      skip,
+      pageSize: this.pageSize,
+      currentPage: this.currentPage,
+    });
 
-    this.solutionService.getMySolutions(skip, limit).subscribe({
+    this.solutionService.getMySolutions(skip, this.pageSize).subscribe({
       next: (response) => {
+        console.log("Raw API response:", response);
         this.solutions = response.data;
-        this.totalRecords = response.total || 0;
+        this.totalRecords = response.total;
         this.loading = false;
+
+        console.log("Solutions loaded:", {
+          count: this.solutions.length,
+          totalRecords: this.totalRecords,
+          currentPage: this.currentPage,
+          response_total: response.total,
+          type_of_total: typeof response.total,
+        });
       },
       error: (error) => {
         console.error("Error loading solutions:", error);
@@ -55,16 +71,23 @@ export class MySolutionsComponent implements OnInit {
     });
   }
 
+  onPageChange(event: any) {
+    console.log("Page changed:", event);
+    this.pageSize = event.rows;
+    this.currentPage = Math.floor(event.first / event.rows);
+    this.loadSolutions();
+  }
+
+  private resetAndReload() {
+    this.currentPage = 0;
+    this.solutions = [];
+    this.loadSolutions();
+  }
+
   editSolution(solution: Solution) {
     this.router.navigate(["/manage/solutions/edit", solution.slug], {
       state: { solution },
     });
-  }
-
-  onPageChange(event: any) {
-    this.first = event.first;
-    this.rows = event.rows;
-    this.loadSolutions(event);
   }
 
   confirmDelete(solution: Solution) {
@@ -85,7 +108,7 @@ export class MySolutionsComponent implements OnInit {
           summary: "Success",
           detail: "Solution deleted successfully",
         });
-        this.loadSolutions();
+        this.resetAndReload();
       },
       error: (error) => {
         console.error("Error deleting solution:", error);
