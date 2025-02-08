@@ -11,6 +11,8 @@ import { DialogService } from "primeng/dynamicdialog";
 import { LoginDialogComponent } from "../../core/components/login-dialog/login-dialog.component";
 import { Solution } from "../../shared/interfaces/solution.interface";
 import { CommentService, Comment } from "../../core/services/comment.service";
+import { RatingService } from "../../core/services/rating.service";
+import type { Rating } from "../../core/services/rating.service";
 
 // PrimeNG Components
 import { BreadcrumbModule } from "primeng/breadcrumb";
@@ -34,15 +36,6 @@ type Severity =
   | "danger"
   | "secondary"
   | "contrast";
-
-interface Rating {
-  _id: string;
-  score: number;
-  comment?: string;
-  username: string;
-  full_name: string;
-  created_at: string;
-}
 
 @Component({
   selector: "app-solution-detail",
@@ -70,8 +63,8 @@ interface Rating {
 })
 export class SolutionDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private commentsPage = 1;
-  private ratingsPage = 1;
+  private commentsPage = 0;
+  private ratingsPage = 0;
 
   solution$ = new BehaviorSubject<Solution | null>(null);
   comments$ = new BehaviorSubject<Comment[]>([]);
@@ -98,7 +91,8 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private authService: AuthService,
     private dialogService: DialogService,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private ratingService: RatingService
   ) {}
 
   ngOnInit() {
@@ -212,7 +206,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
 
   loadRatings(slug: string, loadMore = false) {
     if (!loadMore) {
-      this.ratingsPage = 1;
+      this.ratingsPage = 0;
       this.ratings$.next([]);
       this.hasMoreRatings = true;
     }
@@ -222,11 +216,10 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     }
 
     this.loadingRatings = true;
+    const skip = this.ratingsPage * 10;
 
-    this.http
-      .get<any>(
-        `${environment.apiUrl}/ratings/solution/${slug}?page=${this.ratingsPage}&page_size=10`
-      )
+    this.ratingService
+      .getSolutionRatings(slug, skip, 10)
       .pipe(finalize(() => (this.loadingRatings = false)))
       .subscribe({
         next: (response) => {
@@ -304,11 +297,8 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.http
-      .post<any>(
-        `${environment.apiUrl}/ratings/solution/${slug}`,
-        this.newRating
-      )
+    this.ratingService
+      .addRating(slug, this.newRating.score, this.newRating.comment)
       .subscribe({
         next: (response) => {
           if (response.success) {

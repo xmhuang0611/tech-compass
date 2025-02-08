@@ -1,6 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { SolutionService } from "../../../core/services/solution.service";
 import { CommentService } from "../../../core/services/comment.service";
+import { RatingService } from "../../../core/services/rating.service";
 
 interface DashboardStats {
   solutions: number;
@@ -22,7 +23,8 @@ export class ManagementDashboardComponent implements OnInit {
 
   constructor(
     private solutionService: SolutionService,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private ratingService: RatingService
   ) {}
 
   ngOnInit() {
@@ -41,12 +43,22 @@ export class ManagementDashboardComponent implements OnInit {
     });
 
     // Load comments count
-    this.commentService.getMyComments(1, 1).subscribe({
+    this.commentService.getMyComments(0, 1).subscribe({
       next: (response) => {
         this.stats.comments = response.total || 0;
       },
       error: (error) => {
         console.error("Error loading comments count:", error);
+      },
+    });
+
+    // Load ratings count
+    this.ratingService.getMyRatings(0, 1).subscribe({
+      next: (response) => {
+        this.stats.ratings = response.total || 0;
+      },
+      error: (error) => {
+        console.error("Error loading ratings count:", error);
       },
     });
   }

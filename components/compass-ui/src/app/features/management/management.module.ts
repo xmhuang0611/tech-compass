@@ -22,6 +22,7 @@ import { ManagementDashboardComponent } from "./management-dashboard/management-
 import { MySolutionsComponent } from "./my-solutions/my-solutions.component";
 import { EditSolutionComponent } from "./edit-solution/edit-solution.component";
 import { MyCommentsComponent } from "./my-comments/my-comments.component";
+import { MyRatingsComponent } from "./my-ratings/my-ratings.component";
 
 const routes: Routes = [
   {
@@ -53,6 +54,11 @@ const routes: Routes = [
         component: MyCommentsComponent,
         data: { breadcrumb: "My Comments" },
       },
+      {
+        path: "my-ratings",
+        component: MyRatingsComponent,
+        data: { breadcrumb: "My Ratings" },
+      },
     ],
   },
 ];
@@ -80,6 +86,7 @@ const routes: Routes = [
     EditSolutionComponent,
     MySolutionsComponent,
     MyCommentsComponent,
+    MyRatingsComponent,
   ],
 })
 export class ManagementModule {}
