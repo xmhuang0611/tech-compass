@@ -13,6 +13,18 @@
     &:hover {
       text-decoration: underline;
     }
+
+    .truncate {
+      max-width: 300px;
+    }
+  }
+
+  .truncate {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
   }
 
   .categories-cell {
@@ -48,6 +60,10 @@
   ::ng-deep {
     .p-tag {
       text-transform: capitalize;
+    }
+
+    td {
+      vertical-align: middle;
     }
   }
 } 

@@ -29,10 +29,12 @@
       <tr>
         <td>
           <a [routerLink]="['/solutions', solution.slug]" class="solution-link">
-            {{ solution.name }}
+            <span class="truncate" [title]="solution.name">{{ solution.name }}</span>
           </a>
         </td>
-        <td>{{ solution.category }}</td>
+        <td>
+          <span class="truncate" [title]="solution.category">{{ solution.category }}</span>
+        </td>
         <td>
           <p-tag
             [value]="solution.recommend_status"
