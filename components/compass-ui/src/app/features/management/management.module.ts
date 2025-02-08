@@ -56,7 +56,6 @@ const routes: Routes = [
     ManagementLayoutComponent,
     ManagementDashboardComponent,
     MySolutionsComponent,
-    EditSolutionComponent,
   ],
   imports: [
     CommonModule,
@@ -76,6 +75,7 @@ const routes: Routes = [
     DropdownModule,
     InputNumberModule,
     ChipsModule,
+    EditSolutionComponent,
   ],
 })
 export class ManagementModule {}

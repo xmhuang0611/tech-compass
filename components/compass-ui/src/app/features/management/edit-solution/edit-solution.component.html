@@ -1,124 +1,185 @@
 <div class="edit-solution">
   <h1>Edit Solution</h1>
-
+  
+  <p-messages></p-messages>
+  
   <form [formGroup]="solutionForm" (ngSubmit)="onSubmit()" class="p-fluid">
-    <p-card>
-      <div class="form-grid">
-        <div class="field col-12 md:col-6">
-          <label for="name">Name*</label>
-          <input id="name" type="text" pInputText formControlName="name">
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="pi pi-info-circle"></i> Basic Information</h3>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="name">Solution Name *</label>
+          <input id="name" type="text" pInputText formControlName="name" />
         </div>
-
-        <div class="field col-12">
-          <label for="brief">Brief Description*</label>
-          <textarea id="brief" pInputTextarea formControlName="brief" [rows]="3"></textarea>
+        <div class="form-field">
+          <label for="category">Category *</label>
+          <p-dropdown id="category" [options]="categories" formControlName="category" optionLabel="name" optionValue="name" [style]="{'width':'100%'}" placeholder="Select a category"></p-dropdown>
         </div>
-
-        <div class="field col-12">
-          <label for="description">Full Description*</label>
-          <textarea id="description" pInputTextarea formControlName="description" [rows]="6"></textarea>
+        <div class="form-field">
+          <label for="logo">Logo URL</label>
+          <input id="logo" type="text" pInputText formControlName="logo" placeholder="Enter logo path or URL" />
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="category">Category*</label>
-          <input id="category" type="text" pInputText formControlName="category">
+      </div>
+      <div class="form-row">
+        <div class="form-field one-third">
+          <label for="version">Version *</label>
+          <input id="version" type="text" pInputText formControlName="version" />
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="department">Department*</label>
-          <input id="department" type="text" pInputText formControlName="department">
+        <div class="form-field two-thirds">
+          <label for="tags">Tags</label>
+          <p-chips 
+            id="tags" 
+            formControlName="tags"
+            placeholder="Enter a tag and press Enter"
+            [addOnBlur]="true"
+            [separator]="','"
+            [allowDuplicate]="false">
+          </p-chips>
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="team">Team*</label>
-          <input id="team" type="text" pInputText formControlName="team">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="brief">Brief Description * (max 200 characters)</label>
+          <textarea id="brief" pInputTextarea formControlName="brief" [rows]="2" [maxlength]="200"
+            placeholder="Enter a brief description of your solution"></textarea>
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="team_email">Team Email*</label>
-          <input id="team_email" type="email" pInputText formControlName="team_email">
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="description">Description *</label>
+          <textarea id="description" pInputTextarea formControlName="description" [rows]="5" [autoResize]="true"
+            placeholder="Please provide a detailed description of the solution, including its main features, use cases, and any special requirements."></textarea>
         </div>
+      </div>
+    </div>
 
-        <div class="field col-12 md:col-6">
-          <label for="maintainer_name">Maintainer Name*</label>
-          <input id="maintainer_name" type="text" pInputText formControlName="maintainer_name">
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="pi pi-users"></i> Maintainer Information</h3>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="department">Department *</label>
+          <p-dropdown id="department" [options]="departments" formControlName="department" [style]="{'width':'100%'}" placeholder="Select a department"></p-dropdown>
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="maintainer_email">Maintainer Email*</label>
-          <input id="maintainer_email" type="email" pInputText formControlName="maintainer_email">
+        <div class="form-field">
+          <label for="team">Team Name *</label>
+          <input id="team" type="text" pInputText formControlName="team" />
         </div>
+        <div class="form-field">
+          <label for="team_email">Team Email *</label>
+          <input id="team_email" type="email" pInputText formControlName="team_email" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="maintainer_id">Maintainer ID *</label>
+          <input id="maintainer_id" type="text" pInputText formControlName="maintainer_id" />
+        </div>
+        <div class="form-field">
+          <label for="maintainer_name">Maintainer Name *</label>
+          <input id="maintainer_name" type="text" pInputText formControlName="maintainer_name" />
+        </div>
+        <div class="form-field">
+          <label for="maintainer_email">Maintainer Email *</label>
+          <input id="maintainer_email" type="email" pInputText formControlName="maintainer_email" />
+        </div>
+      </div>
+    </div>
 
-        <div class="field col-12 md:col-6">
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="pi pi-link"></i> Links & Resources</h3>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
           <label for="official_website">Official Website</label>
-          <input id="official_website" type="url" pInputText formControlName="official_website">
+          <input id="official_website" type="url" pInputText formControlName="official_website" placeholder="https://" />
         </div>
-
-        <div class="field col-12 md:col-6">
+        <div class="form-field">
           <label for="documentation_url">Documentation URL</label>
-          <input id="documentation_url" type="url" pInputText formControlName="documentation_url">
+          <input id="documentation_url" type="url" pInputText formControlName="documentation_url" placeholder="https://" />
         </div>
-
-        <div class="field col-12 md:col-6">
+        <div class="form-field">
           <label for="demo_url">Demo URL</label>
-          <input id="demo_url" type="url" pInputText formControlName="demo_url">
+          <input id="demo_url" type="url" pInputText formControlName="demo_url" placeholder="https://" />
         </div>
+      </div>
+    </div>
 
-        <div class="field col-12 md:col-6">
-          <label for="version">Version</label>
-          <input id="version" type="text" pInputText formControlName="version">
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="pi pi-chart-bar"></i> Status Information</h3>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="stage">Development Stage *</label>
+          <p-dropdown id="stage" [options]="stageOptions" formControlName="stage" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select stage"></p-dropdown>
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="adoption_level">Adoption Level*</label>
-          <p-dropdown id="adoption_level" 
-            [options]="['PILOT', 'TEAM', 'DEPARTMENT', 'ENTERPRISE', 'INDUSTRY']"
-            formControlName="adoption_level"
-            placeholder="Select adoption level">
+        <div class="form-field">
+          <label for="recommend_status">
+            Recommend Status * 
+            <span class="admin-note">(Admin only)</span>
+          </label>
+          <p-dropdown id="recommend_status" 
+            [options]="recommendStatusOptions" 
+            formControlName="recommend_status" 
+            optionLabel="label" 
+            optionValue="value" 
+            [style]="{'width':'100%'}" 
+            placeholder="Select status"
+            [disabled]="true">
           </p-dropdown>
         </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="adoption_user_count">User Count*</label>
-          <p-inputNumber id="adoption_user_count" 
-            formControlName="adoption_user_count"
-            [min]="0"
-            [showButtons]="false">
-          </p-inputNumber>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="adoption_level">Adoption Level *</label>
+          <p-dropdown id="adoption_level" [options]="adoptionLevelOptions" formControlName="adoption_level" optionLabel="label" optionValue="value" [style]="{'width':'100%'}" placeholder="Select adoption level"></p-dropdown>
         </div>
-
-        <div class="field col-12">
-          <label for="tags">Tags</label>
-          <p-chips id="tags" formControlName="tags"></p-chips>
-        </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="pros">Pros</label>
-          <p-chips id="pros" formControlName="pros"></p-chips>
-        </div>
-
-        <div class="field col-12 md:col-6">
-          <label for="cons">Cons</label>
-          <p-chips id="cons" formControlName="cons"></p-chips>
+        <div class="form-field">
+          <label for="adoption_user_count">Estimated User Count *</label>
+          <p-inputNumber id="adoption_user_count" formControlName="adoption_user_count" [min]="0" placeholder="Enter number of users"></p-inputNumber>
         </div>
       </div>
+    </div>
 
-      <div class="form-actions">
-        <p-button 
-          label="Cancel" 
-          styleClass="p-button-text" 
-          type="button"
-          [routerLink]="['/manage/solutions']">
-        </p-button>
-        <p-button 
-          label="Save Changes" 
-          type="submit"
-          [loading]="loading"
-          [disabled]="!solutionForm.valid || loading">
-        </p-button>
+    <div class="section-card">
+      <div class="section-header">
+        <h3><i class="pi pi-list"></i> Pros & Cons</h3>
       </div>
-    </p-card>
+      <div class="form-row">
+        <div class="form-field">
+          <label for="pros">Pros *</label>
+          <textarea id="pros" pInputTextarea formControlName="pros" [rows]="5" [autoResize]="true"
+            placeholder="Enter one advantage per line. For example:&#10;Easy to use&#10;Good performance&#10;Well documented"></textarea>
+        </div>
+        <div class="form-field">
+          <label for="cons">Cons *</label>
+          <textarea id="cons" pInputTextarea formControlName="cons" [rows]="5" [autoResize]="true"
+            placeholder="Enter one disadvantage per line. For example:&#10;High learning curve&#10;Limited customization&#10;Complex setup"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <p-button 
+        type="button"
+        label="Cancel"
+        icon="pi pi-times"
+        styleClass="p-button-text"
+        [routerLink]="['/manage/solutions']">
+      </p-button>
+      <p-button 
+        type="submit"
+        label="Save Changes"
+        icon="pi pi-check"
+        [loading]="loading"
+        [disabled]="!solutionForm.valid || loading"
+        styleClass="p-button-primary">
+      </p-button>
+    </div>
   </form>
-
-  <p-toast></p-toast>
 </div> 

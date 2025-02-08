@@ -1,32 +1,94 @@
 .edit-solution {
+  padding: 1rem;
+
   h1 {
-    margin: 0 0 2rem;
+    margin: 0 0 1.5rem;
     font-size: 1.5rem;
     font-weight: 600;
   }
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 1.5rem;
+  .section-card {
+    background: #fff;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 
-    .field {
+    .section-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e9ecef;
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+          font-size: 1.2rem;
+          color: #6366f1;
+        }
+      }
+    }
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+
+    &:last-child {
       margin-bottom: 0;
+    }
 
-      &.col-12 {
-        grid-column: span 12;
+    .form-field {
+      flex: 1;
+      min-width: 0; // 防止flex子项溢出
+
+      &.one-third {
+        flex: 0 0 calc(33.333% - 0.667rem);
       }
 
-      &.md\:col-6 {
-        @media (min-width: 768px) {
-          grid-column: span 6;
-        }
+      &.two-thirds {
+        flex: 0 0 calc(66.667% - 0.333rem);
       }
 
       label {
         display: block;
         margin-bottom: 0.5rem;
+        color: #495057;
         font-weight: 500;
+        font-size: 0.875rem;
+
+        .admin-note {
+          font-size: 0.75rem;
+          color: #6c757d;
+          font-weight: normal;
+          font-style: italic;
+          margin-left: 0.5rem;
+        }
+
+        &::after {
+          content: "*";
+          color: #e24c4c;
+          margin-left: 0.25rem;
+        }
+
+        &:not([for$="*"])::after {
+          display: none;
+        }
+      }
+
+      input, textarea {
+        width: 100%;
+      }
+
+      textarea {
+        resize: vertical;
       }
     }
   }
@@ -36,23 +98,37 @@
     justify-content: flex-end;
     gap: 1rem;
     margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--surface-border);
   }
 
+  // PrimeNG 组件样式覆盖
   ::ng-deep {
-    .p-inputtext,
-    .p-dropdown,
+    .p-dropdown {
+      width: 100%;
+    }
+
     .p-inputnumber {
       width: 100%;
     }
 
     .p-chips {
       width: 100%;
-
+      
       .p-chips-multiple-container {
         width: 100%;
+        min-height: 2.5rem;
+        padding: 0.25rem 0.5rem;
       }
+    }
+
+    .p-inputtextarea {
+      resize: vertical;
+    }
+
+    // 必填字段标记
+    .p-float-label label.required::after {
+      content: "*";
+      color: #e24c4c;
+      margin-left: 0.25rem;
     }
   }
 } 
