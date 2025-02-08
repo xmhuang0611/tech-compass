@@ -97,6 +97,15 @@
   [modal]="true"
   [style]="{ width: '50vw' }">
   <div class="edit-rating-form">
+    <div class="solution-field">
+      <label>Solution</label>
+      <div class="solution-slug">
+        <a [routerLink]="['/solutions', editingRating.solution_slug]" target="_blank">
+          <i class="pi pi-external-link"></i>
+          {{ editingRating.solution_slug }}
+        </a>
+      </div>
+    </div>
     <div class="rating-field">
       <label>Rating</label>
       <p-rating
