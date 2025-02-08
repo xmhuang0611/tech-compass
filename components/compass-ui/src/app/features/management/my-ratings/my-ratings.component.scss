@@ -9,14 +9,15 @@
     font-size: 1.5rem;
     font-weight: 600;
     flex: none;
+    color: var(--text-color);
   }
 
   .ratings-table-container {
     position: relative;
     flex: 1;
     min-height: 0;
-    border-radius: 6px;
-    background: #fff;
+    border-radius: var(--border-radius);
+    background: var(--surface-card);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 
@@ -25,13 +26,13 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--surface-card);
     padding: 1rem;
-    border-top: 1px solid #e9ecef;
+    border-top: 1px solid var(--surface-border);
   }
 
   .solution-link {
-    color: #2196F3;
+    color: var(--primary-color);
     text-decoration: none;
     
     &:hover {
@@ -61,7 +62,7 @@
     flex-direction: column;
     align-items: center;
     padding: 2rem;
-    color: #6c757d;
+    color: var(--text-color-secondary);
 
     i {
       font-size: 2rem;
@@ -78,7 +79,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    color: #6c757d;
+    color: var(--text-color-secondary);
 
     i {
       font-size: 1.2rem;
@@ -98,8 +99,8 @@
       }
 
       .p-datatable-thead > tr > th {
-        background: #f8f9fa;
-        color: #495057;
+        background: var(--surface-ground);
+        color: var(--text-color);
         font-weight: 600;
         padding: 1rem;
         position: sticky;
@@ -109,11 +110,12 @@
 
       .p-datatable-tbody > tr > td {
         padding: 1rem;
+        color: var(--text-color);
       }
 
       &.p-datatable-hoverable-rows {
         .p-datatable-tbody > tr:not(.p-highlight):hover {
-          background: #f8f9fa;
+          background: var(--surface-ground);
         }
       }
     }
@@ -163,28 +165,28 @@
     label {
       display: block;
       margin-bottom: 0.5rem;
-      color: #495057;
+      color: var(--text-color);
       font-weight: 500;
     }
   }
 
   .solution-slug {
-    color: #495057;
+    color: var(--text-color);
     font-family: monospace;
-    background: #f8f9fa;
+    background: var(--surface-ground);
     padding: 0.5rem;
-    border-radius: 4px;
-    border: 1px solid #e9ecef;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--surface-border);
 
     a {
-      color: #2196F3;
+      color: var(--primary-color);
       text-decoration: none;
       display: flex;
       align-items: center;
       gap: 0.5rem;
       
       &:hover {
-        color: #1976D2;
+        color: var(--primary-color);
         text-decoration: none;
       }
 
