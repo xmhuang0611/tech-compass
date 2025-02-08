@@ -47,10 +47,10 @@ export class AuthInterceptor implements HttpInterceptor {
       return true;
     }
 
-    // Add token for all POST and PUT requests
+    // Add token for all POST, PUT and DELETE requests
     if (
       url.startsWith(this.apiUrl) &&
-      (method === "post" || method === "put")
+      (method === "post" || method === "put" || method === "delete")
     ) {
       return true;
     }
