@@ -20,9 +20,10 @@
         <tr>
           <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
           <th>Category</th>
-          <th>Recommendation</th>
-          <th>Review Status</th>
-          <th>Updated At</th>
+          <th>Rating</th>
+          <th>Recommend</th>
+          <th>Review</th>
+          <th>Updated On</th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -35,7 +36,18 @@
             </a>
           </td>
           <td>
-            <span class="truncate" [title]="solution.category">{{ solution.category }}</span>
+            <span class="truncate category" [title]="solution.category">{{ solution.category }}</span>
+          </td>
+          <td>
+            <div class="rating-info">
+              <p-rating 
+                [ngModel]="solution.rating" 
+                [readonly]="true" 
+                [stars]="5" 
+                [cancel]="false">
+              </p-rating>
+              <span class="rating-count">({{ solution.rating_count || 0 }})</span>
+            </div>
           </td>
           <td>
             <p-tag

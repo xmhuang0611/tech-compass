@@ -1,8 +1,16 @@
 import { Component, OnInit, ViewChild, ElementRef } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { RouterModule } from "@angular/router";
+import { FormsModule } from "@angular/forms";
 import { Router, ActivatedRoute } from "@angular/router";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { SolutionService } from "../../../core/services/solution.service";
 import { Solution } from "../../../shared/interfaces/solution.interface";
+import { RatingModule } from "primeng/rating";
+import { TableModule } from "primeng/table";
+import { ButtonModule } from "primeng/button";
+import { TagModule } from "primeng/tag";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 
 type TagSeverity =
   | "success"
@@ -17,6 +25,17 @@ type TagSeverity =
   templateUrl: "./my-solutions.component.html",
   styleUrls: ["./my-solutions.component.scss"],
   providers: [ConfirmationService, MessageService],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    RatingModule,
+    TableModule,
+    ButtonModule,
+    TagModule,
+    ConfirmDialogModule,
+  ],
+  standalone: true,
 })
 export class MySolutionsComponent implements OnInit {
   @ViewChild("scrollContainer") scrollContainer!: ElementRef;

@@ -45,6 +45,10 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
+
+    &.category {
+      max-width: 150px;
+    }
   }
 
   .action-buttons {
@@ -93,6 +97,31 @@
     ::ng-deep .p-chip {
       background: var(--primary-50);
       color: var(--primary-700);
+      font-size: 0.875rem;
+    }
+  }
+
+  .rating-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    ::ng-deep {
+      .p-rating {
+        .p-rating-icon {
+          color: #FFA41C;
+          font-size: 1rem;
+          margin-right: 0.1rem;
+
+          &.p-rating-icon-active {
+            color: #FFA41C;
+          }
+        }
+      }
+    }
+
+    .rating-count {
+      color: #6C757D;
       font-size: 0.875rem;
     }
   }

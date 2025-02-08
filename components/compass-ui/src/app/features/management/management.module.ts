@@ -52,11 +52,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  declarations: [
-    ManagementLayoutComponent,
-    ManagementDashboardComponent,
-    MySolutionsComponent,
-  ],
+  declarations: [ManagementLayoutComponent, ManagementDashboardComponent],
   imports: [
     CommonModule,
     RouterModule.forChild(routes),
@@ -76,6 +72,7 @@ const routes: Routes = [
     InputNumberModule,
     ChipsModule,
     EditSolutionComponent,
+    MySolutionsComponent,
   ],
 })
 export class ManagementModule {}
