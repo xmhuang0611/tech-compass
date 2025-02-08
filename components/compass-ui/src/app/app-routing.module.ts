@@ -3,6 +3,7 @@ import { RouterModule, Routes, TitleStrategy } from "@angular/router";
 import { Title } from "@angular/platform-browser";
 import { Injectable } from "@angular/core";
 import { siteConfig } from "./core/config/site.config";
+import { AuthGuard } from "./core/guards/auth.guard";
 
 @Injectable()
 class CustomTitleStrategy extends TitleStrategy {
@@ -79,6 +80,7 @@ const routes: Routes = [
       {
         path: "manage",
         title: "Manage Content",
+        canActivate: [AuthGuard],
         loadChildren: () =>
           import("./features/management/management.module").then(
             (m) => m.ManagementModule
