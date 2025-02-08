@@ -108,25 +108,27 @@
 
     ::ng-deep {
       .p-rating {
-        .p-rating-icon {
-          color: #FFA41C;
+        .p-rating-item {
           font-size: 1rem;
-          margin-right: 0.1rem;
           cursor: default;
 
-          &.p-rating-icon-active {
-            color: #FFA41C;
+          .p-rating-icon {
+            color: var(--rating-star-color);
+            font-size: 1rem;
+            cursor: default;
+
+            &.pi-star {
+              color: var(--rating-star-color);
+            }
+
+            &.pi-star-fill {
+              color: var(--rating-star-color);
+            }
           }
 
           &:hover {
-            color: inherit !important;
-          }
-        }
-
-        &:not(.p-disabled):not(.p-readonly) {
-          .p-rating-icon {
-            &:hover {
-              color: inherit !important;
+            .p-rating-icon {
+              color: var(--rating-star-color);
             }
           }
         }
@@ -134,8 +136,9 @@
     }
 
     .rating-count {
-      color: #6C757D;
-      font-size: 0.875rem;
+      font-size: 0.75rem;
+      color: var(--text-color-secondary);
+      opacity: 0.8;
     }
   }
 

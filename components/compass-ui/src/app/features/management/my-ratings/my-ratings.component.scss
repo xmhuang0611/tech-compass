@@ -123,27 +123,27 @@
     }
 
     .p-rating {
-      .p-rating-icon {
-        color: var(--rating-star-color);
+      .p-rating-item {
         font-size: 1rem;
-        margin-right: 0.1rem;
         cursor: default;
 
-        &.p-rating-icon-active {
+        .p-rating-icon {
           color: var(--rating-star-color);
+          font-size: 1rem;
+          cursor: default;
+
+          &.pi-star {
+            color: var(--rating-star-color);
+          }
+
+          &.pi-star-fill {
+            color: var(--rating-star-color);
+          }
         }
 
         &:hover {
-          color: var(--rating-star-color) !important;
-        }
-      }
-
-      &:not(.p-disabled):not(.p-readonly) {
-        .p-rating-icon {
-          cursor: default;
-          
-          &:hover {
-            color: var(--rating-star-color) !important;
+          .p-rating-icon {
+            color: var(--rating-star-color);
           }
         }
       }
@@ -196,13 +196,63 @@
 
   ::ng-deep {
     .p-rating {
-      .p-rating-icon {
-        color: var(--rating-star-color);
+      .p-rating-item {
         font-size: 1rem;
-        margin-right: 0.1rem;
+        cursor: default;
 
-        &.p-rating-icon-active {
+        .p-rating-icon {
           color: var(--rating-star-color);
+          font-size: 1rem;
+          cursor: default;
+
+          &.pi-star {
+            color: var(--rating-star-color);
+          }
+
+          &.pi-star-fill {
+            color: var(--rating-star-color);
+          }
+        }
+
+        &:hover {
+          .p-rating-icon {
+            color: var(--rating-star-color);
+          }
+        }
+      }
+    }
+  }
+}
+
+.rating-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  ::ng-deep {
+    .p-rating {
+      .p-rating-item {
+        font-size: 1rem;
+        cursor: default;
+
+        .p-rating-icon {
+          color: var(--rating-star-color);
+          font-size: 1rem;
+          cursor: default;
+
+          &.pi-star {
+            color: var(--rating-star-color);
+          }
+
+          &.pi-star-fill {
+            color: var(--rating-star-color);
+          }
+        }
+
+        &:hover {
+          .p-rating-icon {
+            color: var(--rating-star-color);
+          }
         }
       }
     }

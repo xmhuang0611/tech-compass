@@ -39,12 +39,14 @@
             </a>
           </td>
           <td>
-            <p-rating
-              [ngModel]="rating.score"
-              [readonly]="true"
-              [stars]="5"
-              [cancel]="false">
-            </p-rating>
+            <div class="rating-info">
+              <p-rating 
+                [ngModel]="rating.score" 
+                [readonly]="true" 
+                [stars]="5" 
+                [cancel]="false">
+              </p-rating>
+            </div>
           </td>
           <td>
             <div class="truncate comment-content" [title]="rating.comment">
