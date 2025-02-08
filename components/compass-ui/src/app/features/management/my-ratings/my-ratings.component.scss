@@ -124,24 +124,26 @@
 
     .p-rating {
       .p-rating-icon {
-        color: #FFA41C;
+        color: var(--rating-star-color);
         font-size: 1rem;
         margin-right: 0.1rem;
         cursor: default;
 
         &.p-rating-icon-active {
-          color: #FFA41C;
+          color: var(--rating-star-color);
         }
 
         &:hover {
-          color: inherit !important;
+          color: var(--rating-star-color) !important;
         }
       }
 
       &:not(.p-disabled):not(.p-readonly) {
         .p-rating-icon {
+          cursor: default;
+          
           &:hover {
-            color: inherit !important;
+            color: var(--rating-star-color) !important;
           }
         }
       }
@@ -195,12 +197,12 @@
   ::ng-deep {
     .p-rating {
       .p-rating-icon {
-        color: #FFA41C;
+        color: var(--rating-star-color);
         font-size: 1rem;
         margin-right: 0.1rem;
 
         &.p-rating-icon-active {
-          color: #FFA41C;
+          color: var(--rating-star-color);
         }
       }
     }

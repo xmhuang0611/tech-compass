@@ -130,14 +130,33 @@
       ::ng-deep .p-rating {
         .p-rating-item {
           font-size: 1rem;
+          cursor: default;
           
           &.p-rating-item-active .p-rating-icon {
-            color: var(--yellow-500);
+            color: var(--rating-star-color);
           }
 
           .p-rating-icon {
             width: 1rem;
             height: 1rem;
+            cursor: default;
+            color: var(--rating-star-color);
+
+            &:hover {
+              color: var(--rating-star-color) !important;
+            }
+          }
+        }
+
+        &:not(.p-disabled):not(.p-readonly) {
+          .p-rating-item {
+            cursor: default;
+            
+            &:hover {
+              .p-rating-icon {
+                color: var(--rating-star-color) !important;
+              }
+            }
           }
         }
       }
@@ -181,18 +200,31 @@
 .meta-info {
   padding: 0 1.5rem;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.75rem;
   margin-bottom: 1.5rem;
   color: var(--text-color-secondary);
 
-  span {
+  .category-row {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    min-width: fit-content;
-    white-space: nowrap;
+  }
+
+  .team-maintainer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      min-width: fit-content;
+      white-space: nowrap;
+    }
   }
 
   .maintainer {
