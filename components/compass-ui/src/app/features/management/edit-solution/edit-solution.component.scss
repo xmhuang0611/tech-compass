@@ -1,0 +1,58 @@
+.edit-solution {
+  h1 {
+    margin: 0 0 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+
+    .field {
+      margin-bottom: 0;
+
+      &.col-12 {
+        grid-column: span 12;
+      }
+
+      &.md\:col-6 {
+        @media (min-width: 768px) {
+          grid-column: span 6;
+        }
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  ::ng-deep {
+    .p-inputtext,
+    .p-dropdown,
+    .p-inputnumber {
+      width: 100%;
+    }
+
+    .p-chips {
+      width: 100%;
+
+      .p-chips-multiple-container {
+        width: 100%;
+      }
+    }
+  }
+} 

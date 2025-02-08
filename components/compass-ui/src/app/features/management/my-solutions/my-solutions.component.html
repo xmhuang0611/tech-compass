@@ -1,0 +1,79 @@
+<div class="my-solutions">
+  <h1>My Solutions</h1>
+
+  <p-table
+    [value]="solutions"
+    [lazy]="true"
+    [paginator]="true"
+    [rows]="rows"
+    [totalRecords]="totalRecords"
+    [loading]="loading"
+    [rowsPerPageOptions]="[10, 20, 50]"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} solutions"
+    (onPage)="onPageChange($event)"
+    [tableStyle]="{ 'min-width': '60rem' }">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+        <th>Category</th>
+        <th>Recommendation</th>
+        <th>Review Status</th>
+        <th>Updated At</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-solution>
+      <tr>
+        <td>
+          <a [routerLink]="['/solutions', solution.slug]" class="solution-link">
+            {{ solution.name }}
+          </a>
+        </td>
+        <td>{{ solution.category }}</td>
+        <td>
+          <p-tag
+            [value]="solution.recommend_status"
+            [severity]="getStatusSeverity(solution.recommend_status)">
+          </p-tag>
+        </td>
+        <td>
+          <p-tag
+            [value]="solution.review_status"
+            [severity]="getStatusSeverity(solution.review_status)">
+          </p-tag>
+        </td>
+        <td>{{ solution.updated_at | date:'yyyy-MM-dd' }}</td>
+        <td>
+          <div class="action-buttons">
+            <p-button 
+              icon="pi pi-pencil" 
+              [routerLink]="['/manage/solutions/edit', solution.slug]"
+              styleClass="p-button-text p-button-sm">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              (click)="confirmDelete(solution)"
+              styleClass="p-button-text p-button-danger p-button-sm">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6">
+          <div class="empty-message">
+            <i class="pi pi-inbox"></i>
+            <p>No solutions found</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <p-confirmDialog header="Confirm Deletion" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+</div> 

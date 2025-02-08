@@ -76,6 +76,14 @@ const routes: Routes = [
         loadChildren: () =>
           import("./features/about/about.module").then((m) => m.AboutModule),
       },
+      {
+        path: "manage",
+        title: "Manage Content",
+        loadChildren: () =>
+          import("./features/management/management.module").then(
+            (m) => m.ManagementModule
+          ),
+      },
     ],
   },
 ];

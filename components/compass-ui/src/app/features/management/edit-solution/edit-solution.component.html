@@ -1,0 +1,124 @@
+<div class="edit-solution">
+  <h1>Edit Solution</h1>
+
+  <form [formGroup]="solutionForm" (ngSubmit)="onSubmit()" class="p-fluid">
+    <p-card>
+      <div class="form-grid">
+        <div class="field col-12 md:col-6">
+          <label for="name">Name*</label>
+          <input id="name" type="text" pInputText formControlName="name">
+        </div>
+
+        <div class="field col-12">
+          <label for="brief">Brief Description*</label>
+          <textarea id="brief" pInputTextarea formControlName="brief" [rows]="3"></textarea>
+        </div>
+
+        <div class="field col-12">
+          <label for="description">Full Description*</label>
+          <textarea id="description" pInputTextarea formControlName="description" [rows]="6"></textarea>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="category">Category*</label>
+          <input id="category" type="text" pInputText formControlName="category">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="department">Department*</label>
+          <input id="department" type="text" pInputText formControlName="department">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="team">Team*</label>
+          <input id="team" type="text" pInputText formControlName="team">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="team_email">Team Email*</label>
+          <input id="team_email" type="email" pInputText formControlName="team_email">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="maintainer_name">Maintainer Name*</label>
+          <input id="maintainer_name" type="text" pInputText formControlName="maintainer_name">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="maintainer_email">Maintainer Email*</label>
+          <input id="maintainer_email" type="email" pInputText formControlName="maintainer_email">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="official_website">Official Website</label>
+          <input id="official_website" type="url" pInputText formControlName="official_website">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="documentation_url">Documentation URL</label>
+          <input id="documentation_url" type="url" pInputText formControlName="documentation_url">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="demo_url">Demo URL</label>
+          <input id="demo_url" type="url" pInputText formControlName="demo_url">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="version">Version</label>
+          <input id="version" type="text" pInputText formControlName="version">
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="adoption_level">Adoption Level*</label>
+          <p-dropdown id="adoption_level" 
+            [options]="['PILOT', 'TEAM', 'DEPARTMENT', 'ENTERPRISE', 'INDUSTRY']"
+            formControlName="adoption_level"
+            placeholder="Select adoption level">
+          </p-dropdown>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="adoption_user_count">User Count*</label>
+          <p-inputNumber id="adoption_user_count" 
+            formControlName="adoption_user_count"
+            [min]="0"
+            [showButtons]="false">
+          </p-inputNumber>
+        </div>
+
+        <div class="field col-12">
+          <label for="tags">Tags</label>
+          <p-chips id="tags" formControlName="tags"></p-chips>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="pros">Pros</label>
+          <p-chips id="pros" formControlName="pros"></p-chips>
+        </div>
+
+        <div class="field col-12 md:col-6">
+          <label for="cons">Cons</label>
+          <p-chips id="cons" formControlName="cons"></p-chips>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <p-button 
+          label="Cancel" 
+          styleClass="p-button-text" 
+          type="button"
+          [routerLink]="['/manage/solutions']">
+        </p-button>
+        <p-button 
+          label="Save Changes" 
+          type="submit"
+          [loading]="loading"
+          [disabled]="!solutionForm.valid || loading">
+        </p-button>
+      </div>
+    </p-card>
+  </form>
+
+  <p-toast></p-toast>
+</div> 

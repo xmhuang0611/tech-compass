@@ -1,0 +1,52 @@
+.dashboard {
+  h1 {
+    margin: 0 0 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+
+    ::ng-deep .stats-card {
+      .p-card {
+        background: var(--surface-card);
+      }
+
+      .stat-content {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        i {
+          font-size: 2rem;
+          color: var(--primary-color);
+          background: var(--primary-50);
+          width: 4rem;
+          height: 4rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+        }
+
+        .stat-details {
+          h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--text-color-secondary);
+          }
+
+          .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-top: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+} 

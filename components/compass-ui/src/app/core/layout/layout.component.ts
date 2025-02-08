@@ -104,6 +104,10 @@ export class LayoutComponent implements OnInit {
     // TODO: Implement search functionality
   }
 
+  isUserLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
   onUserIconClick(event: Event) {
     if (!this.authService.isLoggedIn()) {
       this.showLoginDialog();

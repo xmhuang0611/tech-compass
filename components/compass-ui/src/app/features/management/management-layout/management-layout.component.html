@@ -1,0 +1,23 @@
+<div class="management-layout">
+  <div class="breadcrumb-wrapper">
+    <p-breadcrumb [model]="breadcrumbItems"></p-breadcrumb>
+  </div>
+  
+  <div class="management-content">
+    <aside class="management-sidebar" [class.collapsed]="sidebarCollapsed">
+      <div class="sidebar-header">
+        <p-button 
+          class="toggle-button"
+          icon="pi pi-bars" 
+          (click)="toggleSidebar()"
+          styleClass="p-button-text p-button-rounded">
+        </p-button>
+      </div>
+      <p-menu [model]="sideMenuItems" styleClass="management-menu"></p-menu>
+    </aside>
+    
+    <main class="management-main">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div> 
