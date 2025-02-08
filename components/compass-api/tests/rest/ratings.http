@@ -144,4 +144,166 @@ Content-Type: application/json
 # Authentication error
 # {
 #     "detail": "Not authenticated"
+# }
+
+### Get my ratings (default sort by created_at desc)
+GET {{baseUrl}}/ratings/my/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my ratings with custom pagination
+GET {{baseUrl}}/ratings/my/?skip=10&limit=5
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my ratings sorted by updated_at ascending
+GET {{baseUrl}}/ratings/my/?sort=updated_at
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my ratings sorted by score descending
+GET {{baseUrl}}/ratings/my/?sort=-score
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my ratings sorted by created_at ascending
+GET {{baseUrl}}/ratings/my/?sort=created_at
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to get my ratings without auth token (should fail)
+GET {{baseUrl}}/ratings/my/
+Content-Type: application/json
+
+### Try to get my ratings with invalid sort field (should fail)
+GET {{baseUrl}}/ratings/my/?sort=invalid_field
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Example responses for my ratings:
+
+# Success response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "id": "rating123",
+#             "solution_slug": "my-solution",
+#             "score": 5,
+#             "comment": "Great solution!",
+#             "username": "test",
+#             "full_name": "Test User",
+#             "created_at": "2024-01-22T10:30:00",
+#             "updated_at": "2024-01-22T10:30:00"
+#         }
+#     ],
+#     "total": 1,
+#     "skip": 0,
+#     "limit": 20
+# }
+
+# Error - Not authenticated
+# {
+#     "detail": "Not authenticated"
+# }
+
+# Error - Invalid sort field
+# {
+#     "detail": "Invalid sort field: invalid_field. Valid fields are: created_at, updated_at, score"
+# }
+
+### Update rating by ID
+PUT {{baseUrl}}/ratings/65b7c8d9e0f1a2b3c4d5e6f7
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 4,
+    "comment": "Updated comment: Good solution but could use some improvements"
+}
+
+### Delete rating by ID
+DELETE {{baseUrl}}/ratings/65b7c8d9e0f1a2b3c4d5e6f7
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to update rating without auth (should fail with 401)
+PUT {{baseUrl}}/ratings/65b7c8d9e0f1a2b3c4d5e6f7
+Content-Type: application/json
+
+{
+    "score": 4,
+    "comment": "This should fail without auth token"
+}
+
+### Try to delete rating without auth (should fail with 401)
+DELETE {{baseUrl}}/ratings/65b7c8d9e0f1a2b3c4d5e6f7
+Content-Type: application/json
+
+### Try to update non-existent rating (should fail with 404)
+PUT {{baseUrl}}/ratings/000000000000000000000000
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 4,
+    "comment": "This should fail because rating doesn't exist"
+}
+
+### Try to delete non-existent rating (should fail with 404)
+DELETE {{baseUrl}}/ratings/000000000000000000000000
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to update rating with invalid score (should fail with 400)
+PUT {{baseUrl}}/ratings/65b7c8d9e0f1a2b3c4d5e6f7
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "score": 6,
+    "comment": "Score must be between 1 and 5"
+}
+
+### Example responses for PUT/DELETE:
+
+# Success update response
+# {
+#     "success": true,
+#     "data": {
+#         "id": "65b7c8d9e0f1a2b3c4d5e6f7",
+#         "solution_slug": "my-solution",
+#         "score": 4,
+#         "comment": "Updated comment: Good solution but could use some improvements",
+#         "username": "test",
+#         "full_name": "Test User",
+#         "created_at": "2024-01-22T10:30:00",
+#         "updated_at": "2024-01-22T11:45:00"
+#     }
+# }
+
+# Success delete response
+# {
+#     "success": true,
+#     "data": true
+# }
+
+# Error - Not found
+# {
+#     "detail": "Rating not found"
+# }
+
+# Error - Not authenticated
+# {
+#     "detail": "Not authenticated"
+# }
+
+# Error - Invalid score
+# {
+#     "detail": "Score must be between 1 and 5"
+# }
+
+# Error - Forbidden
+# {
+#     "detail": "You don't have permission to update/delete this rating"
 # } 

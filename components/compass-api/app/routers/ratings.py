@@ -135,3 +135,100 @@ async def get_all_ratings(
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting ratings: {str(e)}")
+
+@router.get("/my/", response_model=StandardResponse[list[Rating]], tags=["ratings"])
+async def get_my_ratings(
+    skip: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    current_user: User = Depends(get_current_active_user),
+    rating_service: RatingService = Depends()
+) -> StandardResponse[list[Rating]]:
+    """
+    Get all ratings created by the current user with pagination and sorting.
+    Default sort is by created_at in descending order (newest first).
+    
+    Query Parameters:
+    - skip: Number of items to skip
+    - limit: Maximum number of items to return (1-100)
+    - sort: Sort field (created_at, updated_at, score). Prefix with - for descending order
+    """
+    try:
+        ratings, total = await rating_service.get_user_ratings(
+            username=current_user.username,
+            skip=skip,
+            limit=limit,
+            sort=sort
+        )
+        return StandardResponse.paginated(ratings, total, skip, limit)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting user ratings: {str(e)}")
+
+@router.put("/{rating_id}", response_model=StandardResponse[Rating], tags=["ratings"])
+async def update_rating(
+    rating_id: str,
+    rating_update: RatingCreate,
+    current_user: User = Depends(get_current_active_user),
+    rating_service: RatingService = Depends()
+) -> StandardResponse[Rating]:
+    """
+    Update a rating by ID.
+    Only the rating creator or superusers can update it.
+    
+    Path Parameters:
+    - rating_id: ID of the rating to update
+    
+    Request Body:
+    - score: New rating score (1-5)
+    - comment: Optional new comment
+    """
+    try:
+        updated_rating = await rating_service.update_rating(
+            rating_id=rating_id,
+            rating_update=rating_update,
+            username=current_user.username,
+            is_superuser=current_user.is_superuser
+        )
+        if not updated_rating:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Rating not found"
+            )
+        return StandardResponse.of(updated_rating)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error updating rating: {str(e)}"
+        )
+
+@router.delete("/{rating_id}", response_model=StandardResponse[bool], tags=["ratings"])
+async def delete_rating(
+    rating_id: str,
+    current_user: User = Depends(get_current_active_user),
+    rating_service: RatingService = Depends()
+) -> StandardResponse[bool]:
+    """
+    Delete a rating by ID.
+    Only the rating creator or superusers can delete it.
+    
+    Path Parameters:
+    - rating_id: ID of the rating to delete
+    """
+    try:
+        success = await rating_service.delete_rating(
+            rating_id=rating_id,
+            username=current_user.username,
+            is_superuser=current_user.is_superuser
+        )
+        return StandardResponse.of(success)
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting rating: {str(e)}"
+        )

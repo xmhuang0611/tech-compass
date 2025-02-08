@@ -141,3 +141,120 @@ class RatingService:
         
         # Return the updated rating
         return await self.get_user_rating(solution_slug, username)
+
+    async def get_user_ratings(
+        self,
+        username: str,
+        skip: int = 0,
+        limit: int = 20,
+        sort: str = "-created_at"
+    ) -> Tuple[List[Rating], int]:
+        """Get all ratings created by a specific user with pagination and sorting.
+        Default sort is by created_at in descending order (newest first)."""
+        
+        # Parse sort parameter
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+            sort_direction = ASCENDING
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        # Query for user's ratings
+        query = {"username": username}
+        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        
+        # Convert to Rating objects with user full names
+        ratings = [await self._convert_to_rating(rating) async for rating in cursor]
+        total = await self.db.ratings.count_documents(query)
+        
+        return ratings, total
+
+    async def _get_rating_or_404(self, rating_id: str) -> RatingInDB:
+        """Get a rating by ID or raise 404 if not found."""
+        try:
+            rating = await self.db.ratings.find_one({"_id": ObjectId(rating_id)})
+            if not rating:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Rating not found"
+                )
+            return RatingInDB(**rating)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Invalid rating ID"
+            )
+
+    def check_rating_permission(
+        self,
+        rating: RatingInDB,
+        username: str,
+        is_superuser: bool
+    ) -> bool:
+        """Check if user has permission to modify the rating.
+        
+        Args:
+            rating: The rating to check
+            username: The username of the user
+            is_superuser: Whether the user is a superuser
+            
+        Returns:
+            True if user has permission, False otherwise
+        """
+        return is_superuser or rating.username == username
+
+    async def update_rating(
+        self,
+        rating_id: str,
+        rating_update: RatingCreate,
+        username: str,
+        is_superuser: bool
+    ) -> Optional[RatingInDB]:
+        """Update a rating.
+        Only the rating creator or superusers can update it."""
+        rating = await self._get_rating_or_404(rating_id)
+        
+        # Check permission
+        if not self.check_rating_permission(rating, username, is_superuser):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to update this rating"
+            )
+
+        update_dict = rating_update.model_dump()
+        update_dict.update({
+            "updated_at": datetime.utcnow(),
+            "updated_by": username
+        })
+
+        result = await self.db.ratings.find_one_and_update(
+            {"_id": ObjectId(rating_id)},
+            {"$set": update_dict},
+            return_document=True
+        )
+        return RatingInDB(**result) if result else None
+
+    async def delete_rating(
+        self,
+        rating_id: str,
+        username: str,
+        is_superuser: bool
+    ) -> bool:
+        """Delete a rating.
+        Only the rating creator or superusers can delete it."""
+        rating = await self._get_rating_or_404(rating_id)
+        
+        # Check permission
+        if not self.check_rating_permission(rating, username, is_superuser):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to delete this rating"
+            )
+
+        result = await self.db.ratings.delete_one({"_id": ObjectId(rating_id)})
+        return result.deleted_count > 0
