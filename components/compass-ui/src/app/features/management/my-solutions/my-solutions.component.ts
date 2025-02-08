@@ -62,36 +62,25 @@ export class MySolutionsComponent implements OnInit {
   loadSolutions() {
     this.loading = true;
     const skip = this.currentPage * this.pageSize;
-    console.log("Loading solutions:", {
-      skip,
-      pageSize: this.pageSize,
-      currentPage: this.currentPage,
-    });
 
     this.solutionService.getMySolutions(skip, this.pageSize).subscribe({
       next: (response) => {
-        console.log("Raw API response:", response);
         this.solutions = response.data;
         this.totalRecords = response.total;
         this.loading = false;
-
-        console.log("Solutions loaded:", {
-          count: this.solutions.length,
-          totalRecords: this.totalRecords,
-          currentPage: this.currentPage,
-          response_total: response.total,
-          type_of_total: typeof response.total,
-        });
       },
       error: (error) => {
-        console.error("Error loading solutions:", error);
+        this.messageService.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to load solutions",
+        });
         this.loading = false;
       },
     });
   }
 
   onPageChange(event: any) {
-    console.log("Page changed:", event);
     this.pageSize = event.rows;
     this.currentPage = Math.floor(event.first / event.rows);
     this.loadSolutions();
@@ -104,7 +93,7 @@ export class MySolutionsComponent implements OnInit {
   }
 
   editSolution(solution: Solution) {
-    this.router.navigate(["/manage/solutions/edit", solution.slug], {
+    this.router.navigate(["/manage/my-solutions/edit", solution.slug], {
       state: { solution },
     });
   }
@@ -130,7 +119,6 @@ export class MySolutionsComponent implements OnInit {
         this.resetAndReload();
       },
       error: (error) => {
-        console.error("Error deleting solution:", error);
         this.messageService.add({
           severity: "error",
           summary: "Error",

@@ -85,7 +85,7 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
       {
         label: "My Solutions",
         icon: "pi pi-box",
-        routerLink: "/manage/solutions",
+        routerLink: "/manage/my-solutions",
       },
       {
         label: "My Comments",

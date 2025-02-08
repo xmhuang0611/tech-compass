@@ -112,9 +112,22 @@
           color: #FFA41C;
           font-size: 1rem;
           margin-right: 0.1rem;
+          cursor: default;
 
           &.p-rating-icon-active {
             color: #FFA41C;
+          }
+
+          &:hover {
+            color: inherit !important;
+          }
+        }
+
+        &:not(.p-disabled):not(.p-readonly) {
+          .p-rating-icon {
+            &:hover {
+              color: inherit !important;
+            }
           }
         }
       }

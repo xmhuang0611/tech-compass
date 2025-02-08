@@ -35,7 +35,7 @@ const routes: Routes = [
         data: { breadcrumb: "Dashboard" },
       },
       {
-        path: "solutions",
+        path: "my-solutions",
         data: { breadcrumb: "My Solutions" },
         children: [
           {
