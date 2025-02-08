@@ -16,4 +16,7 @@ export interface SubMenuNavigationItem extends BaseNavigationItem {
   items: (InternalNavigationItem | ExternalNavigationItem)[];
 }
 
-export type NavigationItem = InternalNavigationItem | ExternalNavigationItem | SubMenuNavigationItem; 
+export type NavigationItem =
+  | InternalNavigationItem
+  | ExternalNavigationItem
+  | SubMenuNavigationItem;

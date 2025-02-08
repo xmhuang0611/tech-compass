@@ -8,7 +8,7 @@ import {
   SubMenuNavigationItem,
   InternalNavigationItem,
   ExternalNavigationItem,
-} from "../types/navigation.types";
+} from "../interfaces/navigation.interface";
 import { AuthService } from "../services/auth.service";
 import { LoginDialogComponent } from "../components/login-dialog/login-dialog.component";
 
