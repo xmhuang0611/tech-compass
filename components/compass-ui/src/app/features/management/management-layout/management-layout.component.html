@@ -6,14 +6,28 @@
   <div class="management-content">
     <aside class="management-sidebar" [class.collapsed]="sidebarCollapsed">
       <div class="sidebar-header">
-        <p-button 
-          class="toggle-button"
-          icon="pi pi-bars" 
-          (click)="toggleSidebar()"
-          styleClass="p-button-text p-button-rounded">
-        </p-button>
+        <button 
+          class="collapse-button"
+          type="button"
+          (click)="toggleSidebar()">
+          <i class="pi pi-bars"></i>
+        </button>
       </div>
-      <p-menu [model]="sideMenuItems" styleClass="management-menu"></p-menu>
+
+      <nav class="sidebar-nav">
+        <ul class="nav-list">
+          <li *ngFor="let item of sideMenuItems" class="nav-item">
+            <a 
+              [routerLink]="item.routerLink"
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="item.routerLinkActiveOptions || {}"
+              class="nav-link">
+              <i [class]="item.icon"></i>
+              <span class="nav-text">{{item.label}}</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
     </aside>
     
     <main class="management-main">
