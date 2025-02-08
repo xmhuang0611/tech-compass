@@ -38,7 +38,14 @@
           </div>
           <div class="form-field two-thirds">
             <label for="tags">Tags</label>
-            <input id="tags" type="text" pInputText formControlName="tags" placeholder="Enter multiple tags separated by comma" />
+            <p-chips 
+              id="tags" 
+              formControlName="tags"
+              placeholder="Enter a tag and press Enter"
+              [addOnBlur]="true"
+              [separator]="','"
+              [allowDuplicate]="false">
+            </p-chips>
           </div>
         </div>
         <div class="form-row">
