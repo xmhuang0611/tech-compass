@@ -46,7 +46,15 @@ class CommentService:
 
         # Execute query with sort
         cursor = self.collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
-        comments = [await self._convert_to_comment(comment) async for comment in cursor]
+        
+        # Convert to Comment objects with user full names
+        comments = []
+        async for comment in cursor:
+            # If username is missing, use created_by as fallback
+            if "username" not in comment:
+                comment["username"] = comment["created_by"]
+            comments.append(await self._convert_to_comment(comment))
+            
         total = await self.collection.count_documents({})
         
         return comments, total
@@ -64,22 +72,13 @@ class CommentService:
         sort_field = sort_by
         cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
         
-        # Convert to CommentInDB objects, using created_by as fallback for username
-        comments_in_db = []
+        # Convert to Comment objects with user full names
+        comments = []
         async for comment in cursor:
             # If username is missing, use created_by as fallback
             if "username" not in comment:
                 comment["username"] = comment["created_by"]
-            comments_in_db.append(CommentInDB(**comment))
-        
-        # Then convert to Comment objects with user full names
-        comments = []
-        for comment in comments_in_db:
-            user_info = await self.user_service.get_user_info(comment.username)
-            comment_dict = comment.model_dump()
-            if user_info:
-                comment_dict["full_name"] = user_info["full_name"]
-            comments.append(Comment(**comment_dict))
+            comments.append(await self._convert_to_comment(comment))
             
         total = await self.collection.count_documents(query)
         return comments, total
