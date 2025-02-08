@@ -21,6 +21,7 @@ import { ManagementLayoutComponent } from "./management-layout/management-layout
 import { ManagementDashboardComponent } from "./management-dashboard/management-dashboard.component";
 import { MySolutionsComponent } from "./my-solutions/my-solutions.component";
 import { EditSolutionComponent } from "./edit-solution/edit-solution.component";
+import { MyCommentsComponent } from "./my-comments/my-comments.component";
 
 const routes: Routes = [
   {
@@ -46,6 +47,11 @@ const routes: Routes = [
             data: { breadcrumb: "Edit Solution" },
           },
         ],
+      },
+      {
+        path: "my-comments",
+        component: MyCommentsComponent,
+        data: { breadcrumb: "My Comments" },
       },
     ],
   },
@@ -73,6 +79,7 @@ const routes: Routes = [
     ChipsModule,
     EditSolutionComponent,
     MySolutionsComponent,
+    MyCommentsComponent,
   ],
 })
 export class ManagementModule {}

@@ -1,0 +1,101 @@
+<div class="my-comments">
+  <h1>My Comments</h1>
+
+  <div class="comments-table-container">
+    <p-table
+      [value]="comments$.value"
+      [rows]="pageSize"
+      [paginator]="true"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="[5, 10, 20, 50]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      (onPage)="onPageChange($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Solution</th>
+          <th>Comment</th>
+          <th>Created On</th>
+          <th>Updated On</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-comment>
+        <tr>
+          <td>
+            <a
+              [routerLink]="['/solutions', comment.solution_slug]"
+              class="solution-link">
+              {{ comment.solution_slug }}
+            </a>
+          </td>
+          <td>
+            <div class="comment-content">{{ comment.content }}</div>
+          </td>
+          <td>{{ comment.created_at | date : "yyyy-MM-dd HH:mm" }}</td>
+          <td>{{ comment.updated_at | date : "yyyy-MM-dd HH:mm" }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                (click)="editComment(comment)"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                (click)="confirmDelete(comment)"
+                styleClass="p-button-text p-button-danger p-button-sm">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="5">
+            <div class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No comments found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>
+
+<p-dialog
+  [(visible)]="editDialogVisible"
+  [header]="'Edit Comment'"
+  [modal]="true"
+  [style]="{ width: '50vw' }">
+  <textarea
+    pInputTextarea
+    [(ngModel)]="editingComment.content"
+    [rows]="5"
+    [style]="{ width: '100%' }">
+  </textarea>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      (click)="editDialogVisible = false"
+      styleClass="p-button-text">
+    </p-button>
+    <p-button
+      label="Save"
+      (click)="saveComment()"
+      [disabled]="!editingComment.content?.trim()">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<p-confirmDialog
+  header="Confirm Deletion"
+  icon="pi pi-exclamation-triangle">
+</p-confirmDialog>
+<p-toast></p-toast> 

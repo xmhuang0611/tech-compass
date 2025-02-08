@@ -42,8 +42,13 @@ export class AuthInterceptor implements HttpInterceptor {
     const url = request.url;
     const method = request.method.toLowerCase();
 
-    // Always add token for /api/users/me and /api/solutions/my/
-    if (url === `${this.apiUrl}/users/me` || url.includes("/solutions/my/")) {
+    // Always add token for protected endpoints
+    if (
+      url === `${this.apiUrl}/users/me` ||
+      url.includes("/solutions/my/") ||
+      url.includes("/comments/my/") ||
+      url.includes("/ratings/my/")
+    ) {
       return true;
     }
 

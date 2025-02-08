@@ -90,7 +90,7 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
       {
         label: "My Comments",
         icon: "pi pi-comments",
-        routerLink: "/manage/comments",
+        routerLink: "/manage/my-comments",
       },
       {
         label: "My Ratings",
