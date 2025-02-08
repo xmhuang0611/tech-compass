@@ -18,7 +18,12 @@
           <a [routerLink]="['/solutions', solution.slug]">{{ solution.name }}</a>
         </h3>
         <div class="rating-info">
-          <p-rating [(ngModel)]="solution.rating" [disabled]="true" [cancel]="false"></p-rating>
+          <p-rating 
+            [(ngModel)]="solution.rating" 
+            [readonly]="true" 
+            [cancel]="false"
+            [stars]="5">
+          </p-rating>
           <span class="rating-count" *ngIf="solution.rating_count > 0">({{ solution.rating_count }})</span>
         </div>
       </div>
