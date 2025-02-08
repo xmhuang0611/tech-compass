@@ -145,3 +145,33 @@ async def delete_comment(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting comment: {str(e)}")
+
+@router.get("/my/", response_model=StandardResponse[list[Comment]], tags=["comments"])
+async def get_my_comments(
+    skip: int = Query(0, ge=0, description="Number of items to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    current_user: User = Depends(get_current_active_user),
+    comment_service: CommentService = Depends()
+) -> StandardResponse[list[Comment]]:
+    """
+    Get all comments created by the current user with pagination and sorting.
+    Default sort is by created_at in descending order (newest first).
+    
+    Query Parameters:
+    - skip: Number of items to skip
+    - limit: Maximum number of items to return (1-100)
+    - sort: Sort field (created_at, updated_at). Prefix with - for descending order
+    """
+    try:
+        comments, total = await comment_service.get_user_comments(
+            username=current_user.username,
+            skip=skip,
+            limit=limit,
+            sort=sort
+        )
+        return StandardResponse.paginated(comments, total, skip, limit)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting user comments: {str(e)}")

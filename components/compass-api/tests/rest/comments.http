@@ -357,4 +357,64 @@ DELETE {{baseUrl}}/comments/123
 # {
 #     "success": false,
 #     "error": "Not authenticated"
+# }
+
+### Get my comments (default sort by created_at desc)
+GET {{baseUrl}}/comments/my/
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my comments with custom pagination
+GET {{baseUrl}}/comments/my/?skip=10&limit=5
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my comments sorted by updated_at ascending
+GET {{baseUrl}}/comments/my/?sort=updated_at
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Get my comments sorted by created_at ascending
+GET {{baseUrl}}/comments/my/?sort=created_at
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Try to get my comments without auth token (should fail)
+GET {{baseUrl}}/comments/my/
+Content-Type: application/json
+
+### Try to get my comments with invalid sort field (should fail)
+GET {{baseUrl}}/comments/my/?sort=invalid_field
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Example responses for my comments:
+
+# Success response
+# {
+#     "success": true,
+#     "data": [
+#         {
+#             "id": "comment123",
+#             "content": "This is my comment",
+#             "solution_slug": "my-solution",
+#             "username": "test",
+#             "full_name": "Test User",
+#             "created_at": "2024-01-22T10:30:00",
+#             "updated_at": "2024-01-22T10:30:00"
+#         }
+#     ],
+#     "total": 1,
+#     "skip": 0,
+#     "limit": 20
+# }
+
+# Error - Not authenticated
+# {
+#     "detail": "Not authenticated"
+# }
+
+# Error - Invalid sort field
+# {
+#     "detail": "Invalid sort field: invalid_field. Valid fields are: created_at, updated_at"
 # } 

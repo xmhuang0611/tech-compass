@@ -207,3 +207,37 @@ class CommentService:
     async def count_solution_comments(self, solution_slug: str) -> int:
         """Get total number of comments for a solution."""
         return await self.collection.count_documents({"solution_slug": solution_slug})
+
+    async def get_user_comments(
+        self,
+        username: str,
+        skip: int = 0,
+        limit: int = 20,
+        sort: str = "-created_at"
+    ) -> Tuple[List[Comment], int]:
+        """Get all comments created by a specific user with pagination and sorting.
+        Default sort is by created_at in descending order (newest first)."""
+        
+        # Parse sort parameter
+        if sort.startswith("-"):
+            sort_field = sort[1:]  # Remove the minus sign
+            sort_direction = DESCENDING
+        else:
+            sort_field = sort
+            sort_direction = ASCENDING
+
+        # Validate sort field
+        if sort_field not in VALID_SORT_FIELDS:
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+
+        # Query for user's comments
+        query = {"username": username}
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        
+        # Convert to Comment objects with user full names
+        comments = []
+        async for comment in cursor:
+            comments.append(await self._convert_to_comment(comment))
+            
+        total = await self.collection.count_documents(query)
+        return comments, total
