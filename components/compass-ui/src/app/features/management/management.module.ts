@@ -16,6 +16,9 @@ import { InputTextareaModule } from "primeng/inputtextarea";
 import { DropdownModule } from "primeng/dropdown";
 import { InputNumberModule } from "primeng/inputnumber";
 import { ChipsModule } from "primeng/chips";
+import { PaginatorModule } from "primeng/paginator";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
+import { MessagesModule } from "primeng/messages";
 
 import { ManagementLayoutComponent } from "./management-layout/management-layout.component";
 import { ManagementDashboardComponent } from "./management-dashboard/management-dashboard.component";
@@ -23,6 +26,9 @@ import { MySolutionsComponent } from "./my-solutions/my-solutions.component";
 import { EditSolutionComponent } from "./edit-solution/edit-solution.component";
 import { MyCommentsComponent } from "./my-comments/my-comments.component";
 import { MyRatingsComponent } from "./my-ratings/my-ratings.component";
+import { AllSolutionsComponent } from "./all-solutions/all-solutions.component";
+import { AdminGuard } from "../../core/guards/admin.guard";
+import { SharedModule } from "../../shared/shared.module";
 
 const routes: Routes = [
   {
@@ -33,6 +39,22 @@ const routes: Routes = [
         path: "",
         component: ManagementDashboardComponent,
         data: { breadcrumb: "Dashboard" },
+      },
+      {
+        path: "all-solutions",
+        data: { breadcrumb: "All Solutions" },
+        canActivate: [AdminGuard],
+        children: [
+          {
+            path: "",
+            component: AllSolutionsComponent,
+          },
+          {
+            path: "edit/:slug",
+            component: EditSolutionComponent,
+            data: { breadcrumb: "Edit Solution" },
+          },
+        ],
       },
       {
         path: "my-solutions",
@@ -83,10 +105,15 @@ const routes: Routes = [
     DropdownModule,
     InputNumberModule,
     ChipsModule,
+    PaginatorModule,
+    ProgressSpinnerModule,
+    MessagesModule,
+    SharedModule,
     EditSolutionComponent,
     MySolutionsComponent,
     MyCommentsComponent,
     MyRatingsComponent,
+    AllSolutionsComponent,
   ],
 })
 export class ManagementModule {}

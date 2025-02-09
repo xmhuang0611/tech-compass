@@ -120,4 +120,19 @@ export class SolutionService {
   deleteSolution(slug: string): Observable<StandardResponse<void>> {
     return this.http.delete<StandardResponse<void>>(`${this.apiUrl}${slug}`);
   }
+
+  getAllSolutions(
+    skip: number = 0,
+    limit: number = 10,
+    sort: string = "name"
+  ): Observable<StandardResponse<Solution[]>> {
+    const params = new HttpParams()
+      .set("skip", skip.toString())
+      .set("limit", limit.toString())
+      .set("sort", sort);
+
+    return this.http.get<StandardResponse<Solution[]>>(`${this.apiUrl}`, {
+      params,
+    });
+  }
 }

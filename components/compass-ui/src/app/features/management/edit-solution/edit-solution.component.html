@@ -1,8 +1,6 @@
 <div class="edit-solution">
   <h1>Edit Solution</h1>
   
-  <p-messages></p-messages>
-  
   <form [formGroup]="solutionForm" (ngSubmit)="onSubmit()" class="p-fluid">
     <div class="section-card">
       <div class="section-header">
@@ -165,21 +163,19 @@
     </div>
 
     <div class="form-actions">
-      <p-button 
-        type="button"
-        label="Cancel"
-        icon="pi pi-times"
-        styleClass="p-button-text"
-        [routerLink]="['/manage/solutions']">
-      </p-button>
-      <p-button 
-        type="submit"
-        label="Save Changes"
-        icon="pi pi-check"
-        [loading]="loading"
-        [disabled]="!solutionForm.valid || loading"
-        styleClass="p-button-primary">
-      </p-button>
+      <div class="messages-container">
+        <p-messages></p-messages>
+      </div>
+      <div class="buttons-container">
+        <p-button 
+          type="submit"
+          label="Save Changes"
+          icon="pi pi-check"
+          [loading]="loading"
+          [disabled]="!solutionForm.valid || loading"
+          styleClass="p-button-primary">
+        </p-button>
+      </div>
     </div>
   </form>
 </div> 

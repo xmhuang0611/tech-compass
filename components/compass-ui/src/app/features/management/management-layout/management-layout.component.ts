@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from "@angular/core";
 import { MenuItem } from "primeng/api";
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { filter, Subscription } from "rxjs";
+import { AuthService } from "../../../core/services/auth.service";
 
 @Component({
   selector: "tc-management-layout",
@@ -13,11 +14,16 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
   sideMenuItems: MenuItem[] = [];
   sidebarCollapsed = false;
   private routerSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined;
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {}
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.initializeSideMenu();
+    this.setupAuthSubscription();
     this.setupBreadcrumbSubscription();
   }
 
@@ -25,10 +31,19 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
   }
 
   toggleSidebar() {
     this.sidebarCollapsed = !this.sidebarCollapsed;
+  }
+
+  private setupAuthSubscription() {
+    this.authSubscription = this.authService.currentUser$.subscribe((user) => {
+      this.initializeSideMenu(user?.is_superuser || false);
+    });
   }
 
   private setupBreadcrumbSubscription() {
@@ -74,7 +89,7 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
     this.breadcrumbItems = breadcrumbs;
   }
 
-  private initializeSideMenu() {
+  private initializeSideMenu(isAdmin: boolean) {
     this.sideMenuItems = [
       {
         label: "Dashboard",
@@ -82,6 +97,17 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
         routerLink: "/manage",
         routerLinkActiveOptions: { exact: true },
       },
+    ];
+
+    if (isAdmin) {
+      this.sideMenuItems.push({
+        label: "All Solutions",
+        icon: "pi pi-list",
+        routerLink: "/manage/all-solutions",
+      });
+    }
+
+    this.sideMenuItems.push(
       {
         label: "My Solutions",
         icon: "pi pi-box",
@@ -96,7 +122,7 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
         label: "My Ratings",
         icon: "pi pi-star",
         routerLink: "/manage/my-ratings",
-      },
-    ];
+      }
+    );
   }
 }

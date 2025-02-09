@@ -158,7 +158,7 @@ export class EditSolutionComponent implements OnInit {
       this.loading = true;
 
       // Convert multiline text to arrays for pros and cons
-      const formValue = this.solutionForm.getRawValue(); // 使用 getRawValue() 来获取包括禁用控件的值
+      const formValue = this.solutionForm.getRawValue();
       const pros =
         formValue.pros?.split("\n").filter((line: string) => line.trim()) || [];
       const cons =
@@ -174,12 +174,20 @@ export class EditSolutionComponent implements OnInit {
 
       this.solutionService.updateSolution(this.slug, solution).subscribe({
         next: (response) => {
-          this.messageService.add({
-            severity: "success",
-            summary: "Success",
-            detail: "Solution updated successfully",
-          });
-          this.router.navigate(["/manage/solutions"]);
+          if (response.success) {
+            this.messageService.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Solution updated successfully",
+            });
+          } else {
+            this.messageService.add({
+              severity: "error",
+              summary: "Error",
+              detail: response.detail || "Failed to update solution",
+            });
+          }
+          this.loading = false;
         },
         error: (error) => {
           this.messageService.add({

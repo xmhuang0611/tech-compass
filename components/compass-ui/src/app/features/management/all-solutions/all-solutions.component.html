@@ -1,0 +1,103 @@
+<div class="all-solutions">
+  <h1>All Solutions</h1>
+
+  <div class="solutions-table-container">
+    <p-table
+      #dt
+      [value]="solutions"
+      [rows]="pageSize"
+      [paginator]="true"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      [showCurrentPageReport]="true"
+      [lazy]="true"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      (onPage)="onPageChange($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+          <th>Category</th>
+          <th>Rating</th>
+          <th>Recommend</th>
+          <th>Review</th>
+          <th>Updated On</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-solution>
+        <tr>
+          <td>
+            <a [routerLink]="['/solutions', solution.slug]" class="solution-link">
+              <span class="truncate" [title]="solution.name">{{ solution.name }}</span>
+            </a>
+          </td>
+          <td>
+            <span class="truncate category" [title]="solution.category">{{ solution.category }}</span>
+          </td>
+          <td>
+            <div class="rating-info">
+              <p-rating 
+                [ngModel]="solution.rating" 
+                [readonly]="true" 
+                [stars]="5" 
+                [cancel]="false">
+              </p-rating>
+              <span class="rating-count">({{ solution.rating_count || 0 }})</span>
+            </div>
+          </td>
+          <td>
+            <p-tag
+              [value]="solution.recommend_status"
+              [severity]="getStatusSeverity(solution.recommend_status)">
+            </p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="solution.review_status"
+              [severity]="getStatusSeverity(solution.review_status)">
+            </p-tag>
+          </td>
+          <td>{{ solution.updated_at | date:'yyyy-MM-dd' }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button 
+                icon="pi pi-pencil" 
+                (click)="editSolution(solution)"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button 
+                icon="pi pi-trash" 
+                (click)="confirmDelete(solution)"
+                styleClass="p-button-text p-button-danger p-button-sm">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No solutions found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div *ngIf="loading" class="loading-overlay">
+      <div class="loading-message">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Loading solutions...</p>
+      </div>
+    </div>
+  </div>
+
+  <p-confirmDialog header="Confirm Deletion" icon="pi pi-exclamation-triangle"></p-confirmDialog>
+</div> 
