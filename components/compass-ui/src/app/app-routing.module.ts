@@ -88,6 +88,14 @@ const routes: Routes = [
       },
     ],
   },
+  {
+    path: "**",
+    title: "404 Not Found",
+    loadComponent: () =>
+      import("./features/not-found/not-found.component").then(
+        (m) => m.NotFoundComponent
+      ),
+  },
 ];
 
 @NgModule({
