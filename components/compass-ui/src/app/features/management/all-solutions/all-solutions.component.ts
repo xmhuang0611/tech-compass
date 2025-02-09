@@ -4,12 +4,15 @@ import { RouterModule } from "@angular/router";
 import { FormsModule } from "@angular/forms";
 import { Router, ActivatedRoute } from "@angular/router";
 import { SolutionService } from "../../../core/services/solution.service";
+import { CategoryService } from "../../../core/services/category.service";
 import { Solution } from "../../../shared/interfaces/solution.interface";
 import { ConfirmationService, MessageService } from "primeng/api";
 import { RatingModule } from "primeng/rating";
 import { TableModule } from "primeng/table";
 import { ButtonModule } from "primeng/button";
 import { TagModule } from "primeng/tag";
+import { DropdownModule } from "primeng/dropdown";
+import { TooltipModule } from "primeng/tooltip";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { MessagesModule } from "primeng/messages";
 
@@ -20,6 +23,12 @@ type TagSeverity =
   | "danger"
   | "secondary"
   | "contrast";
+
+interface Filters {
+  category?: string;
+  recommend_status?: string;
+  review_status?: string;
+}
 
 @Component({
   selector: "tc-all-solutions",
@@ -33,6 +42,8 @@ type TagSeverity =
     TableModule,
     ButtonModule,
     TagModule,
+    DropdownModule,
+    TooltipModule,
     ConfirmDialogModule,
     MessagesModule,
   ],
@@ -43,14 +54,31 @@ export class AllSolutionsComponent implements OnInit {
   @ViewChild("scrollContainer") scrollContainer!: ElementRef;
 
   solutions: Solution[] = [];
+  categories: { name: string }[] = [];
   totalRecords: number = 0;
   loading: boolean = true;
   pageSize: number = 10;
   currentPage: number = 0;
   rowsPerPageOptions: number[] = [5, 10, 20, 50];
 
+  filters: Filters = {};
+
+  recommendStatusOptions = [
+    { label: "ADOPT", value: "ADOPT" },
+    { label: "TRIAL", value: "TRIAL" },
+    { label: "ASSESS", value: "ASSESS" },
+    { label: "HOLD", value: "HOLD" },
+  ];
+
+  reviewStatusOptions = [
+    { label: "PENDING", value: "PENDING" },
+    { label: "APPROVED", value: "APPROVED" },
+    { label: "REJECTED", value: "REJECTED" },
+  ];
+
   constructor(
     private solutionService: SolutionService,
+    private categoryService: CategoryService,
     private router: Router,
     private route: ActivatedRoute,
     private confirmationService: ConfirmationService,
@@ -58,28 +86,53 @@ export class AllSolutionsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadCategories();
     this.loadSolutions();
+  }
+
+  private loadCategories() {
+    this.categoryService.getCategories().subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.categories = response.data;
+        }
+      },
+      error: () => {
+        this.messageService.add({
+          severity: "error",
+          summary: "Error",
+          detail: "Failed to load categories",
+        });
+      },
+    });
   }
 
   loadSolutions() {
     this.loading = true;
     const skip = this.currentPage * this.pageSize;
 
-    this.solutionService.getAllSolutions(skip, this.pageSize).subscribe({
-      next: (response) => {
-        this.solutions = response.data;
-        this.totalRecords = response.total;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.messageService.add({
-          severity: "error",
-          summary: "Error",
-          detail: "Failed to load solutions",
-        });
-        this.loading = false;
-      },
-    });
+    this.solutionService
+      .getAllSolutions(skip, this.pageSize, undefined, this.filters)
+      .subscribe({
+        next: (response) => {
+          this.solutions = response.data;
+          this.totalRecords = response.total;
+          this.loading = false;
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to load solutions",
+          });
+          this.loading = false;
+        },
+      });
+  }
+
+  onFilterChange() {
+    this.currentPage = 0;
+    this.loadSolutions();
   }
 
   onPageChange(event: any) {

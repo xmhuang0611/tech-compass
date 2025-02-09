@@ -1,6 +1,53 @@
 <div class="all-solutions">
   <h1>All Solutions</h1>
 
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label for="category">Category</label>
+        <p-dropdown
+          id="category"
+          [options]="categories"
+          [(ngModel)]="filters.category"
+          optionLabel="name"
+          optionValue="name"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          placeholder="Select a category"
+          (onChange)="onFilterChange()">
+        </p-dropdown>
+      </div>
+      <div class="filter-field">
+        <label for="recommend_status">Recommend Status</label>
+        <p-dropdown
+          id="recommend_status"
+          [options]="recommendStatusOptions"
+          [(ngModel)]="filters.recommend_status"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          placeholder="Select status"
+          (onChange)="onFilterChange()">
+        </p-dropdown>
+      </div>
+      <div class="filter-field">
+        <label for="review_status">Review Status</label>
+        <p-dropdown
+          id="review_status"
+          [options]="reviewStatusOptions"
+          [(ngModel)]="filters.review_status"
+          optionLabel="label"
+          optionValue="value"
+          [style]="{'width':'100%'}"
+          [showClear]="true"
+          placeholder="Select status"
+          (onChange)="onFilterChange()">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
   <div class="solutions-table-container">
     <p-table
       #dt

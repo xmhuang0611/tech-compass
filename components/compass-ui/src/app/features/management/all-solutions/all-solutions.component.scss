@@ -12,6 +12,37 @@
     color: var(--text-color);
   }
 
+  .filters-section {
+    margin-bottom: 1.5rem;
+    background: var(--surface-card);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .filter-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+
+      .filter-field {
+        flex: 1;
+
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: var(--text-color);
+          font-weight: 500;
+        }
+      }
+
+      .filter-actions {
+        display: flex;
+        align-items: center;
+        padding-bottom: 0.5rem;
+      }
+    }
+  }
+
   .solutions-table-container {
     position: relative;
     flex: 1;

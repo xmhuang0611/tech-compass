@@ -124,12 +124,29 @@ export class SolutionService {
   getAllSolutions(
     skip: number = 0,
     limit: number = 10,
-    sort: string = "name"
+    sort: string = "name",
+    filters?: {
+      category?: string;
+      recommend_status?: string;
+      review_status?: string;
+    }
   ): Observable<StandardResponse<Solution[]>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set("skip", skip.toString())
       .set("limit", limit.toString())
       .set("sort", sort);
+
+    if (filters) {
+      if (filters.category) {
+        params = params.set("category", filters.category);
+      }
+      if (filters.recommend_status) {
+        params = params.set("recommend_status", filters.recommend_status);
+      }
+      if (filters.review_status) {
+        params = params.set("review_status", filters.review_status);
+      }
+    }
 
     return this.http.get<StandardResponse<Solution[]>>(`${this.apiUrl}`, {
       params,
