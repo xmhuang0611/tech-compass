@@ -104,7 +104,7 @@
     }
   }
 
-  // PrimeNG 组件样式覆盖
+  // PrimeNG component style overrides
   ::ng-deep {
     .messages-bottom {
       position: fixed;
@@ -142,7 +142,7 @@
       resize: vertical;
     }
 
-    // 必填字段标记
+    // Required field marker
     .p-float-label label.required::after {
       content: "*";
       color: #e24c4c;
