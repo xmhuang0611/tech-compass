@@ -9,6 +9,8 @@ import {
 } from "@angular/forms";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { MessageService } from "primeng/api";
+import { AuthService } from "../../../core/services/auth.service";
+import { take } from "rxjs/operators";
 
 import { ButtonModule } from "primeng/button";
 import { ChipsModule } from "primeng/chips";
@@ -48,6 +50,7 @@ export class EditSolutionComponent implements OnInit {
   departments: string[] = [];
   loading = false;
   slug!: string;
+  isAdmin = false;
 
   stageOptions = [
     { label: "DEVELOPING", value: "DEVELOPING" },
@@ -62,6 +65,12 @@ export class EditSolutionComponent implements OnInit {
     { label: "TRIAL", value: "TRIAL" },
     { label: "ASSESS", value: "ASSESS" },
     { label: "HOLD", value: "HOLD" },
+  ];
+
+  reviewStatusOptions = [
+    { label: "PENDING", value: "PENDING" },
+    { label: "APPROVED", value: "APPROVED" },
+    { label: "REJECTED", value: "REJECTED" },
   ];
 
   adoptionLevelOptions = [
@@ -81,7 +90,8 @@ export class EditSolutionComponent implements OnInit {
     private categoryService: CategoryService,
     private departmentService: DepartmentService,
     private solutionService: SolutionService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) {
     this.solutionForm = this.fb.group({
       name: ["", Validators.required],
@@ -103,7 +113,8 @@ export class EditSolutionComponent implements OnInit {
       pros: ["", Validators.required],
       cons: ["", Validators.required],
       stage: ["", Validators.required],
-      recommend_status: [{ value: "", disabled: true }, Validators.required],
+      recommend_status: [{ value: "", disabled: true }],
+      review_status: [{ value: "", disabled: true }],
       adoption_level: ["", Validators.required],
       adoption_user_count: [0, [Validators.required, Validators.min(0)]],
     });
@@ -112,7 +123,18 @@ export class EditSolutionComponent implements OnInit {
   ngOnInit() {
     this.loadCategories();
     this.loadDepartments();
+    this.checkAdminStatus();
     this.loadSolution();
+  }
+
+  private checkAdminStatus() {
+    this.authService.currentUser$.pipe(take(1)).subscribe((user) => {
+      this.isAdmin = user?.is_superuser || false;
+      if (this.isAdmin) {
+        this.solutionForm.get("recommend_status")?.enable();
+        this.solutionForm.get("review_status")?.enable();
+      }
+    });
   }
 
   private loadCategories() {
@@ -164,15 +186,24 @@ export class EditSolutionComponent implements OnInit {
       const cons =
         formValue.cons?.split("\n").filter((line: string) => line.trim()) || [];
 
-      // Create solution object without recommend_status
-      const { recommend_status, ...solutionData } = formValue;
-      const solution = {
-        ...solutionData,
+      // Create solution object, excluding admin-only fields for non-admins
+      const { recommend_status, review_status, ...baseData } = formValue;
+      let solutionData = {
+        ...baseData,
         pros,
         cons,
       };
 
-      this.solutionService.updateSolution(this.slug, solution).subscribe({
+      // Only include admin fields if user is admin
+      if (this.isAdmin) {
+        solutionData = {
+          ...solutionData,
+          recommend_status,
+          review_status,
+        };
+      }
+
+      this.solutionService.updateSolution(this.slug, solutionData).subscribe({
         next: (response) => {
           if (response.success) {
             this.messageService.add({

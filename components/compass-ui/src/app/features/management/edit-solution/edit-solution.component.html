@@ -128,7 +128,22 @@
             optionValue="value" 
             [style]="{'width':'100%'}" 
             placeholder="Select status"
-            [disabled]="true">
+            [disabled]="!isAdmin">
+          </p-dropdown>
+        </div>
+        <div class="form-field">
+          <label for="review_status">
+            Review Status * 
+            <span class="admin-note">(Admin only)</span>
+          </label>
+          <p-dropdown id="review_status" 
+            [options]="reviewStatusOptions" 
+            formControlName="review_status" 
+            optionLabel="label" 
+            optionValue="value" 
+            [style]="{'width':'100%'}" 
+            placeholder="Select status"
+            [disabled]="!isAdmin">
           </p-dropdown>
         </div>
       </div>
