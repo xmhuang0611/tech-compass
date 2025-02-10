@@ -31,11 +31,24 @@ export class CommentService {
   // Get all comments (admin only)
   getAllComments(
     skip: number = 0,
-    limit: number = 10
+    limit: number = 10,
+    filters?: {
+      solution_slug?: string;
+      type?: "OFFICIAL" | "USER";
+    }
   ): Observable<CommentResponse> {
-    return this.http.get<CommentResponse>(
-      `${environment.apiUrl}/comments/?skip=${skip}&limit=${limit}`
-    );
+    let url = `${environment.apiUrl}/comments/?skip=${skip}&limit=${limit}`;
+    
+    if (filters) {
+      if (filters.solution_slug) {
+        url += `&solution_slug=${filters.solution_slug}`;
+      }
+      if (filters.type) {
+        url += `&type=${filters.type}`;
+      }
+    }
+    
+    return this.http.get<CommentResponse>(url);
   }
 
   // Get comments for a specific solution

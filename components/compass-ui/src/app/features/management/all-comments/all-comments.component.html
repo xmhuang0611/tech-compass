@@ -1,6 +1,35 @@
 <div class="all-comments">
   <h1>All Comments</h1>
 
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label for="solution_slug">Solution</label>
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            id="solution_slug"
+            type="text"
+            pInputText
+            [(ngModel)]="filters.solution_slug"
+            (ngModelChange)="onFilterChange()"
+            placeholder="Search by solution name">
+        </span>
+      </div>
+      <div class="filter-field">
+        <label for="type">Comment Type</label>
+        <p-dropdown
+          id="type"
+          [options]="commentTypes"
+          [(ngModel)]="filters.type"
+          (onChange)="onFilterChange()"
+          [showClear]="true"
+          placeholder="Select type">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
   <div class="comments-table-container">
     <p-table
       #dt

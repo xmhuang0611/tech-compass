@@ -12,6 +12,52 @@
     color: var(--text-color);
   }
 
+  .filters-section {
+    margin-bottom: 1.5rem;
+    background: var(--surface-card);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    .filter-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+
+      .filter-field {
+        flex: 1;
+
+        label {
+          display: block;
+          margin-bottom: 0.5rem;
+          color: var(--text-color);
+          font-weight: 500;
+        }
+
+        .p-input-icon-left {
+          width: 100%;
+
+          i {
+            color: var(--text-color-secondary);
+          }
+
+          input {
+            width: 100%;
+            padding-left: 2rem;
+          }
+        }
+
+        p-dropdown {
+          width: 100%;
+
+          ::ng-deep .p-dropdown {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
   .comments-table-container {
     position: relative;
     flex: 1;

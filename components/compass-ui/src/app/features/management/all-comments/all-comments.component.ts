@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
@@ -7,7 +7,7 @@ import {
   CommentService,
   Comment,
 } from "../../../core/services/comment.service";
-import { BehaviorSubject, finalize } from "rxjs";
+import { BehaviorSubject, Subject, debounceTime, takeUntil, finalize } from "rxjs";
 
 // PrimeNG Components
 import { ButtonModule } from "primeng/button";
@@ -19,6 +19,8 @@ import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ConfirmationService } from "primeng/api";
 import { TagModule } from "primeng/tag";
 import { RadioButtonModule } from "primeng/radiobutton";
+import { InputTextModule } from "primeng/inputtext";
+import { DropdownModule } from "primeng/dropdown";
 
 @Component({
   selector: "app-all-comments",
@@ -37,10 +39,12 @@ import { RadioButtonModule } from "primeng/radiobutton";
     ConfirmDialogModule,
     TagModule,
     RadioButtonModule,
+    InputTextModule,
+    DropdownModule,
   ],
   providers: [MessageService, ConfirmationService],
 })
-export class AllCommentsComponent implements OnInit {
+export class AllCommentsComponent implements OnInit, OnDestroy {
   comments: Comment[] = [];
   loading = false;
   totalRecords = 0;
@@ -56,14 +60,42 @@ export class AllCommentsComponent implements OnInit {
     { label: "User Comment", value: "USER" },
   ];
 
+  // Filters
+  filters: {
+    solution_slug: string;
+    type: "OFFICIAL" | "USER" | "";
+  } = {
+    solution_slug: "",
+    type: "",
+  };
+
+  private destroy$ = new Subject<void>();
+  private searchSubject = new Subject<void>();
+
   constructor(
     private commentService: CommentService,
     private messageService: MessageService,
     private confirmationService: ConfirmationService
-  ) {}
+  ) {
+    // Setup search debounce
+    this.searchSubject
+      .pipe(debounceTime(300), takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.resetAndReload();
+      });
+  }
 
   ngOnInit() {
     this.loadComments();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  onFilterChange() {
+    this.searchSubject.next();
   }
 
   getCommentTypeSeverity(type: string): "success" | "info" | "warning" | "danger" {
@@ -81,8 +113,13 @@ export class AllCommentsComponent implements OnInit {
     this.loading = true;
     const skip = this.currentPage * this.pageSize;
 
+    const filters = {
+      solution_slug: this.filters.solution_slug || undefined,
+      type: this.filters.type || undefined
+    };
+
     this.commentService
-      .getAllComments(skip, this.pageSize)
+      .getAllComments(skip, this.pageSize, filters)
       .pipe(
         finalize(() => {
           this.loading = false;
