@@ -127,7 +127,7 @@ async def search_solutions(
 ) -> Any:
     """Search solutions by keyword using text similarity.
     Searches across name, category, description, team, maintainer name, pros and cons.
-    Returns top 5 matches sorted by relevance.
+    Returns all matches sorted by relevance score.
     """
     try:
         solutions = await solution_service.search_solutions(keyword)

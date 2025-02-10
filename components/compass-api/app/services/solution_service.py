@@ -446,7 +446,7 @@ class SolutionService:
             return Solution(**solution_dict)
         return None
 
-    async def search_solutions(self, keyword: str, limit: int = 6) -> List[Solution]:
+    async def search_solutions(self, keyword: str) -> List[Solution]:
         """Search solutions by keyword using text similarity
         Searches across:
         - name (highest weight)
@@ -457,7 +457,7 @@ class SolutionService:
         - team
         - maintainer_name
         - pros and cons
-        Returns top matches sorted by text relevance score
+        Returns all matches sorted by text relevance score
         """
         # Create text index with field weights if it doesn't exist
         await self.collection.create_index([
@@ -486,9 +486,9 @@ class SolutionService:
         cursor = self.collection.find(
             {"$text": {"$search": keyword}},
             {"score": {"$meta": "textScore"}}
-        ).sort([("score", {"$meta": "textScore"})]).limit(limit)
+        ).sort([("score", {"$meta": "textScore"})])
 
-        solutions = await cursor.to_list(length=limit)
+        solutions = await cursor.to_list(length=None)
         
         # Convert to Solution model with ratings
         result = []
