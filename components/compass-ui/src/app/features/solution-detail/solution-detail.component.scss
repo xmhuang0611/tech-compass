@@ -448,4 +448,46 @@
     opacity: 1;
     transform: scale(1);
   }
+}
+
+.comments-list {
+  margin-top: 2rem;
+}
+
+.comment {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+  box-shadow: var(--card-shadow);
+  background-color: var(--surface-card);
+
+  .comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+    gap: 0.5rem;
+
+    .username {
+      font-weight: 600;
+      color: var(--text-color);
+    }
+
+    .date {
+      margin-left: auto;
+    }
+
+    ::ng-deep .p-tag {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      height: 1.5rem;
+    }
+  }
+
+  .comment-content {
+    color: var(--text-color);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
 } 

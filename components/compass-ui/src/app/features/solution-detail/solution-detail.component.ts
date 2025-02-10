@@ -63,19 +63,22 @@ type Severity =
 })
 export class SolutionDetailComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private commentsPage = 0;
+  private userCommentsPage = 0;
   private ratingsPage = 0;
 
   solution$ = new BehaviorSubject<Solution | null>(null);
-  comments$ = new BehaviorSubject<Comment[]>([]);
+  officialComments$ = new BehaviorSubject<Comment[]>([]);
+  userComments$ = new BehaviorSubject<Comment[]>([]);
   ratings$ = new BehaviorSubject<Rating[]>([]);
 
   loading = true;
-  loadingComments = false;
+  loadingOfficialComments = false;
+  loadingUserComments = false;
   loadingRatings = false;
-  hasMoreComments = true;
+  hasMoreUserComments = true;
   hasMoreRatings = true;
-  totalComments = 0;
+  totalOfficialComments = 0;
+  totalUserComments = 0;
   totalRatings = 0;
   activeTab = 0;
   newComment = "";
@@ -168,37 +171,67 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
 
   loadComments(slug: string, loadMore = false) {
     if (!loadMore) {
-      this.commentsPage = 0;
-      this.comments$.next([]);
-      this.hasMoreComments = true;
+      this.userCommentsPage = 0;
+      this.officialComments$.next([]);
+      this.userComments$.next([]);
     }
 
-    if (!this.hasMoreComments || this.loadingComments) {
-      return;
-    }
-
-    this.loadingComments = true;
-    const skip = this.commentsPage * 10;
-
+    // Load OFFICIAL comments (max 10)
+    this.loadingOfficialComments = true;
     this.commentService
-      .getSolutionComments(slug, skip, 10)
-      .pipe(finalize(() => (this.loadingComments = false)))
+      .getSolutionComments(slug, 0, 10, "OFFICIAL")
+      .pipe(
+        finalize(() => {
+          this.loadingOfficialComments = false;
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe({
         next: (response) => {
           if (response.success) {
-            const currentComments = this.comments$.value;
-            this.comments$.next([...currentComments, ...response.data]);
-            this.totalComments = response.total;
-            this.hasMoreComments =
-              currentComments.length + response.data.length < response.total;
-            this.commentsPage++;
+            this.officialComments$.next(response.data);
+            this.totalOfficialComments = response.total;
           }
         },
         error: (error) => {
           this.messageService.add({
             severity: "error",
             summary: "Error",
-            detail: "Failed to load comments",
+            detail: "Failed to load official comments",
+          });
+        },
+      });
+
+    // Load USER comments
+    if (!loadMore) {
+      this.userCommentsPage = 0;
+      this.userComments$.next([]);
+    }
+
+    this.loadingUserComments = true;
+    this.commentService
+      .getSolutionComments(slug, this.userCommentsPage * 10, 10, "USER")
+      .pipe(
+        finalize(() => {
+          this.loadingUserComments = false;
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            const currentComments = this.userComments$.value;
+            this.userComments$.next([...currentComments, ...response.data]);
+            this.totalUserComments = response.total;
+            this.hasMoreUserComments = currentComments.length + response.data.length < response.total;
+            this.userCommentsPage++;
+          }
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to load user comments",
           });
         },
       });
@@ -243,18 +276,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   }
 
   submitComment(slug: string) {
-    if (!this.isLoggedIn) {
-      this.messageService.add({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Please login to add a comment",
-      });
-      return;
-    }
-
-    if (!this.newComment.trim()) {
-      return;
-    }
+    if (!this.newComment.trim()) return;
 
     this.commentService.addComment(slug, this.newComment).subscribe({
       next: (response) => {
@@ -269,11 +291,15 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        this.messageService.add({
-          severity: "error",
-          summary: "Error",
-          detail: error.error?.detail || "Failed to add comment",
-        });
+        if (error.status === 401) {
+          this.showLoginDialog();
+        } else {
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to add comment",
+          });
+        }
       },
     });
   }

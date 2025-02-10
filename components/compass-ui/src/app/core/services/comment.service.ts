@@ -42,11 +42,14 @@ export class CommentService {
   getSolutionComments(
     slug: string,
     skip: number = 0,
-    limit: number = 10
+    limit: number = 10,
+    type?: "OFFICIAL" | "USER"
   ): Observable<CommentResponse> {
-    return this.http.get<CommentResponse>(
-      `${environment.apiUrl}/comments/solution/${slug}?skip=${skip}&limit=${limit}`
-    );
+    let url = `${environment.apiUrl}/comments/solution/${slug}?skip=${skip}&limit=${limit}`;
+    if (type) {
+      url += `&type=${type}`;
+    }
+    return this.http.get<CommentResponse>(url);
   }
 
   // Get my comments

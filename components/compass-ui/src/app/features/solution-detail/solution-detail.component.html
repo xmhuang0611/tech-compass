@@ -57,36 +57,53 @@
 
         <p-tabPanel header="Comments">
           <div class="comments-section">
-              <div class="new-comment">
+            <div class="new-comment">
               <h3>Add a Comment</h3>
-                <div *ngIf="isLoggedIn; else loginToComment">
-                  <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
-                  <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
-                </div>
-                <ng-template #loginToComment>
-                  <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
-                </ng-template>
+              <div *ngIf="isLoggedIn; else loginToComment">
+                <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
+                <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
               </div>
-              
+              <ng-template #loginToComment>
+                <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
+              </ng-template>
+            </div>
+
+            <!-- Official Comments Section -->
             <div class="comments-list">
-              <h3>Comments ({{ totalComments }})</h3>
+              <h3>Official Reviews ({{ totalOfficialComments }})</h3>
               <div class="comments-container">
-                <div *ngFor="let comment of comments$.value" class="comment">
+                <div *ngFor="let comment of officialComments$.value" class="comment">
+                  <div class="comment-header">
+                    <span class="username">{{ comment.full_name }}</span>
+                    <p-tag value="OFFICIAL" severity="success" [rounded]="true"></p-tag>
+                    <span class="date">{{ comment.created_at | date }}</span>
+                  </div>
+                  <div class="comment-content">{{ comment.content }}</div>
+                </div>
+                <p-progressSpinner *ngIf="loadingOfficialComments"></p-progressSpinner>
+              </div>
+            </div>
+
+            <!-- User Comments Section -->
+            <div class="comments-list">
+              <h3>User Reviews ({{ totalUserComments }})</h3>
+              <div class="comments-container">
+                <div *ngFor="let comment of userComments$.value" class="comment">
                   <div class="comment-header">
                     <span class="username">{{ comment.full_name }}</span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
                 </div>
-                <div class="load-more-container" *ngIf="hasMoreComments">
+                <div class="load-more-container" *ngIf="hasMoreUserComments">
                   <p-button 
-                    label="Load More Comments" 
-                    [loading]="loadingComments"
+                    label="Load More User Comments" 
+                    [loading]="loadingUserComments"
                     styleClass="p-button-secondary"
                     (onClick)="loadComments(solution$.value?.slug || '', true)">
                   </p-button>
                 </div>
-                <p-progressSpinner *ngIf="loadingComments"></p-progressSpinner>
+                <p-progressSpinner *ngIf="loadingUserComments"></p-progressSpinner>
               </div>
             </div>
           </div>
