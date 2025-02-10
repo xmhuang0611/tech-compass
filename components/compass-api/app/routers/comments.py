@@ -29,18 +29,27 @@ async def get_all_comments(
     limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
     sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
     type: Optional[CommentType] = Query(None, description="Filter comments by type (OFFICIAL or USER)"),
+    solution_slug: Optional[str] = Query(None, description="Filter comments by solution slug (supports partial matching)"),
     comment_service: CommentService = Depends()
 ) -> StandardResponse[list[Comment]]:
     """
-    Get all comments with pagination, sorting and optional type filtering.
+    Get all comments with pagination, sorting and optional filtering.
     Default sort is by created_at in descending order (newest first).
+    
+    Query Parameters:
+    - skip: Number of items to skip
+    - limit: Maximum number of items to return (1-100)
+    - sort: Sort field (created_at, updated_at). Prefix with - for descending order
+    - type: Filter comments by type (OFFICIAL or USER)
+    - solution_slug: Filter comments by solution slug (supports partial matching)
     """
     try:
         comments, total = await comment_service.get_comments(
             skip=skip,
             limit=limit,
             sort=sort,
-            type=type
+            type=type,
+            solution_slug=solution_slug
         )
         return StandardResponse.paginated(comments, total, skip, limit)
     except ValueError as e:

@@ -29,12 +29,16 @@ class CommentService:
         skip: int = 0,
         limit: int = 20,
         sort: str = "-created_at",  # Default sort by created_at desc
-        type: Optional[CommentType] = None
+        type: Optional[CommentType] = None,
+        solution_slug: Optional[str] = None
     ) -> Tuple[List[Comment], int]:
         """Get all comments with pagination, sorting and optional type filtering."""
         query = {}
         if type:
             query["type"] = type
+        if solution_slug:
+            # Add case-insensitive partial matching for solution_slug
+            query["solution_slug"] = {"$regex": solution_slug, "$options": "i"}
 
         if sort.startswith("-"):
             sort_field = sort[1:]  # Remove the minus sign
