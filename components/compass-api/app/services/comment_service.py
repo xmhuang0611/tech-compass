@@ -169,7 +169,7 @@ class CommentService:
     ) -> Optional[CommentInDB]:
         """Update a comment.
         Only the comment creator or superusers can update it.
-        Only superusers can update the type field."""
+        Only superusers can update the type field, for non-admin users the type field will be ignored."""
         comment = await self._get_comment_or_404(comment_id)
         
         # Check permission
@@ -179,13 +179,12 @@ class CommentService:
                 detail="You don't have permission to update this comment"
             )
 
-        # Check type field permission
+        # Get update fields
         update_dict = comment_update.model_dump(exclude_unset=True)
-        if "type" in update_dict and not is_superuser:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only administrators can update comment type"
-            )
+        
+        # Remove type field for non-admin users
+        if not is_superuser and "type" in update_dict:
+            del update_dict["type"]
 
         update_dict.update({
             "updated_at": datetime.utcnow(),
