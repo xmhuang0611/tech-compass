@@ -27,10 +27,20 @@ class RatingService:
         self,
         skip: int = 0,
         limit: int = 20,
-        sort: str = "-created_at"  # Default sort by created_at desc
+        sort: str = "-created_at",  # Default sort by created_at desc
+        solution_slug: Optional[str] = None,
+        score: Optional[int] = None
     ) -> Tuple[List[Rating], int]:
         """Get all ratings with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
+        
+        # Build query
+        query = {}
+        if solution_slug:
+            # Add case-insensitive partial matching for solution_slug
+            query["solution_slug"] = {"$regex": solution_slug, "$options": "i"}
+        if score is not None:
+            query["score"] = score  # Exact match for score
         
         # Parse sort parameter
         sort_field = "created_at"
@@ -48,9 +58,9 @@ class RatingService:
             raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Execute query with sort
-        cursor = self.db.ratings.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
-        total = await self.db.ratings.count_documents({})
+        total = await self.db.ratings.count_documents(query)
         
         return ratings, total
 

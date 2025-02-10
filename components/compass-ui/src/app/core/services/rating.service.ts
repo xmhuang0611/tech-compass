@@ -39,6 +39,29 @@ export class RatingService {
     );
   }
 
+  // Get all ratings (admin only)
+  getAllRatings(
+    skip: number = 0,
+    limit: number = 10,
+    filters?: {
+      solution_slug?: string;
+      score?: number;
+    }
+  ): Observable<RatingResponse> {
+    let url = `${environment.apiUrl}/ratings/?skip=${skip}&limit=${limit}`;
+    
+    if (filters) {
+      if (filters.solution_slug) {
+        url += `&solution_slug=${filters.solution_slug}`;
+      }
+      if (filters.score) {
+        url += `&score=${filters.score}`;
+      }
+    }
+    
+    return this.http.get<RatingResponse>(url);
+  }
+
   // Get my ratings
   getMyRatings(
     skip: number = 0,

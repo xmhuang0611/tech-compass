@@ -110,6 +110,11 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
           label: "All Comments",
           icon: "pi pi-comments",
           routerLink: "/manage/all-comments",
+        },
+        {
+          label: "All Ratings",
+          icon: "pi pi-star",
+          routerLink: "/manage/all-ratings",
         }
       );
     }

@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -108,6 +108,8 @@ async def get_all_ratings(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    solution_slug: Optional[str] = Query(None, description="Filter ratings by solution slug (supports partial matching)"),
+    score: Optional[int] = Query(None, ge=1, le=5, description="Filter ratings by exact score (1-5)"),
     rating_service: RatingService = Depends()
 ):
     """
@@ -117,13 +119,17 @@ async def get_all_ratings(
     - **page**: Page number for pagination
     - **page_size**: Number of ratings per page
     - **sort**: Field to sort by (created_at, updated_at, score). Prefix with - for descending order
+    - **solution_slug**: Filter ratings by solution slug (supports partial matching)
+    - **score**: Filter ratings by exact score (1-5)
     """
     try:
         skip = (page - 1) * page_size
         ratings, total = await rating_service.get_ratings(
             skip=skip,
             limit=page_size,
-            sort=sort
+            sort=sort,
+            solution_slug=solution_slug,
+            score=score
         )
         return StandardResponse.paginated(
             data=ratings,
