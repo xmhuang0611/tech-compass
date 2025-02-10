@@ -1,8 +1,15 @@
 from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
+from enum import Enum
 
 from app.models import AuditModel
+
+
+class CommentType(str, Enum):
+    """Enum for comment types"""
+    OFFICIAL = "OFFICIAL"
+    USER = "USER"
 
 
 class CommentBase(BaseModel):
@@ -32,11 +39,16 @@ class CommentCreate(CommentBase):
 class CommentUpdate(CommentBase):
     """Model for updating a comment"""
     content: Optional[str] = Field(None, min_length=1, max_length=1000, description="Updated comment content")
+    type: Optional[CommentType] = Field(None, description="Type of the comment (OFFICIAL or USER), only admins can update this field")
 
 class CommentInDB(CommentBase, AuditModel):
     """Model for comment in database"""
     solution_slug: str = Field(..., description="Slug of the solution this comment belongs to")
     username: str = Field(..., description="Username of the comment author")
+    type: CommentType = Field(
+        default=CommentType.USER,
+        description="Type of the comment (OFFICIAL or USER)"
+    )
 
 class Comment(CommentInDB):
     """Comment model for API responses with user's full name"""

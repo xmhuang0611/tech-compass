@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
@@ -6,7 +6,7 @@ from app.core.auth import get_current_active_user
 from app.models.response import StandardResponse
 from app.models.user import User
 from app.services.comment_service import CommentService
-from app.models.comment import CommentCreate, Comment, CommentUpdate, CommentInDB
+from app.models.comment import CommentCreate, Comment, CommentUpdate, CommentInDB, CommentType
 from app.services.solution_service import SolutionService
 
 router = APIRouter()
@@ -28,17 +28,19 @@ async def get_all_comments(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
     sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    type: Optional[CommentType] = Query(None, description="Filter comments by type (OFFICIAL or USER)"),
     comment_service: CommentService = Depends()
 ) -> StandardResponse[list[Comment]]:
     """
-    Get all comments with pagination and sorting.
+    Get all comments with pagination, sorting and optional type filtering.
     Default sort is by created_at in descending order (newest first).
     """
     try:
         comments, total = await comment_service.get_comments(
             skip=skip,
             limit=limit,
-            sort=sort
+            sort=sort,
+            type=type
         )
         return StandardResponse.paginated(comments, total, skip, limit)
     except ValueError as e:
@@ -52,11 +54,12 @@ async def get_solution_comments(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
     limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
     sort_by: str = Query("created_at", regex="^(created_at)$", description="Field to sort by"),
+    type: Optional[CommentType] = Query(None, description="Filter comments by type (OFFICIAL or USER)"),
     comment_service: CommentService = Depends(),
     _: None = Depends(verify_solution_exists)
 ) -> StandardResponse[list[Comment]]:
     """
-    Get all comments for a solution with pagination and sorting.
+    Get all comments for a solution with pagination, sorting and optional type filtering.
     Comments are sorted by created_at in descending order (newest first).
     """
     try:
@@ -64,7 +67,8 @@ async def get_solution_comments(
             solution_slug=solution_slug,
             skip=skip,
             limit=limit,
-            sort_by=sort_by
+            sort_by=sort_by,
+            type=type
         )
         return StandardResponse.paginated(comments, total, skip, limit)
     except ValueError as e:
@@ -100,7 +104,16 @@ async def update_comment(
 ) -> StandardResponse[CommentInDB]:
     """
     Update a comment.
-    Only the comment creator or superusers can update it.
+    
+    Permissions:
+    - Regular users can only update their own comments' content
+    - Regular users cannot update the type field
+    - Administrators can update any comment and all fields including type
+    - Attempting to update type field as a non-admin will result in a 403 error
+    
+    The type field can be:
+    - OFFICIAL: Official comments from administrators
+    - USER: Regular user comments (default)
     """
     try:
         result = await comment_service.update_comment(

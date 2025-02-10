@@ -5,7 +5,7 @@ from pymongo import DESCENDING, ASCENDING
 from fastapi import HTTPException, status
 
 from app.core.database import get_database
-from app.models.comment import CommentCreate, CommentInDB, Comment, CommentUpdate
+from app.models.comment import CommentCreate, CommentInDB, Comment, CommentUpdate, CommentType
 from app.services.user_service import UserService
 
 VALID_SORT_FIELDS = {'created_at', 'updated_at'}
@@ -28,10 +28,13 @@ class CommentService:
         self,
         skip: int = 0,
         limit: int = 20,
-        sort: str = "-created_at"  # Default sort by created_at desc
+        sort: str = "-created_at",  # Default sort by created_at desc
+        type: Optional[CommentType] = None
     ) -> Tuple[List[Comment], int]:
-        """Get all comments with pagination and sorting.
-        Default sort is by created_at in descending order (newest first)."""
+        """Get all comments with pagination, sorting and optional type filtering."""
+        query = {}
+        if type:
+            query["type"] = type
 
         if sort.startswith("-"):
             sort_field = sort[1:]  # Remove the minus sign
@@ -45,7 +48,7 @@ class CommentService:
             raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Execute query with sort
-        cursor = self.collection.find().sort(sort_field, sort_direction).skip(skip).limit(limit)
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         
         # Convert to Comment objects with user full names
         comments = []
@@ -55,7 +58,7 @@ class CommentService:
                 comment["username"] = comment["created_by"]
             comments.append(await self._convert_to_comment(comment))
             
-        total = await self.collection.count_documents({})
+        total = await self.collection.count_documents(query)
         
         return comments, total
 
@@ -64,11 +67,14 @@ class CommentService:
         solution_slug: str,
         skip: int = 0,
         limit: int = 20,
-        sort_by: str = "created_at"
+        sort_by: str = "created_at",
+        type: Optional[CommentType] = None
     ) -> Tuple[List[Comment], int]:
-        """Get all comments for a solution with pagination.
-        Comments are sorted by created_at in descending order (newest first)."""
+        """Get all comments for a solution with pagination and optional type filtering."""
         query = {"solution_slug": solution_slug}
+        if type:
+            query["type"] = type
+
         sort_field = sort_by
         cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
         
@@ -144,6 +150,7 @@ class CommentService:
         comment_dict.update({
             "solution_slug": solution_slug,
             "username": username,
+            "type": CommentType.USER,  # Always set type to USER for new comments
             "created_at": now,
             "updated_at": now,
             "created_by": username,
@@ -161,7 +168,8 @@ class CommentService:
         is_superuser: bool
     ) -> Optional[CommentInDB]:
         """Update a comment.
-        Only the comment creator or superusers can update it."""
+        Only the comment creator or superusers can update it.
+        Only superusers can update the type field."""
         comment = await self._get_comment_or_404(comment_id)
         
         # Check permission
@@ -171,7 +179,14 @@ class CommentService:
                 detail="You don't have permission to update this comment"
             )
 
+        # Check type field permission
         update_dict = comment_update.model_dump(exclude_unset=True)
+        if "type" in update_dict and not is_superuser:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only administrators can update comment type"
+            )
+
         update_dict.update({
             "updated_at": datetime.utcnow(),
             "updated_by": username

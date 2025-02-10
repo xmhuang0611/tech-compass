@@ -40,7 +40,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Docker Container Service",
+    "name": "Docker",
     "brief": "Enterprise container platform",
     "description": "Docker container service for enterprise applications",
     "category": "Infrastructure",

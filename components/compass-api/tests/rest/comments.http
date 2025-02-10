@@ -1,17 +1,21 @@
 @baseUrl = http://127.0.0.1:8000/api
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0IiwiZXhwIjoyMDUzMjI2OTczfQ.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
-@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjA1MzIyNjk3M30.cMGhHbnYwkuPxmbcJezfYsflyLX-NFsAErPbIxD5qC0
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0dXNlciIsImV4cCI6MjA1NDU0NjkxMX0.bgRqIppFVAX924kYwAE5clyWzla43B9ageS-W6rsJ_M
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjA1NDU0NjgwMn0.UTicXf0sfRDMZ3BigIWrcauso0zy68g1FkSBrCPto0s
 
-### Get all comments (with pagination and sorting)
-GET {{baseUrl}}/comments?page=1&page_size=10&sort=-created_at
+### Get all comments (with pagination, sorting and type filtering)
+GET {{baseUrl}}/comments?skip=0&limit=10&sort=-created_at&type=USER
 Content-Type: application/json
 
-### Get all comments for a specific solution
-GET {{baseUrl}}/comments/solution/my-solution?page=1&page_size=10&sort_by=created_at
+### Get all official comments
+GET {{baseUrl}}/comments?skip=0&limit=10&sort=-created_at&type=OFFICIAL
+Content-Type: application/json
+
+### Get all comments for a specific solution with type filtering
+GET {{baseUrl}}/comments/solution/docker?skip=0&limit=10&sort_by=created_at&type=USER
 Content-Type: application/json
 
 ### Create new comment for a solution (requires auth)
-POST {{baseUrl}}/comments/solution/my-solution
+POST {{baseUrl}}/comments/solution/docker
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -19,26 +23,57 @@ Authorization: Bearer {{token}}
     "content": "This is a great solution! I've been using it in production for several months now."
 }
 
-### Create comment with whitespace (will be trimmed)
-POST {{baseUrl}}/comments/solution/my-solution
+### Create official comment for a solution (requires admin auth)
+POST {{baseUrl}}/comments/solution/docker
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
-    "content": "   This comment has whitespace around it   "
+    "content": "This is an official comment from the admin team.",
+    "type": "OFFICIAL"
 }
 
-### Update comment (requires auth, only author can update)
-PUT {{baseUrl}}/comments/comment123
+### Try to create comment with type field (type will be ignored)
+POST {{baseUrl}}/comments/solution/docker
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "content": "Updated comment content with more details about my experience."
+    "content": "Trying to create a comment with type field.",
+    "type": "OFFICIAL"
+}
+
+### Update comment content as regular user
+PUT {{baseUrl}}/comments/67a9e2ff635c6baed5652083
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Updated comment content"
+}
+
+### Try to update comment type as regular user (should fail)
+PUT {{baseUrl}}/comments/67a9e2ff635c6baed5652083
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "content": "Updated content",
+    "type": "OFFICIAL"
+}
+
+### Update comment type as admin
+PUT {{baseUrl}}/comments/67a9e2ff635c6baed5652083
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+    "content": "Updated by admin",
+    "type": "OFFICIAL"
 }
 
 ### Delete comment (requires auth, only author can delete)
-DELETE {{baseUrl}}/comments/comment123
+DELETE {{baseUrl}}/comments/67a9e2ff635c6baed5652083
 Authorization: Bearer {{token}}
 
 ### Test error cases
@@ -133,23 +168,25 @@ Authorization: Bearer {{token}}
 
 ### Example responses:
 
-# Get all comments response
+# Get comments response with type
 # {
 #     "success": true,
 #     "data": [
 #         {
 #             "id": "comment123",
-#             "content": "This is a great solution! I've been using it in production for several months now.",
+#             "content": "This is a great solution!",
 #             "solution_slug": "my-solution",
 #             "username": "test",
+#             "type": "USER",
 #             "created_at": "2024-01-22T10:30:00",
 #             "updated_at": "2024-01-22T10:30:00"
 #         },
 #         {
 #             "id": "comment124",
-#             "content": "Another helpful comment about the solution.",
+#             "content": "Official response from the team",
 #             "solution_slug": "my-solution",
-#             "username": "other-user",
+#             "username": "admin",
+#             "type": "OFFICIAL",
 #             "created_at": "2024-01-22T10:35:00",
 #             "updated_at": "2024-01-22T10:35:00"
 #         }
@@ -159,49 +196,9 @@ Authorization: Bearer {{token}}
 #     "limit": 10
 # }
 
-# Get single comment response (after create/update)
+# Error - Cannot update type as non-admin
 # {
-#     "success": true,
-#     "data": {
-#         "id": "comment123",
-#         "content": "This is a great solution! I've been using it in production for several months now.",
-#         "solution_slug": "my-solution",
-#         "username": "test",
-#         "created_at": "2024-01-22T10:30:00",
-#         "updated_at": "2024-01-22T10:30:00"
-#     }
-# }
-
-# Error responses examples:
-
-# Not found error - Solution
-# {
-#     "detail": "Solution with slug 'non-existent-solution' not found"
-# }
-
-# Not found error - Comment
-# {
-#     "detail": "Comment not found"
-# }
-
-# Validation error - empty content
-# {
-#     "detail": "Comment content cannot be empty"
-# }
-
-# Validation error - whitespace only
-# {
-#     "detail": "Comment content cannot be empty"
-# }
-
-# Permission error
-# {
-#     "detail": "You don't have permission to update this comment"
-# }
-
-# Authentication error
-# {
-#     "detail": "Not authenticated"
+#     "detail": "Only administrators can update comment type"
 # }
 
 ### Create a comment on a solution
