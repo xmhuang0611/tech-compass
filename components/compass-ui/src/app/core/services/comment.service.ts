@@ -10,6 +10,7 @@ export interface Comment {
   full_name: string;
   created_at: string;
   solution_slug: string;
+  type: "OFFICIAL" | "USER";
   created_by?: string;
   updated_at?: string;
   updated_by?: string;
@@ -26,6 +27,16 @@ export interface CommentResponse {
 })
 export class CommentService {
   constructor(private http: HttpClient) {}
+
+  // Get all comments (admin only)
+  getAllComments(
+    skip: number = 0,
+    limit: number = 10
+  ): Observable<CommentResponse> {
+    return this.http.get<CommentResponse>(
+      `${environment.apiUrl}/comments/?skip=${skip}&limit=${limit}`
+    );
+  }
 
   // Get comments for a specific solution
   getSolutionComments(
@@ -57,9 +68,10 @@ export class CommentService {
   }
 
   // Update a comment
-  updateComment(commentId: string, content: string): Observable<any> {
+  updateComment(commentId: string, content: string, type: "OFFICIAL" | "USER"): Observable<any> {
     return this.http.put<any>(`${environment.apiUrl}/comments/${commentId}`, {
       content,
+      type,
     });
   }
 

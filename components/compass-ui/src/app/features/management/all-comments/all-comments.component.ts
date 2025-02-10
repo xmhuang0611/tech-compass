@@ -17,11 +17,13 @@ import { DialogModule } from "primeng/dialog";
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ConfirmationService } from "primeng/api";
+import { TagModule } from "primeng/tag";
+import { RadioButtonModule } from "primeng/radiobutton";
 
 @Component({
-  selector: "app-my-comments",
-  templateUrl: "./my-comments.component.html",
-  styleUrls: ["./my-comments.component.scss"],
+  selector: "app-all-comments",
+  templateUrl: "./all-comments.component.html",
+  styleUrls: ["./all-comments.component.scss"],
   standalone: true,
   imports: [
     CommonModule,
@@ -33,10 +35,12 @@ import { ConfirmationService } from "primeng/api";
     DialogModule,
     InputTextareaModule,
     ConfirmDialogModule,
+    TagModule,
+    RadioButtonModule,
   ],
   providers: [MessageService, ConfirmationService],
 })
-export class MyCommentsComponent implements OnInit {
+export class AllCommentsComponent implements OnInit {
   comments: Comment[] = [];
   loading = false;
   totalRecords = 0;
@@ -46,6 +50,11 @@ export class MyCommentsComponent implements OnInit {
 
   editDialogVisible = false;
   editingComment: Partial<Comment> = {};
+
+  commentTypes = [
+    { label: "Official Comment", value: "OFFICIAL" },
+    { label: "User Comment", value: "USER" },
+  ];
 
   constructor(
     private commentService: CommentService,
@@ -57,12 +66,23 @@ export class MyCommentsComponent implements OnInit {
     this.loadComments();
   }
 
+  getCommentTypeSeverity(type: string): "success" | "info" | "warning" | "danger" {
+    switch (type) {
+      case "OFFICIAL":
+        return "success";
+      case "USER":
+        return "info";
+      default:
+        return "info";
+    }
+  }
+
   loadComments() {
     this.loading = true;
     const skip = this.currentPage * this.pageSize;
 
     this.commentService
-      .getMyComments(skip, this.pageSize)
+      .getAllComments(skip, this.pageSize)
       .pipe(
         finalize(() => {
           this.loading = false;
@@ -103,17 +123,13 @@ export class MyCommentsComponent implements OnInit {
   }
 
   saveComment() {
-    if (!this.editingComment._id || !this.editingComment.content?.trim()) {
+    if (!this.editingComment._id || !this.editingComment.content?.trim() || !this.editingComment.type) {
       return;
     }
 
     this.loading = true;
     this.commentService
-      .updateComment(
-        this.editingComment._id,
-        this.editingComment.content,
-        this.editingComment.type || "USER"
-      )
+      .updateComment(this.editingComment._id, this.editingComment.content, this.editingComment.type)
       .subscribe({
         next: (response) => {
           if (response.success) {
@@ -152,7 +168,6 @@ export class MyCommentsComponent implements OnInit {
 
     this.commentService.deleteComment(comment._id).subscribe({
       next: (response) => {
-        // 204 response will be null, which is expected for successful deletion
         this.messageService.add({
           severity: "success",
           summary: "Success",
@@ -170,4 +185,4 @@ export class MyCommentsComponent implements OnInit {
       },
     });
   }
-}
+} 

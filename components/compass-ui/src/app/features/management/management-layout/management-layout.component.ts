@@ -100,11 +100,18 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
     ];
 
     if (isAdmin) {
-      this.sideMenuItems.push({
-        label: "All Solutions",
-        icon: "pi pi-list",
-        routerLink: "/manage/all-solutions",
-      });
+      this.sideMenuItems.push(
+        {
+          label: "All Solutions",
+          icon: "pi pi-list",
+          routerLink: "/manage/all-solutions",
+        },
+        {
+          label: "All Comments",
+          icon: "pi pi-comments",
+          routerLink: "/manage/all-comments",
+        }
+      );
     }
 
     this.sideMenuItems.push(
