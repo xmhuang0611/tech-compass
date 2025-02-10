@@ -93,9 +93,36 @@ class UserService:
             return None
         return User.model_validate(user)
 
-    async def get_users(self, skip: int = 0, limit: int = 10) -> list[User]:
-        """Get all users with pagination."""
-        cursor = self.collection.find().sort("username", 1).skip(skip).limit(limit)
+    async def get_users(
+        self,
+        skip: int = 0,
+        limit: int = 10,
+        username: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        is_superuser: Optional[bool] = None
+    ) -> list[User]:
+        """Get all users with pagination and filtering.
+        
+        Args:
+            skip: Number of records to skip
+            limit: Maximum number of records to return
+            username: Optional filter by username (case-insensitive partial match)
+            is_active: Optional filter by active status
+            is_superuser: Optional filter by superuser status
+            
+        Returns:
+            List of matching users
+        """
+        # Build query
+        query = {}
+        if username:
+            query["username"] = {"$regex": username, "$options": "i"}
+        if is_active is not None:
+            query["is_active"] = is_active
+        if is_superuser is not None:
+            query["is_superuser"] = is_superuser
+
+        cursor = self.collection.find(query).sort("username", 1).skip(skip).limit(limit)
         users = []
         async for user_dict in cursor:
             users.append(User(**user_dict))
@@ -110,6 +137,7 @@ class UserService:
 
     async def create_user(self, user: UserCreate) -> User:
         """Create a new user."""
+        user.username = user.username.lower()
         await self._check_username_uniqueness(user.username, "")
 
         user_dict = user.model_dump(exclude={"password"})
@@ -130,6 +158,7 @@ class UserService:
         current_username: str
     ) -> bool:
         """Update a user's password."""
+        username = username.lower()
         if username != current_username:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -271,9 +300,31 @@ class UserService:
         result = await self.collection.delete_one({"username": username})
         return result.deleted_count > 0
 
-    async def count_users(self) -> int:
-        """Get total number of users."""
-        return await self.collection.count_documents({})
+    async def count_users(
+        self,
+        username: Optional[str] = None,
+        is_active: Optional[bool] = None,
+        is_superuser: Optional[bool] = None
+    ) -> int:
+        """Get total number of users matching the filter criteria.
+        
+        Args:
+            username: Optional filter by username (case-insensitive partial match)
+            is_active: Optional filter by active status
+            is_superuser: Optional filter by superuser status
+            
+        Returns:
+            Total number of matching users
+        """
+        query = {}
+        if username:
+            query["username"] = {"$regex": username, "$options": "i"}
+        if is_active is not None:
+            query["is_active"] = is_active
+        if is_superuser is not None:
+            query["is_superuser"] = is_superuser
+            
+        return await self.collection.count_documents(query)
 
     async def get_user_info(self, username: str) -> Optional[dict]:
         """Get basic user info (username and full_name) for display purposes."""

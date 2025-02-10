@@ -1,6 +1,6 @@
-from typing import Any, List
+from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.user import User, UserCreate, UserUpdate, UserPasswordUpdate, AdminUserUpdate
@@ -26,11 +26,32 @@ async def create_user(
 async def get_users(
     skip: int = 0,
     limit: int = 10,
+    username: Optional[str] = Query(None, description="Filter by username (case-insensitive partial match)"),
+    is_active: Optional[bool] = Query(None, description="Filter by active status"),
+    is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
     user_service: UserService = Depends()
 ) -> Any:
-    """Get all users with pagination."""
-    users = await user_service.get_users(skip=skip, limit=limit)
-    total = await user_service.count_users()
+    """Get all users with pagination and filtering.
+    
+    Query Parameters:
+    - skip: Number of records to skip
+    - limit: Maximum number of records to return
+    - username: Filter by username (case-insensitive partial match)
+    - is_active: Filter by active status (true/false)
+    - is_superuser: Filter by superuser status (true/false)
+    """
+    users = await user_service.get_users(
+        skip=skip,
+        limit=limit,
+        username=username,
+        is_active=is_active,
+        is_superuser=is_superuser
+    )
+    total = await user_service.count_users(
+        username=username,
+        is_active=is_active,
+        is_superuser=is_superuser
+    )
     return StandardResponse.paginated(
         data=users,
         total=total,

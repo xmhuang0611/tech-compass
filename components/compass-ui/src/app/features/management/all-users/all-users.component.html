@@ -1,0 +1,191 @@
+<div class="all-users">
+  <h1>All Users</h1>
+
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label for="username">Username</label>
+        <span class="p-input-icon-left">
+          <i class="pi pi-search"></i>
+          <input
+            id="username"
+            type="text"
+            pInputText
+            [(ngModel)]="filters.username"
+            (ngModelChange)="onFilterChange()"
+            placeholder="Search by username">
+        </span>
+      </div>
+      <div class="filter-field">
+        <label for="is_active">Status</label>
+        <p-dropdown
+          id="is_active"
+          [options]="statusOptions"
+          [(ngModel)]="filters.is_active"
+          (onChange)="onFilterChange()"
+          [showClear]="true"
+          placeholder="Select status">
+        </p-dropdown>
+      </div>
+      <div class="filter-field">
+        <label for="is_superuser">Role</label>
+        <p-dropdown
+          id="is_superuser"
+          [options]="roleOptions"
+          [(ngModel)]="filters.is_superuser"
+          (onChange)="onFilterChange()"
+          [showClear]="true"
+          placeholder="Select role">
+        </p-dropdown>
+      </div>
+    </div>
+  </div>
+
+  <div class="users-table-container">
+    <p-table
+      #dt
+      [value]="users"
+      [rows]="pageSize"
+      [paginator]="true"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      [showCurrentPageReport]="true"
+      [lazy]="true"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      (onPage)="onPageChange($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Username</th>
+          <th>Full Name</th>
+          <th>Email</th>
+          <th>Status</th>
+          <th>Role</th>
+          <th>Created On</th>
+          <th>Updated On</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-user>
+        <tr>
+          <td>
+            <span class="truncate" [title]="user.username">
+              {{ user.username }}
+            </span>
+          </td>
+          <td>
+            <span class="truncate" [title]="user.full_name">
+              {{ user.full_name }}
+            </span>
+          </td>
+          <td>
+            <span class="truncate" [title]="user.email">
+              {{ user.email }}
+            </span>
+          </td>
+          <td>
+            <p-tag
+              [value]="user.is_active ? 'Active' : 'Inactive'"
+              [severity]="getStatusSeverity(user.is_active)">
+            </p-tag>
+          </td>
+          <td>
+            <p-tag
+              [value]="user.is_superuser ? 'Admin' : 'User'"
+              [severity]="getRoleSeverity(user.is_superuser)">
+            </p-tag>
+          </td>
+          <td>{{ user.created_at | date : "yyyy-MM-dd" }}</td>
+          <td>{{ user.updated_at | date : "yyyy-MM-dd" }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                (click)="editUser(user)"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8">
+            <div class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No users found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div *ngIf="loading" class="loading-overlay">
+      <div class="loading-message">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Loading users...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p-dialog
+  [(visible)]="editDialogVisible"
+  [header]="'Edit User'"
+  [modal]="true"
+  [style]="{ width: '450px' }">
+  <div class="edit-user-form">
+    <div class="user-info">
+      <div class="info-field">
+        <label>Username</label>
+        <div class="info-value">{{ editingUser.username }}</div>
+      </div>
+      <div class="info-field">
+        <label>Full Name</label>
+        <div class="info-value">{{ editingUser.full_name }}</div>
+      </div>
+      <div class="info-field">
+        <label>Email</label>
+        <div class="info-value">{{ editingUser.email }}</div>
+      </div>
+    </div>
+    <div class="edit-fields">
+      <div class="field-row">
+        <label>
+          <p-checkbox
+            [(ngModel)]="editingUser.is_active"
+            [binary]="true">
+          </p-checkbox>
+          <span class="checkbox-label">Active</span>
+        </label>
+      </div>
+      <div class="field-row">
+        <label>
+          <p-checkbox
+            [(ngModel)]="editingUser.is_superuser"
+            [binary]="true">
+          </p-checkbox>
+          <span class="checkbox-label">Admin</span>
+        </label>
+      </div>
+    </div>
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button
+      label="Cancel"
+      (click)="editDialogVisible = false"
+      styleClass="p-button-text">
+    </p-button>
+    <p-button
+      label="Save"
+      (click)="saveUser()"
+      [loading]="loading">
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<p-toast></p-toast> 
