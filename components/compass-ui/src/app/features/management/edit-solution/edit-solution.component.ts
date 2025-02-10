@@ -210,6 +210,7 @@ export class EditSolutionComponent implements OnInit {
               severity: "success",
               summary: "Success",
               detail: "Solution updated successfully",
+              life: 3000  // 3 seconds
             });
           } else {
             this.messageService.add({
