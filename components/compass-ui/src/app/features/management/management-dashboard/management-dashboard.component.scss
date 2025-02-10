@@ -3,6 +3,14 @@
     margin: 0 0 2rem;
     font-size: 1.5rem;
     font-weight: 600;
+    color: var(--text-color);
+  }
+
+  h2 {
+    margin: 3rem 0 2rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
   }
 
   .stats-grid {
@@ -13,6 +21,12 @@
     ::ng-deep .stats-card {
       .p-card {
         background: var(--surface-card);
+        transition: transform 0.2s, box-shadow 0.2s;
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
       }
 
       .stat-content {

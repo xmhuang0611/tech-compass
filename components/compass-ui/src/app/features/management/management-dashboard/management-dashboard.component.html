@@ -6,6 +6,40 @@
       <div class="stat-content">
         <i class="pi pi-box"></i>
         <div class="stat-details">
+          <h3>All Solutions</h3>
+          <div class="stat-value">{{ stats.totalSolutions }}</div>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card styleClass="stats-card">
+      <div class="stat-content">
+        <i class="pi pi-comments"></i>
+        <div class="stat-details">
+          <h3>All Comments</h3>
+          <div class="stat-value">{{ stats.totalComments }}</div>
+        </div>
+      </div>
+    </p-card>
+
+    <p-card styleClass="stats-card">
+      <div class="stat-content">
+        <i class="pi pi-star"></i>
+        <div class="stat-details">
+          <h3>All Ratings</h3>
+          <div class="stat-value">{{ stats.totalRatings }}</div>
+        </div>
+      </div>
+    </p-card>
+  </div>
+
+  <h2>My Contributions</h2>
+
+  <div class="stats-grid">
+    <p-card styleClass="stats-card">
+      <div class="stat-content">
+        <i class="pi pi-box"></i>
+        <div class="stat-details">
           <h3>My Solutions</h3>
           <div class="stat-value">{{ stats.solutions }}</div>
         </div>
