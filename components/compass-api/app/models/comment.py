@@ -17,7 +17,7 @@ class CommentBase(BaseModel):
     content: str = Field(
         ..., 
         min_length=1, 
-        max_length=1000, 
+        max_length=2000, 
         description="Comment content"
     )
 
@@ -38,7 +38,7 @@ class CommentCreate(CommentBase):
 
 class CommentUpdate(CommentBase):
     """Model for updating a comment"""
-    content: Optional[str] = Field(None, min_length=1, max_length=1000, description="Updated comment content")
+    content: Optional[str] = Field(None, min_length=1, max_length=2000, description="Updated comment content")
     type: Optional[CommentType] = Field(None, description="Type of the comment (OFFICIAL or USER), only admins can update this field")
 
 class CommentInDB(CommentBase, AuditModel):
