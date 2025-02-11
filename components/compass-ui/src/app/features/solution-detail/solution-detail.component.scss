@@ -276,6 +276,15 @@
               }
             }
           }
+
+          .no-comments-message {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color-secondary);
+            font-size: 0.875rem;
+            margin: 1rem 0;
+          }
         }
 
         .load-more-container {

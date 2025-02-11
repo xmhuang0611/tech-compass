@@ -80,6 +80,9 @@
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
                 </div>
+                <div *ngIf="!loadingOfficialComments && officialComments$.value.length === 0" class="no-comments-message">
+                   No official reviews yet.
+                </div>
                 <p-progressSpinner *ngIf="loadingOfficialComments"></p-progressSpinner>
               </div>
             </div>
@@ -94,6 +97,9 @@
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
+                </div>
+                <div *ngIf="!loadingUserComments && userComments$.value.length === 0" class="no-comments-message">
+                  No user reviews yet. Be the first one to share your experience!
                 </div>
                 <div class="load-more-container" *ngIf="hasMoreUserComments">
                   <p-button 
