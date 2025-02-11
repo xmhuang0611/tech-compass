@@ -49,18 +49,39 @@ class TagService:
             return TagInDB(**tag)
         return None
 
-    async def get_tag_usage_count(self, name: str) -> int:
-        """Get the number of solutions using this tag"""
-        return await self.db.solutions.count_documents({
-            "tags": name,
-            "review_status": "APPROVED"
-        })
-
-    async def get_tag_with_usage(self, tag: TagInDB) -> Tag:
-        """Convert TagInDB to Tag with usage count"""
-        tag_dict = tag.model_dump()
-        usage_count = await self.get_tag_usage_count(tag.name)
-        return Tag(**tag_dict, usage_count=usage_count)
+    async def get_tag_usage_counts(self, tag_names: List[str] = None) -> dict:
+        """Get usage counts for multiple tags in a single query
+        
+        Args:
+            tag_names: Optional list of tag names to get counts for. If None, gets counts for all tags.
+            
+        Returns:
+            Dictionary mapping tag names to their usage counts
+        """
+        pipeline = [
+            # Match stage (optional)
+            *([{"$match": {"tags": {"$in": tag_names}}}] if tag_names else []),
+            
+            # Only count approved solutions
+            {"$match": {"review_status": "APPROVED"}},
+            
+            # Unwind tags array to count each tag separately
+            {"$unwind": "$tags"},
+            
+            # Group by tag and count occurrences
+            {
+                "$group": {
+                    "_id": "$tags",
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
+        
+        # Execute aggregation
+        results = await self.db.solutions.aggregate(pipeline).to_list(length=None)
+        
+        # Convert to dictionary
+        return {doc["_id"]: doc["count"] for doc in results}
 
     async def get_tags(
         self,
@@ -74,19 +95,44 @@ class TagService:
             limit: Maximum number of items to return
             show_all: If True, return all tags; if False, only return tags with usage_count > 0
         """
+        # Get all tags first
         cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
         tags = await cursor.to_list(length=limit)
         
-        # Convert to Tag model with usage count
+        if not tags:
+            return []
+            
+        # Get usage counts for all tags in a single query
+        tag_names = [tag["name"] for tag in tags]
+        usage_counts = await self.get_tag_usage_counts(tag_names)
+        
+        # Convert to Tag models with usage counts
         result = []
         for tag in tags:
             tag_model = TagInDB(**tag)
-            tag_with_usage = await self.get_tag_with_usage(tag_model)
+            usage_count = usage_counts.get(tag_model.name, 0)
+            
             # Only include tags with usage_count > 0 if show_all is False
-            if show_all or tag_with_usage.usage_count > 0:
-                result.append(tag_with_usage)
+            if show_all or usage_count > 0:
+                tag_dict = tag_model.model_dump()
+                tag_dict["usage_count"] = usage_count
+                result.append(Tag(**tag_dict))
             
         return result
+
+    async def get_tag_with_usage(self, tag: TagInDB) -> Tag:
+        """Convert TagInDB to Tag with usage count"""
+        tag_dict = tag.model_dump()
+        usage_counts = await self.get_tag_usage_counts([tag.name])
+        tag_dict["usage_count"] = usage_counts.get(tag.name, 0)
+        return Tag(**tag_dict)
+
+    async def get_tag_usage_count(self, name: str) -> int:
+        """Get the number of solutions using this tag"""
+        return await self.db.solutions.count_documents({
+            "tags": name,
+            "review_status": "APPROVED"
+        })
 
     async def update_tag_by_name(
         self,
@@ -161,15 +207,24 @@ class TagService:
         if not solution or not solution.get("tags"):
             return []
 
-        # Get all tags for this solution
-        tags = []
-        for tag_name in solution["tags"]:
-            tag = await self.get_tag_by_name(tag_name)
-            if tag:
-                tag_with_usage = await self.get_tag_with_usage(tag)
-                tags.append(tag_with_usage)
+        # Get all tags in a single query
+        tags = await self.collection.find({"name": {"$in": solution["tags"]}}).to_list(length=None)
+        if not tags:
+            return []
+            
+        # Get usage counts for these tags in a single query
+        tag_names = [tag["name"] for tag in tags]
+        usage_counts = await self.get_tag_usage_counts(tag_names)
         
-        return tags
+        # Convert to Tag models with usage counts
+        result = []
+        for tag in tags:
+            tag_model = TagInDB(**tag)
+            tag_dict = tag_model.model_dump()
+            tag_dict["usage_count"] = usage_counts.get(tag_model.name, 0)
+            result.append(Tag(**tag_dict))
+            
+        return result
 
     async def add_solution_tag_by_name(self, solution_slug: str, name: str) -> bool:
         """Add a tag to a solution by solution slug and tag name"""
@@ -221,12 +276,15 @@ class TagService:
         if show_all:
             return await self.collection.count_documents({})
         
-        # Count tags with usage_count > 0
-        total = 0
-        cursor = self.collection.find()
-        async for tag in cursor:
-            tag_model = TagInDB(**tag)
-            usage_count = await self.get_tag_usage_count(tag_model.name)
-            if usage_count > 0:
-                total += 1
-        return total
+        # Get all tag names
+        cursor = self.collection.find({}, {"name": 1})
+        tag_names = [doc["name"] async for doc in cursor]
+        
+        if not tag_names:
+            return 0
+            
+        # Get usage counts in a single query
+        usage_counts = await self.get_tag_usage_counts(tag_names)
+        
+        # Count tags with usage > 0
+        return len([count for count in usage_counts.values() if count > 0])
