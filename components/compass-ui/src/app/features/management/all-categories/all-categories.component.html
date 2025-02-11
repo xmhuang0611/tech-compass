@@ -20,10 +20,10 @@
         <tr>
           <th>Name</th>
           <th>Description</th>
-          <th class="text-center" style="width: 100px;">Usage Count</th>
-          <th class="text-center" style="width: 100px;">Radar Quadrant</th>
+          <th class="text-center" style="width: 80px;">Usage Count</th>
+          <th class="text-center" style="width: 80px;">Radar Quadrant</th>
           <th>Updated By</th>
-          <th>Updated At</th>
+          <th style="width: 130px;">Updated On</th>
           <th>Actions</th>
         </tr>
       </ng-template>
@@ -47,7 +47,7 @@
               {{ category.updated_by }}
             </span>
           </td>
-          <td>{{ category.updated_at | date : "yyyy-MM-dd HH:mm" }}</td>
+          <td>{{ category.updated_at | date : "yyyy-MM-dd" }}</td>
           <td>
             <div class="action-buttons">
               <p-button
