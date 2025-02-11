@@ -1,0 +1,204 @@
+// Styling for All Categories Management Component
+
+.card {
+  padding: 1rem;
+  background-color: var(--surface-card);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.p-input-icon-left {
+  width: 100%;
+}
+
+.p-table {
+  .p-datatable-header {
+    background-color: var(--surface-ground);
+    border-bottom: 1px solid var(--surface-border);
+  }
+
+  .p-datatable-tbody {
+    tr {
+      transition: background-color 0.2s;
+
+      &:hover {
+        background-color: var(--surface-hover);
+      }
+    }
+  }
+}
+
+.p-dialog {
+  .p-dialog-content {
+    padding: 1rem;
+  }
+
+  .field {
+    margin-bottom: 1rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+  }
+}
+
+// Responsive adjustments
+@media screen and (max-width: 768px) {
+  .card {
+    padding: 0.5rem;
+  }
+
+  .p-table {
+    font-size: 0.9rem;
+  }
+}
+
+.all-categories {
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .text-center {
+    text-align: center;
+  }
+
+  h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    flex: none;
+    color: var(--text-color);
+  }
+
+  .categories-table-container {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    border-radius: var(--border-radius);
+    background: var(--surface-card);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .loading-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface-card);
+    padding: 1rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  .truncate {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+
+    &.category-name {
+      max-width: 120px;
+    }
+
+    &.category-description {
+      max-width: 200px;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .empty-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    color: var(--text-color-secondary);
+
+    i {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .loading-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-color-secondary);
+
+    i {
+      font-size: 1.2rem;
+    }
+
+    p {
+      margin: 0;
+    }
+  }
+
+  ::ng-deep {
+    .p-datatable {
+      height: 100%;
+      
+      .p-datatable-wrapper {
+        max-height: calc(100vh - 14rem);
+      }
+
+      .p-datatable-thead > tr > th {
+        background: var(--surface-ground);
+        color: var(--text-color);
+        font-weight: 600;
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
+
+      .p-datatable-tbody > tr > td {
+        padding: 1rem;
+        color: var(--text-color);
+      }
+
+      &.p-datatable-hoverable-rows {
+        .p-datatable-tbody > tr:not(.p-highlight):hover {
+          background: var(--surface-ground);
+        }
+      }
+    }
+
+    td {
+      vertical-align: middle;
+    }
+  }
+}
+
+.edit-category-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+
+  .category-field {
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+  }
+} 

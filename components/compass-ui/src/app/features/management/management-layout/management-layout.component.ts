@@ -103,8 +103,13 @@ export class ManagementLayoutComponent implements OnInit, OnDestroy {
       this.sideMenuItems.push(
         {
           label: "All Solutions",
-          icon: "pi pi-list",
+          icon: "pi pi-box",
           routerLink: "/manage/all-solutions",
+        },
+        {
+          label: "All Categories",
+          icon: "pi pi-folder",
+          routerLink: "/manage/all-categories",
         },
         {
           label: "All Comments",

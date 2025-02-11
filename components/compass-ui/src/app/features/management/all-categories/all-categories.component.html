@@ -1,0 +1,144 @@
+<div class="all-categories">
+  <h1>All Categories</h1>
+
+  <div class="categories-table-container">
+    <p-table
+      #dt
+      [value]="categories"
+      [rows]="pageSize"
+      [paginator]="true"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      [showCurrentPageReport]="true"
+      [lazy]="true"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      (onPage)="onPageChange($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th class="text-center" style="width: 100px;">Usage Count</th>
+          <th class="text-center" style="width: 100px;">Radar Quadrant</th>
+          <th>Updated By</th>
+          <th>Updated At</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-category>
+        <tr>
+          <td>
+            <span class="truncate category-name" [title]="category.name">
+              {{ category.name }}
+            </span>
+          </td>
+          <td>
+            <div class="truncate category-description" [title]="category.description || 'No description'">
+              {{ category.description || 'No description' }}
+            </div>
+          </td>
+          <td class="text-center">{{ category.usage_count }}</td>
+          <td class="text-center">{{ category.radar_quadrant }}</td>
+          <td>
+            <span class="truncate" [title]="category.updated_by">
+              {{ category.updated_by }}
+            </span>
+          </td>
+          <td>{{ category.updated_at | date : "yyyy-MM-dd HH:mm" }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                (click)="editCategory(category)"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                (click)="confirmDelete(category)"
+                styleClass="p-button-text p-button-danger p-button-sm">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No categories found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div *ngIf="loading" class="loading-overlay">
+      <div class="loading-message">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Loading categories...</p>
+      </div>
+    </div>
+  </div>
+
+  <p-dialog
+    [(visible)]="editDialogVisible"
+    [header]="'Edit Category'"
+    [modal]="true"
+    [style]="{ width: '50vw' }">
+    <div class="edit-category-form">
+      <div class="category-field">
+        <label>Name</label>
+        <input 
+          pInputText 
+          [(ngModel)]="editingCategory.name" 
+          [style]="{ width: '100%' }"
+          required
+        />
+      </div>
+      <div class="category-field">
+        <label>Description</label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="editingCategory.description"
+          [rows]="5"
+          [style]="{ width: '100%' }">
+        </textarea>
+      </div>
+      <div class="category-field">
+        <label>Radar Quadrant</label>
+        <input 
+          pInputText 
+          type="number" 
+          [(ngModel)]="editingCategory.radar_quadrant" 
+          [style]="{ width: '100%' }"
+          min="-1" 
+          max="3"
+        />
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        (click)="editDialogVisible = false"
+        styleClass="p-button-text">
+      </p-button>
+      <p-button
+        label="Save"
+        (click)="saveCategory()"
+        [disabled]="!editingCategory.name?.trim()">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+
+  <p-confirmDialog
+    header="Confirm Deletion"
+    icon="pi pi-exclamation-triangle">
+  </p-confirmDialog>
+
+  <p-toast></p-toast>
+</div> 

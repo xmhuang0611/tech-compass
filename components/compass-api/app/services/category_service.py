@@ -4,7 +4,7 @@ from typing import Optional
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.category import CategoryCreate, CategoryUpdate, CategoryInDB, Category
+from app.models.category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
 
 
 class CategoryService:
@@ -84,31 +84,29 @@ class CategoryService:
         categories = await cursor.to_list(length=limit)
         return [CategoryInDB(**category) for category in categories]
 
-    async def update_category_by_name(
+    async def update_category_by_id(
         self,
-        name: str,
+        category_id: str,
         category_update: CategoryUpdate,
         username: Optional[str] = None
     ) -> Optional[CategoryInDB]:
-        """Update a category by name"""
-        # Name is already trimmed by the model validator
-        
+        """Update a category by ID"""
         # Get existing category
-        existing_category = await self.get_category_by_name(name)
+        existing_category = await self.get_category_by_id(category_id)
         if not existing_category:
             return None
 
         update_dict = category_update.model_dump(exclude_unset=True)
         
         # Check name uniqueness if being updated
-        if "name" in update_dict and update_dict["name"] != name:
+        if "name" in update_dict and update_dict["name"] != existing_category.name:
             other_category = await self.get_category_by_name(update_dict["name"])
             if other_category:
                 raise ValueError(f"Category '{update_dict['name']}' is already in use")
 
             # Update all solutions using this category
             await self.db.solutions.update_many(
-                {"category": name},
+                {"category": existing_category.name},
                 {"$set": {
                     "category": update_dict["name"],
                     "updated_at": datetime.utcnow(),
@@ -121,28 +119,26 @@ class CategoryService:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
-            {"name": name},
+            {"_id": ObjectId(category_id)},
             {"$set": update_dict}
         )
         if result.modified_count:
-            return await self.get_category_by_name(update_dict.get("name", name))
+            return await self.get_category_by_id(category_id)
         return existing_category
 
-    async def delete_category_by_name(self, name: str) -> bool:
-        """Delete a category by name"""
-        # Name is already trimmed by the model validator
-        
+    async def delete_category_by_id(self, category_id: str) -> bool:
+        """Delete a category by ID"""
         # Get category first
-        category = await self.get_category_by_name(name)
+        category = await self.get_category_by_id(category_id)
         if not category:
             return False
 
         # Check if category is being used by any solutions
-        solutions_using_category = await self.db.solutions.find_one({"category": name})
+        solutions_using_category = await self.db.solutions.find_one({"category": category.name})
         if solutions_using_category:
-            raise ValueError(f"Cannot delete category '{name}' as it is being used by solutions")
+            raise ValueError(f"Cannot delete category '{category.name}' as it is being used by solutions")
 
-        result = await self.collection.delete_one({"name": name})
+        result = await self.collection.delete_one({"_id": ObjectId(category_id)})
         return result.deleted_count > 0
 
     async def count_categories(self) -> int:
@@ -152,8 +148,7 @@ class CategoryService:
     async def get_category_usage_count(self, name: str) -> int:
         """Get the number of approved solutions using this category"""
         return await self.db.solutions.count_documents({
-            "category": name,
-            "review_status": "APPROVED"
+            "category": name
         })
 
     async def get_category_with_usage(self, category: CategoryInDB) -> Category:
