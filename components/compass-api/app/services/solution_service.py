@@ -457,7 +457,7 @@ class SolutionService:
         - team
         - maintainer_name
         - pros and cons
-        Returns all approved matches sorted by text relevance score
+        Returns all approved matches sorted by recommend_status (ADOPT first) and then by text relevance score
         """
         # Create text index with field weights if it doesn't exist
         await self.collection.create_index([
@@ -482,28 +482,74 @@ class SolutionService:
             "cons": 1
         })
 
-        # Perform text search with score, only for approved solutions
-        cursor = self.collection.find(
+        # Perform text search with score and recommend status ordering
+        pipeline = [
+            # Match stage - filter approved solutions with text search
             {
-                "$text": {"$search": keyword},
-                "review_status": "APPROVED"  # Only return approved solutions
+                "$match": {
+                    "$text": {"$search": keyword},
+                    "review_status": "APPROVED"
+                }
             },
-            {"score": {"$meta": "textScore"}}
-        ).sort([("score", {"$meta": "textScore"})])
+            # Add fields stage - compute text score and recommend status order
+            {
+                "$addFields": {
+                    "score": {"$meta": "textScore"},
+                    "recommend_status_order": {
+                        "$switch": {
+                            "branches": [
+                                {"case": {"$eq": ["$recommend_status", "ADOPT"]}, "then": 1},
+                                {"case": {"$eq": ["$recommend_status", "TRIAL"]}, "then": 2},
+                                {"case": {"$eq": ["$recommend_status", "ASSESS"]}, "then": 3},
+                                {"case": {"$eq": ["$recommend_status", "HOLD"]}, "then": 4}
+                            ],
+                            "default": 5
+                        }
+                    }
+                }
+            },
+            # Sort stage
+            {
+                "$sort": {
+                    "recommend_status_order": 1,
+                    "score": -1
+                }
+            }
+        ]
 
-        solutions = await cursor.to_list(length=None)
+        solutions = await self.collection.aggregate(pipeline).to_list(length=None)
         
         # Convert to Solution model with ratings
-        result = []
+        adopt_solutions = []
+        trial_solutions = []
+        assess_solutions = []
+        hold_solutions = []
+        other_solutions = []  
         for solution in solutions:            
             # Add rating information
             solution_model = SolutionInDB(**solution)
             rating_summary = await self.rating_service.get_rating_summary(solution_model.slug)
             solution["rating"] = rating_summary["average"]
             solution["rating_count"] = rating_summary["count"]
-            result.append(Solution(**solution))
-            
-        return result
+            # Sort solutions by rating for each recommendation status
+                  
+            if solution["recommend_status"] == "ADOPT":
+                adopt_solutions.append(Solution(**solution))
+            elif solution["recommend_status"] == "TRIAL":
+                trial_solutions.append(Solution(**solution))    
+            elif solution["recommend_status"] == "ASSESS":
+                assess_solutions.append(Solution(**solution))
+            elif solution["recommend_status"] == "HOLD":
+                hold_solutions.append(Solution(**solution))
+            else:
+                other_solutions.append(Solution(**solution))
+        # Sort the final result by rating in descending order for each recommendation status
+        adopt_solutions.sort(key=lambda x: x.rating, reverse=True)
+        trial_solutions.sort(key=lambda x: x.rating, reverse=True)
+        assess_solutions.sort(key=lambda x: x.rating, reverse=True)
+        hold_solutions.sort(key=lambda x: x.rating, reverse=True)
+        other_solutions.sort(key=lambda x: x.rating, reverse=True)  
+        return adopt_solutions + trial_solutions + assess_solutions + hold_solutions + other_solutions
 
     async def get_user_solutions(
         self,
