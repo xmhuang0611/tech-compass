@@ -457,7 +457,7 @@ class SolutionService:
         - team
         - maintainer_name
         - pros and cons
-        Returns all matches sorted by text relevance score
+        Returns all approved matches sorted by text relevance score
         """
         # Create text index with field weights if it doesn't exist
         await self.collection.create_index([
@@ -482,9 +482,12 @@ class SolutionService:
             "cons": 1
         })
 
-        # Perform text search with score
+        # Perform text search with score, only for approved solutions
         cursor = self.collection.find(
-            {"$text": {"$search": keyword}},
+            {
+                "$text": {"$search": keyword},
+                "review_status": "APPROVED"  # Only return approved solutions
+            },
             {"score": {"$meta": "textScore"}}
         ).sort([("score", {"$meta": "textScore"})])
 
