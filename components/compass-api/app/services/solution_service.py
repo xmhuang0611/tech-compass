@@ -122,21 +122,15 @@ class SolutionService:
                 for field in maintainer_fields
             )
             
-            if has_existing_maintainer:
-                # Remove all maintainer fields from update if solution already has maintainer info
-                for field in maintainer_fields:
-                    update_dict.pop(field, None)
-            else:
-                # Check if update contains any maintainer fields
-                has_maintainer_update = any(field in update_dict for field in maintainer_fields)
-                
-                if not has_maintainer_update and username:
-                    # If no maintainer info exists and no update provided, use current user
-                    user = await self.db.users.find_one({"username": username})
-                    if user:
-                        update_dict["maintainer_id"] = username
-                        update_dict["maintainer_name"] = user.get("full_name")
-                        update_dict["maintainer_email"] = user.get("email")
+            has_maintainer_update = any(field in update_dict for field in maintainer_fields)
+            
+            if not has_existing_maintainer and not has_maintainer_update and username:
+                # If no maintainer info exists and no update provided, use current user
+                user = await self.db.users.find_one({"username": username})
+                if user:
+                    update_dict["maintainer_id"] = username
+                    update_dict["maintainer_name"] = user.get("full_name")
+                    update_dict["maintainer_email"] = user.get("email")
 
         # Update timestamp and user fields
         update_dict["updated_at"] = datetime.utcnow()
