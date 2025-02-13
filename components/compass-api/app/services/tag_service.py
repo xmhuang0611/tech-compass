@@ -179,7 +179,7 @@ class TagService:
             return None
 
     async def delete_tag(self, tag_id: str) -> bool:
-        """Delete a tag by ID"""
+        """Delete a tag by ID and remove it from all solutions using it."""
         try:
             # Validate tag_id format
             try:
@@ -192,14 +192,16 @@ class TagService:
             if not tag:
                 return False
 
-            # Check if tag is being used by any solutions
-            solutions_using_tag = await self.db.solutions.find_one({"tags": tag.name})
+            # Remove tag from all solutions that use it
+            await self.db.solutions.update_many(
+                {"tags": tag.name},
+                {
+                    "$pull": {"tags": tag.name},
+                    "$set": {"updated_at": datetime.utcnow(), "updated_by": "system"},
+                },
+            )
 
-            if solutions_using_tag:
-                raise ValueError(
-                    f"Cannot delete tag '{tag.name}' as it is being used by solutions"
-                )
-
+            # Delete the tag
             result = await self.collection.delete_one({"_id": object_id})
             return result.deleted_count > 0
         except ValueError as e:
