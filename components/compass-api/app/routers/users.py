@@ -3,17 +3,26 @@ from typing import Any, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 
 from app.core.auth import get_current_active_user, get_current_superuser
-from app.models.user import User, UserCreate, UserUpdate, UserPasswordUpdate, AdminUserUpdate
+from app.models.user import (
+    User,
+    UserCreate,
+    UserUpdate,
+    UserPasswordUpdate,
+    AdminUserUpdate,
+)
 from app.services.user_service import UserService
 from app.models.response import StandardResponse
 
 router = APIRouter()
 
-@router.post("/", response_model=StandardResponse[User], status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/", response_model=StandardResponse[User], status_code=status.HTTP_201_CREATED
+)
 async def create_user(
     user: UserCreate,
     current_user: User = Depends(get_current_superuser),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Create a new user (admin only)."""
     try:
@@ -22,17 +31,22 @@ async def create_user(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.get("/", response_model=StandardResponse[List[User]])
 async def get_users(
     skip: int = 0,
     limit: int = 10,
-    username: Optional[str] = Query(None, description="Filter by username (case-insensitive partial match)"),
+    username: Optional[str] = Query(
+        None, description="Filter by username (case-insensitive partial match)"
+    ),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
-    user_service: UserService = Depends()
+    is_superuser: Optional[bool] = Query(
+        None, description="Filter by superuser status"
+    ),
+    user_service: UserService = Depends(),
 ) -> Any:
     """Get all users with pagination and filtering.
-    
+
     Query Parameters:
     - skip: Number of records to skip
     - limit: Maximum number of records to return
@@ -45,104 +59,97 @@ async def get_users(
         limit=limit,
         username=username,
         is_active=is_active,
-        is_superuser=is_superuser
+        is_superuser=is_superuser,
     )
     total = await user_service.count_users(
-        username=username,
-        is_active=is_active,
-        is_superuser=is_superuser
+        username=username, is_active=is_active, is_superuser=is_superuser
     )
-    return StandardResponse.paginated(
-        data=users,
-        total=total,
-        skip=skip,
-        limit=limit
-    )
+    return StandardResponse.paginated(data=users, total=total, skip=skip, limit=limit)
+
 
 @router.get("/me", response_model=StandardResponse[User])
-async def read_user_me(
-    current_user: User = Depends(get_current_active_user)
-) -> Any:
+async def read_user_me(current_user: User = Depends(get_current_active_user)) -> Any:
     """Get current user."""
     return StandardResponse.of(current_user)
+
 
 @router.get("/{username}", response_model=StandardResponse[User])
 async def get_user(
     username: str,
     current_user: User = Depends(get_current_active_user),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Get a specific user by username."""
     user = await user_service.get_user_for_api(username)
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return StandardResponse.of(user)
+
 
 @router.put("/{username}/password", response_model=StandardResponse[dict])
 async def update_user_password(
     username: str,
     password_update: UserPasswordUpdate,
     current_user: User = Depends(get_current_active_user),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Update a user's password."""
     try:
         success = await user_service.update_user_password(
             username=username,
             password_update=password_update,
-            current_username=current_user.username
+            current_username=current_user.username,
         )
         if not success:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return StandardResponse.of({"message": "Password updated successfully"})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.put("/{username}", response_model=StandardResponse[User])
 async def update_user(
     username: str,
     user_update: UserUpdate,
     current_user: User = Depends(get_current_active_user),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Update a user by username. Users can only update their own information."""
     try:
         user = await user_service.update_user_by_username(
             username=username,
             user_update=user_update,
-            current_username=current_user.username
+            current_username=current_user.username,
         )
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return StandardResponse.of(user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.delete("/{username}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK)
+
+@router.delete(
+    "/{username}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK
+)
 async def delete_user(
     username: str,
     current_user: User = Depends(get_current_superuser),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Delete a user by username (superuser only)."""
     try:
         success = await user_service.admin_delete_user(
-            username=username,
-            admin_username=current_user.username
+            username=username, admin_username=current_user.username
         )
         if not success:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return StandardResponse.of({"message": "User deleted successfully"})
     except HTTPException as e:
@@ -150,15 +157,16 @@ async def delete_user(
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.put("/manage/{username}", response_model=StandardResponse[User])
 async def admin_update_user(
     username: str,
     user_update: AdminUserUpdate,
     current_user: User = Depends(get_current_superuser),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Update any user's information (admin only).
-    
+
     This endpoint allows superusers to:
     * Update all user fields including is_active and is_superuser
     * Change user's password
@@ -169,33 +177,31 @@ async def admin_update_user(
             username=username,
             user_update=user_update,
             admin_username=current_user.username,
-            new_password=user_update.password
+            new_password=user_update.password,
         )
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return StandardResponse.of(user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.delete("/manage/{username}", response_model=StandardResponse[dict])
 async def admin_delete_user(
     username: str,
     current_user: User = Depends(get_current_superuser),
-    user_service: UserService = Depends()
+    user_service: UserService = Depends(),
 ) -> Any:
     """Delete any user (admin only)."""
     try:
         success = await user_service.admin_delete_user(
-            username=username,
-            admin_username=current_user.username
+            username=username, admin_username=current_user.username
         )
         if not success:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
             )
         return StandardResponse.of({"message": "User deleted successfully"})
     except HTTPException as e:
