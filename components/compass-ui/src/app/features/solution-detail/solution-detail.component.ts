@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { RouterModule, ActivatedRoute } from "@angular/router";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Subject, finalize, takeUntil } from "rxjs";
 import { MessageService } from "primeng/api";
@@ -25,6 +25,7 @@ import { RatingModule } from "primeng/rating";
 import { TabViewModule } from "primeng/tabview";
 import { TagModule } from "primeng/tag";
 import { ToastModule } from "primeng/toast";
+import { TooltipModule } from "primeng/tooltip";
 
 // Markdown
 import { MarkdownModule } from "ngx-markdown";
@@ -57,6 +58,7 @@ type Severity =
     TabViewModule,
     TagModule,
     ToastModule,
+    TooltipModule,
     MarkdownModule,
   ],
   providers: [DialogService],
@@ -95,7 +97,8 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private dialogService: DialogService,
     private commentService: CommentService,
-    private ratingService: RatingService
+    private ratingService: RatingService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -352,6 +355,34 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     this.dialogService.open(LoginDialogComponent, {
       header: "Login Required",
       width: "400px",
+    });
+  }
+
+  canEditSolution(): boolean {
+    let canEdit = false;
+    this.authService.currentUser$.subscribe(currentUser => {
+      const solution = this.solution$.value;
+
+      if (currentUser && solution) {
+        // Check if current user is the solution maintainer or a superuser
+        canEdit = currentUser.username === solution.maintainer_id || 
+                  currentUser.is_superuser;
+      }
+    });
+    return canEdit;
+  }
+
+  navigateToEditSolution() {
+    this.authService.currentUser$.subscribe(currentUser => {
+      const solution = this.solution$.value;
+      if (!solution || !currentUser) return;
+
+      const slug = solution.slug;
+      if (currentUser.is_superuser) {
+        this.router.navigate(['/manage/all-solutions']);
+      } else if (currentUser.username === solution.maintainer_id) {
+        this.router.navigate(['/manage/my-solutions']);
+      }
     });
   }
 }

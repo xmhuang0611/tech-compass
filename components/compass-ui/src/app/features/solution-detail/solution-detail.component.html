@@ -163,7 +163,16 @@
     <div class="content-sidebar">
       <p-card>
         <div class="info-section">
-          <h3>Basic Information</h3>
+          <div class="section-header">
+            <h3>Basic Information</h3>
+            <p-button 
+              *ngIf="canEditSolution()" 
+              icon="pi pi-pencil" 
+              styleClass="p-button-text p-button-primary p-button-sm"
+              (onClick)="navigateToEditSolution()"
+              pTooltip="Edit Solution Information">
+            </p-button>
+          </div>
           <div class="info-item">
             <label>Category</label>
             <span>{{ solution.category }}</span>
