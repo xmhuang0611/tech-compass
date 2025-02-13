@@ -47,6 +47,7 @@ export class AllTagsComponent implements OnInit, OnDestroy {
 
   editDialogVisible = false;
   editingTag: Partial<Tag> = {};
+  tagToDelete: Tag | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -167,11 +168,14 @@ export class AllTagsComponent implements OnInit, OnDestroy {
   }
 
   confirmDelete(tag: Tag) {
+    this.tagToDelete = tag;
     this.confirmationService.confirm({
-      message: "Are you sure you want to delete this tag?",
       accept: () => {
         this.deleteTag(tag);
       },
+      reject: () => {
+        this.tagToDelete = null;
+      }
     });
   }
 
@@ -186,6 +190,7 @@ export class AllTagsComponent implements OnInit, OnDestroy {
           detail: "Tag deleted successfully",
         });
         this.loadTags();
+        this.tagToDelete = null;
       },
       error: (error) => {
         this.messageService.add({
@@ -194,6 +199,7 @@ export class AllTagsComponent implements OnInit, OnDestroy {
           detail: error.error?.detail || "Failed to delete tag",
         });
         this.loading = false;
+        this.tagToDelete = null;
       },
     });
   }

@@ -295,11 +295,59 @@ h2 {
   padding: 1rem 0;
 
   .tag-field {
-    label {
-      display: block;
+    .field-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       margin-bottom: 0.5rem;
-      color: var(--text-color);
-      font-weight: 500;
+
+      label {
+        display: block;
+        color: var(--text-color);
+        font-weight: 500;
+        margin: 0;
+      }
+
+      .merge-note {
+        color: var(--text-color-secondary);
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+
+        i {
+          font-size: 0.875rem;
+        }
+      }
+    }
+  }
+}
+
+.confirm-dialog-content {
+  p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+    color: var(--text-color);
+
+    &.tip {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      color: var(--text-color-secondary);
+      font-size: 0.9rem;
+      background: var(--surface-ground);
+      padding: 0.75rem;
+      border-radius: var(--border-radius);
+
+      i {
+        font-size: 1rem;
+        margin-top: 0.1rem;
+      }
+    }
+
+    strong {
+      color: var(--primary-color);
     }
   }
 } 

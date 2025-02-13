@@ -90,7 +90,13 @@
     [style]="{ width: '50vw' }">
     <div class="edit-tag-form">
       <div class="tag-field">
-        <label>Name</label>
+        <div class="field-header">
+          <label>Name</label>
+          <small class="merge-note">
+            <i class="pi pi-info-circle"></i>
+            If the name matches an existing tag, they will be merged
+          </small>
+        </div>
         <input 
           pInputText 
           [(ngModel)]="editingTag.name" 
@@ -124,7 +130,20 @@
 
   <p-confirmDialog
     header="Confirm Deletion"
-    icon="pi pi-exclamation-triangle">
+    [style]="{ width: '50vw' }"
+    acceptLabel="Delete"
+    rejectLabel="Cancel"
+    acceptButtonStyleClass="p-button-danger">
+    <ng-template pTemplate="message">
+      <div class="confirm-dialog-content">
+        <p>Are you sure you want to delete the tag '<strong>{{ tagToDelete?.name }}</strong>'?</p>
+        <p>This will remove the tag from all solutions that are currently using it.</p>
+        <p class="tip">
+          <i class="pi pi-info-circle"></i>
+          Tip: If you want to keep the tag relationships, consider renaming this tag to match an existing tag instead.
+        </p>
+      </div>
+    </ng-template>
   </p-confirmDialog>
 
   <p-toast></p-toast>
