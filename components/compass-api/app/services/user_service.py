@@ -220,6 +220,7 @@ class UserService:
 
         update_dict = user_update.model_dump(exclude_unset=True)
         if "username" in update_dict:
+            update_dict["username"] = update_dict["username"].lower()
             await self._check_username_uniqueness(update_dict["username"], username)
 
         update_data = self._prepare_update_data(update_dict, current_username)
@@ -265,6 +266,7 @@ class UserService:
             if new_password is not None:
                 update_dict["hashed_password"] = get_password_hash(new_password)
             if "username" in update_dict:
+                update_dict["username"] = update_dict["username"].lower()
                 await self._check_username_uniqueness(update_dict["username"], username)
 
         update_data = self._prepare_update_data(update_dict, admin_username)
