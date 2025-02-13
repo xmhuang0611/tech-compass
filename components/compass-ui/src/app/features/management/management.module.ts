@@ -31,6 +31,7 @@ import { AllCommentsComponent } from "./all-comments/all-comments.component";
 import { AllRatingsComponent } from "./all-ratings/all-ratings.component";
 import { AllUsersComponent } from "./all-users/all-users.component";
 import { AllCategoriesComponent } from "./all-categories/all-categories.component";
+import { AllTagsComponent } from "./all-tags/all-tags.component";
 import { AdminGuard } from "../../core/guards/admin.guard";
 import { SharedModule } from "../../shared/shared.module";
 
@@ -77,6 +78,12 @@ const routes: Routes = [
         component: AllCategoriesComponent,
         canActivate: [AdminGuard],
         data: { breadcrumb: "All Categories" },
+      },
+      {
+        path: "all-tags",
+        component: AllTagsComponent,
+        canActivate: [AdminGuard],
+        data: { breadcrumb: "All Tags" },
       },
       {
         path: "all-users",
@@ -146,6 +153,7 @@ const routes: Routes = [
     AllRatingsComponent,
     AllUsersComponent,
     AllCategoriesComponent,
+    AllTagsComponent,
   ],
 })
 export class ManagementModule {}

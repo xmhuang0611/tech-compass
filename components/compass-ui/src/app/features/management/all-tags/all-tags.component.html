@@ -1,0 +1,131 @@
+<div class="all-tags">
+  <h1>All Tags</h1>
+
+  <div class="tags-table-container">
+    <p-table
+      #dt
+      [value]="tags"
+      [rows]="pageSize"
+      [paginator]="true"
+      [totalRecords]="totalRecords"
+      [loading]="loading"
+      [rowsPerPageOptions]="rowsPerPageOptions"
+      [showCurrentPageReport]="true"
+      [lazy]="true"
+      currentPageReportTemplate="{first}-{last} of {totalRecords}"
+      [tableStyle]="{ 'min-width': '60rem' }"
+      (onPage)="onPageChange($event)">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th class="text-center" style="width: 80px;">Usage Count</th>
+          <th>Updated By</th>
+          <th style="width: 130px;">Updated On</th>
+          <th>Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-tag>
+        <tr>
+          <td>
+            <span class="truncate tag-name" [title]="tag.name">
+              {{ tag.name }}
+            </span>
+          </td>
+          <td>
+            <div class="truncate tag-description" [title]="tag.description || 'No description'">
+              {{ tag.description || 'No description' }}
+            </div>
+          </td>
+          <td class="text-center">{{ tag.usage_count }}</td>
+          <td>
+            <span class="truncate" [title]="tag.updated_by">
+              {{ tag.updated_by }}
+            </span>
+          </td>
+          <td>{{ tag.updated_at | date : "yyyy-MM-dd" }}</td>
+          <td>
+            <div class="action-buttons">
+              <p-button
+                icon="pi pi-pencil"
+                (click)="editTag(tag)"
+                styleClass="p-button-text p-button-sm">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                (click)="confirmDelete(tag)"
+                styleClass="p-button-text p-button-danger p-button-sm">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6">
+            <div class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No tags found</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <div *ngIf="loading" class="loading-overlay">
+      <div class="loading-message">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>Loading tags...</p>
+      </div>
+    </div>
+  </div>
+
+  <p-dialog
+    [(visible)]="editDialogVisible"
+    [header]="'Edit Tag'"
+    [modal]="true"
+    [style]="{ width: '50vw' }">
+    <div class="edit-tag-form">
+      <div class="tag-field">
+        <label>Name</label>
+        <input 
+          pInputText 
+          [(ngModel)]="editingTag.name" 
+          [style]="{ width: '100%' }"
+          required
+        />
+      </div>
+      <div class="tag-field">
+        <label>Description</label>
+        <textarea
+          pInputTextarea
+          [(ngModel)]="editingTag.description"
+          [rows]="5"
+          [style]="{ width: '100%' }">
+        </textarea>
+      </div>
+    </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        (click)="editDialogVisible = false"
+        styleClass="p-button-text">
+      </p-button>
+      <p-button
+        label="Save"
+        (click)="saveTag()"
+        [disabled]="!editingTag.name?.trim()">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+
+  <p-confirmDialog
+    header="Confirm Deletion"
+    icon="pi pi-exclamation-triangle">
+  </p-confirmDialog>
+
+  <p-toast></p-toast>
+</div> 
