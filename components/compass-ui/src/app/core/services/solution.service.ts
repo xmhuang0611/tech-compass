@@ -152,4 +152,8 @@ export class SolutionService {
       params,
     });
   }
+
+  getSolution(slug: string): Observable<StandardResponse<Solution>> {
+    return this.http.get<StandardResponse<Solution>>(`${this.apiUrl}${slug}`);
+  }
 }

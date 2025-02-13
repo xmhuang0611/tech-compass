@@ -24,6 +24,7 @@ import { CategoryService } from "../../../core/services/category.service";
 import { DepartmentService } from "../../../core/services/department.service";
 import { SolutionService } from "../../../core/services/solution.service";
 import { Solution } from "../../../shared/interfaces/solution.interface";
+import { StandardResponse } from "../../../core/interfaces/standard-response.interface";
 
 @Component({
   selector: "tc-edit-solution",
@@ -155,24 +156,47 @@ export class EditSolutionComponent implements OnInit {
 
   private loadSolution() {
     this.slug = this.route.snapshot.params["slug"];
-    const solution = history.state.solution as Solution;
-
-    if (solution) {
-      // Convert arrays back to newline-separated strings for pros and cons
-      const formValue = {
-        ...solution,
-        pros: solution.pros?.join("\n") || "",
-        cons: solution.cons?.join("\n") || "",
-      };
-      this.solutionForm.patchValue(formValue);
-    } else {
+    if (!this.slug) {
       this.messageService.add({
         severity: "error",
         summary: "Error",
-        detail: "No solution data provided",
+        detail: "No solution slug provided",
       });
-      this.router.navigate(["/manage/solutions"]);
+      this.router.navigate(["/manage/my-solutions"]);
+      return;
     }
+
+    this.loading = true;
+    this.solutionService.getSolution(this.slug).subscribe({
+      next: (response: StandardResponse<Solution>) => {
+        if (response.success && response.data) {
+          // Convert arrays back to newline-separated strings for pros and cons
+          const formValue = {
+            ...response.data,
+            pros: response.data.pros?.join("\n") || "",
+            cons: response.data.cons?.join("\n") || "",
+          };
+          this.solutionForm.patchValue(formValue);
+          this.loading = false;
+        } else {
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to load solution",
+          });
+          this.router.navigate(["/manage/my-solutions"]);
+        }
+      },
+      error: (error: { error?: { detail: string } }) => {
+        this.messageService.add({
+          severity: "error",
+          summary: "Error",
+          detail: error.error?.detail || "Failed to load solution",
+        });
+        this.router.navigate(["/manage/my-solutions"]);
+        this.loading = false;
+      },
+    });
   }
 
   onSubmit() {
@@ -210,7 +234,7 @@ export class EditSolutionComponent implements OnInit {
               severity: "success",
               summary: "Success",
               detail: "Solution updated successfully",
-              life: 3000  // 3 seconds
+              life: 3000,
             });
           } else {
             this.messageService.add({
