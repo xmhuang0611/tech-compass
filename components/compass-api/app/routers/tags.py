@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
-from app.models.tag import Tag, TagCreate, TagUpdate
+from app.models.tag import Tag, TagCreate, TagUpdate, format_tag_name
 from app.models.user import User
 from app.models.response import StandardResponse
 from app.services.tag_service import TagService
@@ -24,6 +24,7 @@ async def create_tag(
 ) -> Any:
     """Create a new tag (superuser only)."""
     try:
+        # Name is already formatted by the model validator
         result = await tag_service.create_tag(tag, current_user.username)
         tag_with_usage = await tag_service.get_tag_with_usage(result)
         return StandardResponse.of(tag_with_usage)
@@ -69,18 +70,10 @@ async def update_tag(
     current_user: User = Depends(get_current_superuser),
     tag_service: TagService = Depends(),
 ) -> Any:
-    """Update a tag by ID (superuser only). If tag name is changed, all tagged solutions will be updated."""
+    """Update a tag by ID (superuser only).
+    If tag name is changed to an existing tag name, the tags will be merged."""
     try:
-        # If name is being updated, check if new name already exists
-        if tag_update.name:
-            existing_tag = await tag_service.get_tag_by_name(tag_update.name)
-            if existing_tag and str(existing_tag.id) != tag_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Tag name '{tag_update.name}' already exists",
-                )
-
-        # Update tag and all solutions using it
+        # Name will be formatted by the model validator
         tag = await tag_service.update_tag(
             tag_id=tag_id,
             tag_update=tag_update,
@@ -95,11 +88,6 @@ async def update_tag(
         return StandardResponse.of(tag_with_usage)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating tag: {str(e)}",
-        )
 
 
 @router.delete(
@@ -110,7 +98,7 @@ async def delete_tag(
     current_user: User = Depends(get_current_superuser),
     tag_service: TagService = Depends(),
 ) -> None:
-    """Delete a tag by ID (superuser only). Will return 400 error if tag is being used by any solutions."""
+    """Delete a tag by ID (superuser only). Will also remove the tag from all solutions using it."""
     try:
         success = await tag_service.delete_tag(tag_id)
         if not success:
@@ -118,12 +106,7 @@ async def delete_tag(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
             )
     except ValueError as e:
-        if "Invalid tag ID format" in str(e):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-        elif "being used by solutions" in str(e):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-        else:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.get("/solution/{solution_slug}", response_model=StandardResponse[List[Tag]])
@@ -155,6 +138,9 @@ async def add_solution_tag(
                 detail="Tag name cannot be empty",
             )
 
+        # Format tag name
+        formatted_tag_name = format_tag_name(tag_name)
+
         # Get the solution first
         solution = await solution_service.get_solution_by_slug(solution_slug)
         if not solution:
@@ -164,14 +150,14 @@ async def add_solution_tag(
 
         # Check if tag already exists in solution
         existing_tags = solution.tags or []
-        if tag_name in existing_tags:
+        if formatted_tag_name in existing_tags:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Tag '{tag_name}' is already added to this solution",
+                detail=f"Tag '{formatted_tag_name}' is already added to this solution",
             )
 
         # Create tag if it doesn't exist and add it to solution
-        solution_update = SolutionUpdate(tags=existing_tags + [tag_name])
+        solution_update = SolutionUpdate(tags=existing_tags + [formatted_tag_name])
         updated_solution = await solution_service.update_solution_by_slug(
             solution_slug, solution_update, current_user.username
         )
@@ -181,7 +167,9 @@ async def add_solution_tag(
                 detail="Failed to update solution with new tag",
             )
 
-        return StandardResponse.of({"message": f"Tag '{tag_name}' added successfully"})
+        return StandardResponse.of(
+            {"message": f"Tag '{formatted_tag_name}' added successfully"}
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -211,6 +199,9 @@ async def delete_solution_tag(
                 detail="Tag name cannot be empty",
             )
 
+        # Format tag name
+        formatted_tag_name = format_tag_name(tag_name)
+
         # Get the solution first
         solution = await solution_service.get_solution_by_slug(solution_slug)
         if not solution:
@@ -220,14 +211,14 @@ async def delete_solution_tag(
 
         # Check if tag exists in solution
         existing_tags = solution.tags or []
-        if tag_name not in existing_tags:
+        if formatted_tag_name not in existing_tags:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Tag '{tag_name}' not found in this solution",
+                detail=f"Tag '{formatted_tag_name}' not found in this solution",
             )
 
         # Remove tag from solution
-        updated_tags = [tag for tag in existing_tags if tag != tag_name]
+        updated_tags = [tag for tag in existing_tags if tag != formatted_tag_name]
         solution_update = SolutionUpdate(tags=updated_tags)
         updated_solution = await solution_service.update_solution_by_slug(
             solution_slug, solution_update, current_user.username
@@ -239,7 +230,7 @@ async def delete_solution_tag(
             )
 
         return StandardResponse.of(
-            {"message": f"Tag '{tag_name}' removed successfully"}
+            {"message": f"Tag '{formatted_tag_name}' removed successfully"}
         )
     except HTTPException:
         raise

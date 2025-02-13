@@ -127,6 +127,62 @@ class TagService:
             {"tags": name, "review_status": "APPROVED"}
         )
 
+    async def merge_tags(
+        self, source_tag_id: str, target_tag_name: str, username: Optional[str] = None
+    ) -> Optional[TagInDB]:
+        """Merge source tag into target tag.
+
+        This will:
+        1. Find all solutions using the source tag
+        2. Add the target tag to these solutions
+        3. Remove the source tag from these solutions
+        4. Delete the source tag
+
+        Args:
+            source_tag_id: ID of the tag to be merged and deleted
+            target_tag_name: Name of the tag to merge into
+            username: Username performing the merge operation
+
+        Returns:
+            The target tag if successful, None if either tag not found
+        """
+        try:
+            # Get source tag
+            source_tag = await self.get_tag_by_id(source_tag_id)
+            if not source_tag:
+                return None
+
+            # Get target tag
+            target_tag = await self.get_tag_by_name(target_tag_name)
+            if not target_tag:
+                return None
+
+            # Update all solutions that use the source tag
+            # First add the target tag to all solutions using source tag
+            await self.db.solutions.update_many(
+                {"tags": source_tag.name},
+                {
+                    "$addToSet": {"tags": target_tag.name},
+                    "$set": {
+                        "updated_at": datetime.utcnow(),
+                        "updated_by": username if username else "system",
+                    },
+                },
+            )
+
+            # Then remove the source tag
+            await self.db.solutions.update_many(
+                {"tags": source_tag.name}, {"$pull": {"tags": source_tag.name}}
+            )
+
+            # Delete the source tag
+            await self.collection.delete_one({"_id": ObjectId(source_tag_id)})
+
+            # Return the target tag
+            return target_tag
+        except Exception as e:
+            raise ValueError(f"Error merging tags: {str(e)}")
+
     async def update_tag(
         self,
         tag_id: str,
@@ -143,25 +199,24 @@ class TagService:
 
             update_dict = tag_update.model_dump(exclude_unset=True)
 
-            # If name is changing and we need to update solutions
-            if (
-                update_solutions
-                and "name" in update_dict
-                and update_dict["name"] != tag.name
-            ):
-                # Update all solutions that use this tag
-                await self.db.solutions.update_many(
-                    {"tags": tag.name},
-                    {
-                        "$set": {
-                            "tags.$": update_dict["name"],
-                            "updated_at": datetime.utcnow(),
-                        }
-                    },
-                )
-                if username:
+            # If name is changing
+            if "name" in update_dict and update_dict["name"] != tag.name:
+                # Check if target name already exists
+                existing_tag = await self.get_tag_by_name(update_dict["name"])
+                if existing_tag:
+                    # If target tag exists, merge this tag into it
+                    return await self.merge_tags(tag_id, existing_tag.name, username)
+                elif update_solutions:
+                    # If target tag doesn't exist and we need to update solutions
                     await self.db.solutions.update_many(
-                        {"tags": tag.name}, {"$set": {"updated_by": username}}
+                        {"tags": tag.name},
+                        {
+                            "$set": {
+                                "tags.$": update_dict["name"],
+                                "updated_at": datetime.utcnow(),
+                                "updated_by": username if username else "system",
+                            }
+                        },
                     )
 
             # Update the tag itself
@@ -175,8 +230,8 @@ class TagService:
             if result.modified_count:
                 return await self.get_tag_by_id(tag_id)
             return None
-        except Exception:
-            return None
+        except Exception as e:
+            raise ValueError(f"Error updating tag: {str(e)}")
 
     async def delete_tag(self, tag_id: str) -> bool:
         """Delete a tag by ID and remove it from all solutions using it."""

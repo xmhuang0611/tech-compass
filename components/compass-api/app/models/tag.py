@@ -5,7 +5,6 @@ from typing import Optional
 from pydantic import BaseModel, Field, field_validator
 
 from app.models import AuditModel
-from app.models.common import PyObjectId
 
 
 def format_tag_name(name: str) -> str:
