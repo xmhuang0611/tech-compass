@@ -16,6 +16,7 @@ interface TechRadarEntry {
   quadrant: number; // Index of quadrant (0-3)
   ring: number; // Index of ring (0-3)
   label: string; // Technology name
+  link: string; // Technology link
   active: boolean; // Active status
   moved: number; // Movement status
 }
@@ -214,6 +215,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
       quadrant,
       ring,
       label: String(entry.label),
+      link: String(entry.link),
       active: Boolean(entry.active),
       moved: Number(entry.moved),
     };
