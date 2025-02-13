@@ -39,8 +39,6 @@ The project follows a microservices architecture with the following components:
 
 - `components/compass-api`: Backend API service built with Python FastAPI
 - `components/compass-ui`: Frontend web application built with Angular + PrimeNG
-- `components/compass-admin`: Admin panel built with Python Streamlit
-- `components/compass-radar`: Technology radar visualization
 
 ## 🛠️ Tech Stack
 
@@ -51,13 +49,6 @@ The project follows a microservices architecture with the following components:
 - **Backend**: 
   - Python FastAPI
   - MongoDB
-  - Redis (caching)
-- **Admin Panel**: 
-  - Python Streamlit
-- **DevOps**:
-  - Docker
-  - GitHub Actions
-  - Kubernetes (optional)
 
 ## 🚀 Getting Started
 
@@ -95,37 +86,9 @@ python main.py
 3. **Frontend Setup**
 
 ```bash
-cd components/compass-web
+cd components/compass-ui
 npm install
-
-# Configure environment
-cp environment.example.ts environment.ts
-# Edit environment.ts with your configuration
-
 ng serve
-```
-
-4. **Admin Panel Setup**
-
-```bash
-cd components/compass-admin
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Configure environment
-cp .streamlit/config.example.toml .streamlit/config.toml
-# Edit config.toml with your configuration
-
-streamlit run Home.py
-```
-
-5. **Tech Radar Setup**
-
-```bash
-cd components/compass-radar
-npm install
-npm start
 ```
 
 ### 🐳 Docker Setup (Alternative)
