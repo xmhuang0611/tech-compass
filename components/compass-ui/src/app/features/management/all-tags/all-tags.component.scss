@@ -1,78 +1,3 @@
-.container {
-  padding: 2rem;
-
-  .header {
-    margin-bottom: 2rem;
-
-    h1 {
-      margin: 0;
-      font-size: 2rem;
-      font-weight: 600;
-      color: var(--text-color);
-    }
-  }
-
-  .content {
-    background: var(--surface-card);
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-}
-
-:host ::ng-deep {
-  .p-datatable {
-    .p-datatable-header {
-      background: transparent;
-      border: none;
-      padding: 0 0 1rem 0;
-    }
-
-    .p-datatable-thead > tr > th {
-      background: var(--surface-section);
-      color: var(--text-color);
-      padding: 1rem;
-      font-weight: 600;
-      border: 1px solid var(--surface-border);
-    }
-
-    .p-datatable-tbody > tr {
-      background: var(--surface-card);
-      transition: background-color 0.2s;
-
-      > td {
-        padding: 1rem;
-        border: 1px solid var(--surface-border);
-      }
-
-      &:hover {
-        background: var(--surface-hover);
-      }
-    }
-
-    .p-paginator {
-      background: transparent;
-      border: none;
-      padding: 1rem 0 0 0;
-    }
-
-    .p-datatable-wrapper {
-      max-height: calc(100vh - 14rem);
-    }
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 0.5rem;
-    justify-content: center;
-
-    .p-button {
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-  }
-}
-
 .edit-form {
   padding: 1rem;
 
@@ -97,15 +22,6 @@
   button {
     margin-left: 0.5rem;
   }
-}
-
-// Styling for All Tags Management Component
-
-.card {
-  padding: 1rem;
-  background-color: var(--surface-card);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 h2 {
@@ -150,17 +66,6 @@ h2 {
   }
 }
 
-// Responsive adjustments
-@media screen and (max-width: 768px) {
-  .card {
-    padding: 0.5rem;
-  }
-
-  .p-table {
-    font-size: 0.9rem;
-  }
-}
-
 .all-tags {
   padding: 1rem;
   height: 100%;
@@ -175,7 +80,6 @@ h2 {
     margin: 0 0 1.5rem;
     font-size: 1.5rem;
     font-weight: 600;
-    flex: none;
     color: var(--text-color);
   }
 
@@ -255,7 +159,7 @@ h2 {
   ::ng-deep {
     .p-datatable {
       height: 100%;
-      
+
       .p-datatable-wrapper {
         max-height: calc(100vh - 14rem);
       }
@@ -297,15 +201,13 @@ h2 {
   .tag-field {
     .field-header {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 0.5rem;
       margin-bottom: 0.5rem;
 
       label {
-        display: block;
         color: var(--text-color);
         font-weight: 500;
-        margin: 0;
       }
 
       .merge-note {
@@ -314,10 +216,6 @@ h2 {
         display: flex;
         align-items: center;
         gap: 0.25rem;
-
-        i {
-          font-size: 0.875rem;
-        }
       }
     }
   }
@@ -350,4 +248,4 @@ h2 {
       color: var(--primary-color);
     }
   }
-} 
+}

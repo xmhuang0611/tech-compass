@@ -1,12 +1,3 @@
-// Styling for All Categories Management Component
-
-.card {
-  padding: 1rem;
-  background-color: var(--surface-card);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 h2 {
   margin-bottom: 1rem;
   color: var(--text-color);
@@ -46,17 +37,6 @@ h2 {
       margin-bottom: 0.5rem;
       font-weight: 600;
     }
-  }
-}
-
-// Responsive adjustments
-@media screen and (max-width: 768px) {
-  .card {
-    padding: 0.5rem;
-  }
-
-  .p-table {
-    font-size: 0.9rem;
   }
 }
 
