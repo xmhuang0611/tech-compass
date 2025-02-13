@@ -110,7 +110,7 @@ class CommentService:
                     detail="Comment not found"
                 )
             return CommentInDB(**comment)
-        except Exception as e:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Invalid comment ID"
