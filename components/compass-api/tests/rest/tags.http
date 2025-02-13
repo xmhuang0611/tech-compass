@@ -10,8 +10,8 @@ Content-Type: application/json
 GET {{baseUrl}}/tags?skip=0&limit=5
 Content-Type: application/json
 
-### Get specific tag by name (no auth required)
-GET {{baseUrl}}/tags/python
+### Get specific tag by ID (no auth required)
+GET {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Content-Type: application/json
 
 ### Try to create tag as non-superuser (should fail)
@@ -37,14 +37,14 @@ Authorization: Bearer {{adminToken}}
 ### Create tag without description (should succeed)
 POST {{baseUrl}}/tags
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "FastAPI"
 }
 
 ### Try to update tag as non-superuser (should fail)
-PUT {{baseUrl}}/tags/python
+PUT {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -53,7 +53,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Update tag as superuser
-PUT {{baseUrl}}/tags/python
+PUT {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Content-Type: application/json
 Authorization: Bearer {{adminToken}}
 
@@ -62,9 +62,9 @@ Authorization: Bearer {{adminToken}}
 }
 
 ### Update tag name (requires auth, will update all solutions using this tag)
-PUT {{baseUrl}}/tags/fastapi
+PUT {{baseUrl}}/tags/65ae1234b5c3e1234567890b
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "FastAPI Framework",
@@ -72,11 +72,11 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to delete tag as non-superuser (should fail)
-DELETE {{baseUrl}}/tags/python
+DELETE {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Authorization: Bearer {{token}}
 
 ### Delete tag as superuser
-DELETE {{baseUrl}}/tags/python
+DELETE {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Authorization: Bearer {{adminToken}}
 
 ### Solution Tag Operations
@@ -100,7 +100,7 @@ Authorization: Bearer {{token}}
 ### Try to create tag with invalid characters (will be formatted)
 POST {{baseUrl}}/tags
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "Python & Django!@#",
@@ -110,7 +110,7 @@ Authorization: Bearer {{token}}
 ### Try to create duplicate tag
 POST {{baseUrl}}/tags
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "python",
@@ -118,9 +118,9 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to update to existing tag name
-PUT {{baseUrl}}/tags/python
+PUT {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer {{adminToken}}
 
 {
     "name": "fastapi",
@@ -128,11 +128,11 @@ Authorization: Bearer {{token}}
 }
 
 ### Try to get non-existent tag
-GET {{baseUrl}}/tags/non-existent-tag
+GET {{baseUrl}}/tags/65ae1234b5c3e1234567890f
 Content-Type: application/json
 
 ### Try to update without auth token
-PUT {{baseUrl}}/tags/python
+PUT {{baseUrl}}/tags/65ae1234b5c3e1234567890a
 Content-Type: application/json
 
 {
