@@ -62,6 +62,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
   private rings: Ring[] = [];
 
   faqs = siteConfig.techRadar.faqs;
+  title = siteConfig.techRadar.title;
 
   constructor(private http: HttpClient) {}
 
@@ -246,7 +247,7 @@ export class TechRadarComponent implements OnInit, OnDestroy {
     return {
       svg_id: "radar",
       scale: 0.92,
-      title: "Technology Radar",
+      title: this.title,
       date: data.date,
       quadrants: this.quadrants,
       rings: this.rings.map((ring) => ({

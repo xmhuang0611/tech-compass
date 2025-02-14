@@ -308,6 +308,7 @@ export const siteConfig = {
   ],
 
   techRadar: {
+    title: "Tech Radar",
     faqs: [
       {
         title: "What is the Tech Radar?",
