@@ -43,7 +43,7 @@ The project follows a microservices architecture with the following components:
 ## 🛠️ Tech Stack
 
 - **Frontend**: 
-  - Angular 15+
+  - Angular 17+
   - PrimeNG
   - TypeScript
 - **Backend**: 
@@ -55,7 +55,7 @@ The project follows a microservices architecture with the following components:
 ### Prerequisites
 
 - Node.js 16+ and npm
-- Python 3.9+
+- Python 3.11+
 - MongoDB 5.0+
 - Docker (optional)
 
