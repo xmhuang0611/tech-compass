@@ -1,21 +1,21 @@
 .breadcrumb {
   margin-bottom: 1.5rem;
-  animation: fadeInUp 0.8s ease-out;
+  animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 }
 
 .categories-container {
-  animation: fadeInUp 0.8s ease-out;
+  animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 
   h1 {
     font-size: 2rem;
     margin-bottom: 0.5rem;
-    animation: fadeInUp 0.8s ease-out 0.2s both;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.1s both;
   }
 
   .subtitle {
     color: #6c757d;
     margin-bottom: 2rem;
-    animation: fadeInUp 0.8s ease-out 0.4s both;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.2s both;
   }
 
   .categories-grid {
@@ -29,7 +29,7 @@
       border-radius: 12px;
       padding: 1.5rem;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
+      transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
       outline: none;
       border: 1px solid #e9ecef;
       display: flex;
@@ -37,20 +37,22 @@
       height: 100%;
       min-height: 200px;
       opacity: 0;
-      animation: fadeInScale 0.6s ease-out forwards;
+      animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
       @for $i from 1 through 20 {
         &:nth-child(#{$i}) {
-          animation-delay: #{$i * 0.1 + 0.4}s;
+          animation-delay: #{$i * 0.05 + 0.2}s;
         }
       }
 
       &:hover {
+        transform: translateY(-2px);
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
       }
 
       &:focus-visible {
-        box-shadow: 0 0 0 2px var(--primary-color), 0 8px 16px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 0 2px var(--primary-color),
+          0 8px 16px rgba(0, 0, 0, 0.1);
       }
 
       .card-header {
@@ -134,7 +136,7 @@
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s cubic-bezier(0.2, 0, 0.2, 1);
 
             i {
               font-size: 0.9rem;
@@ -158,7 +160,7 @@
               color: white;
 
               i {
-                transition: transform 0.2s ease;
+                transition: transform 0.15s cubic-bezier(0.2, 0, 0.2, 1);
               }
 
               &:hover {
@@ -191,7 +193,7 @@
   gap: 1rem;
   padding: 1rem;
   color: #6c757d;
-  animation: fadeInScale 0.6s ease-out both;
+  animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) both;
 
   .spinner {
     width: 20px;
@@ -199,13 +201,17 @@
     border: 2px solid #f3f3f3;
     border-top: 2px solid #007bff;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
   }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // Animation keyframes

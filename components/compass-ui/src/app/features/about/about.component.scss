@@ -1,5 +1,4 @@
 .about-container {
-
   .hero-section {
     text-align: center;
     margin-bottom: 4rem;
@@ -10,10 +9,10 @@
     color: white;
     text-align: center;
     border-radius: var(--border-radius);
-    animation: fadeInUp 0.4s ease-out;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 
     &::before {
-      content: '';
+      content: "";
       position: absolute;
       top: 0;
       left: 0;
@@ -34,7 +33,7 @@
       font-weight: 700;
       position: relative;
       z-index: 2;
-      animation: fadeInUp 1s ease-out 0.2s both;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.1s both;
     }
 
     p {
@@ -44,7 +43,7 @@
       line-height: 1.6;
       position: relative;
       z-index: 2;
-      animation: fadeInUp 1s ease-out 0.4s both;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.2s both;
     }
   }
 
@@ -74,9 +73,9 @@
         border-radius: var(--border-radius);
         padding: 2rem;
         text-align: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         opacity: 0;
-        animation: fadeInScale 0.3s ease-out forwards;
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
         &.clickable {
           cursor: pointer;
@@ -120,14 +119,22 @@
           line-height: 1.5;
         }
 
-        &:nth-child(1) { animation-delay: 0.8s; }
-        &:nth-child(2) { animation-delay: 1s; }
-        &:nth-child(3) { animation-delay: 1.2s; }
-        &:nth-child(4) { animation-delay: 1.4s; }
+        &:nth-child(1) {
+          animation-delay: 0.3s;
+        }
+        &:nth-child(2) {
+          animation-delay: 0.4s;
+        }
+        &:nth-child(3) {
+          animation-delay: 0.5s;
+        }
+        &:nth-child(4) {
+          animation-delay: 0.6s;
+        }
       }
     }
     opacity: 0;
-    animation: fadeInUp 0.4s ease-out 0.6s forwards;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.2s forwards;
   }
 
   .features-section {
@@ -136,18 +143,18 @@
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 2rem;
       margin-top: 2rem;
-    
+
       .feature-card {
         border-radius: var(--border-radius);
         padding: 2rem;
         text-align: center;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
         background: var(--primary-color);
         color: var(--primary-color-text);
         opacity: 0;
-        animation: fadeInScale 0.3s ease-out forwards;
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
         .icon-wrapper i {
           color: var(--primary-color-text);
@@ -161,35 +168,41 @@
           transform: translateY(-5px);
           box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
-    
+
         .icon-wrapper {
           margin-bottom: 1.5rem;
-          
+
           i {
             font-size: 2.5rem;
             opacity: 0.9;
           }
         }
-    
+
         h3 {
           font-size: 1.5rem;
           margin-bottom: 1rem;
           font-weight: 600;
         }
-    
+
         p {
           font-size: 1rem;
           line-height: 1.6;
           opacity: 0.9;
         }
 
-        &:nth-child(1) { animation-delay: 1.8s; }
-        &:nth-child(2) { animation-delay: 2s; }
-        &:nth-child(3) { animation-delay: 2.2s; }
+        &:nth-child(1) {
+          animation-delay: 0.7s;
+        }
+        &:nth-child(2) {
+          animation-delay: 0.8s;
+        }
+        &:nth-child(3) {
+          animation-delay: 0.9s;
+        }
       }
     }
     opacity: 0;
-    animation: fadeInUp 0.8s ease-out 1.6s forwards;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.6s forwards;
   }
 
   .engagement-section {
@@ -197,11 +210,11 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2rem;
-      
+
       @media (max-width: 992px) {
         grid-template-columns: repeat(2, 1fr);
       }
-      
+
       @media (max-width: 576px) {
         grid-template-columns: 1fr;
       }
@@ -211,9 +224,9 @@
         border-radius: var(--border-radius);
         padding: 2rem;
         text-align: center;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
         opacity: 0;
-        animation: fadeInScale 0.4s ease-out forwards;
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
         &.clickable {
           cursor: pointer;
@@ -252,13 +265,15 @@
           line-height: 1.6;
         }
 
-        &:nth-child(1) { animation-delay: 2.6s; }
-        &:nth-child(2) { animation-delay: 2.8s; }
-        &:nth-child(3) { animation-delay: 3s; }
+        @for $i from 1 through 6 {
+          &:nth-child(#{$i}) {
+            animation-delay: #{0.9 + $i * 0.1}s;
+          }
+        }
       }
     }
     opacity: 0;
-    animation: fadeInUp 0.8s ease-out 2.4s forwards;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.8s forwards;
   }
 }
 
@@ -279,7 +294,7 @@
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -290,7 +305,7 @@
 @keyframes fadeInScale {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;

@@ -30,7 +30,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    animation: fadeInUp 0.8s ease-out;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1);
 
     #radar {
       width: 100%;
@@ -39,13 +39,13 @@
 
     .breadcrumb {
       margin-bottom: 1.5rem;
-      animation: fadeInUp 0.8s ease-out;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1);
     }
 
     .radar-header {
       text-align: center;
       margin-bottom: 2rem;
-      animation: fadeInUp 0.8s ease-out 0.2s both;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.1s both;
 
       h2 {
         font-size: 2rem;
@@ -54,12 +54,12 @@
 
       p {
         color: var(--text-color-secondary);
-        animation: fadeInUp 0.8s ease-out 0.4s both;
+        animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.2s both;
       }
     }
 
     .radar-content {
-      animation: fadeInScale 0.8s ease-out 0.4s both;
+      animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.2s both;
 
       .quadrants {
         display: grid;
@@ -69,17 +69,18 @@
 
         .quadrant {
           opacity: 0;
-          animation: fadeInScale 0.6s ease-out forwards;
+          animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
           @for $i from 1 through 4 {
             &:nth-child(#{$i}) {
-              animation-delay: #{$i * 0.2 + 0.4}s;
+              animation-delay: #{$i * 0.1 + 0.2}s;
             }
           }
 
           &:hover {
             .quadrant-header {
               transform: translateY(-2px);
+              transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
             }
           }
         }
@@ -87,21 +88,21 @@
 
       .blip-details {
         opacity: 0;
-        animation: fadeInUp 0.6s ease-out 1.2s forwards;
+        animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.6s forwards;
       }
 
       .loading-state {
-        animation: fadeInScale 0.6s ease-out both;
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) both;
       }
 
       .error-state {
-        animation: fadeInScale 0.6s ease-out both;
+        animation: fadeInScale 0.3s cubic-bezier(0.2, 0, 0.2, 1) both;
       }
     }
 
     .legend {
       opacity: 0;
-      animation: fadeInUp 0.6s ease-out 1.4s forwards;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.7s forwards;
     }
   }
 
@@ -113,17 +114,17 @@
     border-radius: var(--border-radius);
     box-shadow: var(--card-shadow);
     opacity: 0;
-    animation: fadeInUp 0.8s ease-out 0.8s forwards;
+    animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) 0.4s forwards;
 
     .faq-item {
       padding: 1.5rem 0;
       border-bottom: 1px solid var(--surface-border);
       opacity: 0;
-      animation: fadeInUp 0.6s ease-out forwards;
+      animation: fadeInUp 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
 
       @for $i from 1 through 10 {
         &:nth-child(#{$i}) {
-          animation-delay: #{$i * 0.08 + 0.9}s;
+          animation-delay: #{$i * 0.05 + 0.4}s;
         }
       }
 
@@ -142,7 +143,7 @@
         color: var(--primary-color);
         transform: translateX(-10px);
         opacity: 0;
-        animation: fadeInRight 0.6s ease-out forwards;
+        animation: fadeInRight 0.3s cubic-bezier(0.2, 0, 0.2, 1) forwards;
         animation-delay: inherit;
       }
 
@@ -191,7 +192,7 @@
       :deep(a) {
         color: var(--primary-color);
         text-decoration: none;
-        transition: color 0.2s;
+        transition: color 0.15s cubic-bezier(0.2, 0, 0.2, 1);
 
         &:hover {
           color: var(--primary-color-hover, var(--primary-color));
@@ -235,4 +236,4 @@
     opacity: 1;
     transform: translateX(0);
   }
-} 
+}
