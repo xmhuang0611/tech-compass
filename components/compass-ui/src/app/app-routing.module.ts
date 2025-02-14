@@ -33,7 +33,7 @@ const routes: Routes = [
       },
       {
         path: "radar",
-        title: "Tech Radar",
+        title: "Radar",
         loadComponent: () =>
           import("./features/tech-radar/tech-radar.component").then(
             (m) => m.TechRadarComponent
