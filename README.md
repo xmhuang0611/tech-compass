@@ -16,6 +16,7 @@ A platform for discovering, evaluating, and sharing technology solutions within 
   - Browse and search technical solutions
   - Advanced filtering and search capabilities
   - Detailed solution comparisons
+
 - ⭐ **Evaluation System**
   - Rate and review solutions
   - Comment and discuss implementations
@@ -32,6 +33,36 @@ A platform for discovering, evaluating, and sharing technology solutions within 
   - Role-based permissions
   - Team management
   - Audit logging
+
+## 📸 Screenshots
+
+#### Home Page
+
+![home](./docs/images/home.png)
+
+#### Solution Categories
+
+![categories](./docs/images/categories.png)
+
+#### Solution Catalog
+
+![solutions](./docs/images/catalog.png)
+
+#### Solution Details
+
+![solution-details](./docs/images/solution-detail.png)
+
+#### Solution Reviews
+
+![solution-reviews](./docs/images/solution-reviews.png)
+
+#### Tech Radar
+
+![tech-radar](./docs/images/tech-radar.png)
+
+#### About Page
+
+![about](./docs/images/about.png)
 
 ## 🏗️ Architecture
 
