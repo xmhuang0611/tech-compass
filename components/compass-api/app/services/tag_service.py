@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.tag import TagCreate, TagUpdate, TagInDB, Tag, format_tag_name
+from app.models.tag import Tag, TagCreate, TagInDB, TagUpdate, format_tag_name
 
 
 class TagService:

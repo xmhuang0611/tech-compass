@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException, status
 
+from app.core.config import settings
 from app.core.mongodb import get_database
 from app.core.password import get_password_hash, verify_password
-from app.models.user import User, UserCreate, UserUpdate, UserInDB, UserPasswordUpdate
-from app.core.config import settings
+from app.models.user import User, UserCreate, UserInDB, UserPasswordUpdate, UserUpdate
 
 
 class UserService:

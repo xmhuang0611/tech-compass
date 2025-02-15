@@ -7,10 +7,10 @@ from fastapi import logger
 from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
-from app.models.solution import SolutionCreate, SolutionUpdate, SolutionInDB, Solution
+from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.services.category_service import CategoryService
-from app.services.tag_service import TagService
 from app.services.rating_service import RatingService
+from app.services.tag_service import TagService
 
 VALID_SORT_FIELDS = {"name", "category", "created_at", "updated_at"}
 

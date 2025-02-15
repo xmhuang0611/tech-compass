@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
+from app.models.response import StandardResponse
+from app.models.solution import SolutionUpdate
 from app.models.tag import Tag, TagCreate, TagUpdate, format_tag_name
 from app.models.user import User
-from app.models.response import StandardResponse
-from app.services.tag_service import TagService
 from app.services.solution_service import SolutionService
-from app.models.solution import SolutionUpdate
+from app.services.tag_service import TagService
 
 router = APIRouter()
 

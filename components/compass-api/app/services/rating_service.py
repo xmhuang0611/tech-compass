@@ -1,14 +1,16 @@
-from typing import List, Optional, Tuple, Dict
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
+
 from bson import ObjectId
-from pymongo import DESCENDING, ASCENDING
 from fastapi import HTTPException, status
+from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
-from app.models.rating import RatingCreate, RatingInDB, Rating
+from app.models.rating import Rating, RatingCreate, RatingInDB
 from app.services.user_service import UserService
 
-VALID_SORT_FIELDS = {'created_at', 'updated_at', 'score'}
+VALID_SORT_FIELDS = {"created_at", "updated_at", "score"}
+
 
 class RatingService:
     def __init__(self):
@@ -29,11 +31,11 @@ class RatingService:
         limit: int = 20,
         sort: str = "-created_at",  # Default sort by created_at desc
         solution_slug: Optional[str] = None,
-        score: Optional[int] = None
+        score: Optional[int] = None,
     ) -> Tuple[List[Rating], int]:
         """Get all ratings with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
-        
+
         # Build query
         query = {}
         if solution_slug:
@@ -41,7 +43,7 @@ class RatingService:
             query["solution_slug"] = {"$regex": solution_slug, "$options": "i"}
         if score is not None:
             query["score"] = score  # Exact match for score
-        
+
         # Parse sort parameter
         sort_field = "created_at"
         sort_direction = DESCENDING  # Default to descending
@@ -55,25 +57,43 @@ class RatingService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+            raise ValueError(
+                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
+            )
 
         # Execute query with sort
-        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
+        cursor = (
+            self.db.ratings.find(query)
+            .sort(sort_field, sort_direction)
+            .skip(skip)
+            .limit(limit)
+        )
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
-        
+
         return ratings, total
 
-    async def get_solution_ratings(self, solution_slug: str, skip: int, limit: int, sort_by: str) -> Tuple[List[Rating], int]:
+    async def get_solution_ratings(
+        self, solution_slug: str, skip: int, limit: int, sort_by: str
+    ) -> Tuple[List[Rating], int]:
         query = {"solution_slug": solution_slug}
         sort_field = "created_at" if sort_by == "created_at" else "score"
-        cursor = self.db.ratings.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
+        cursor = (
+            self.db.ratings.find(query)
+            .sort(sort_field, DESCENDING)
+            .skip(skip)
+            .limit(limit)
+        )
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
         return ratings, total
 
-    async def get_user_rating(self, solution_slug: str, username: str) -> Optional[Rating]:
-        rating = await self.db.ratings.find_one({"solution_slug": solution_slug, "username": username})
+    async def get_user_rating(
+        self, solution_slug: str, username: str
+    ) -> Optional[Rating]:
+        rating = await self.db.ratings.find_one(
+            {"solution_slug": solution_slug, "username": username}
+        )
         if rating:
             return await self._convert_to_rating(rating)
         return None
@@ -87,43 +107,45 @@ class RatingService:
                     "_id": None,
                     "average": {"$avg": "$score"},
                     "count": {"$sum": 1},
-                    "scores": {"$push": "$score"}
+                    "scores": {"$push": "$score"},
                 }
-            }
+            },
         ]
-        
+
         result = await self.db.ratings.aggregate(pipeline).to_list(1)
         if not result:
             return {
                 "average": 0,
                 "count": 0,
-                "distribution": {str(i): 0 for i in range(1, 6)}
+                "distribution": {str(i): 0 for i in range(1, 6)},
             }
-            
+
         summary = result[0]
         # Calculate distribution
         distribution = {str(i): 0 for i in range(1, 6)}
         for score in summary["scores"]:
             distribution[str(score)] += 1
-            
+
         return {
             "average": round(summary["average"], 2),
             "count": summary["count"],
-            "distribution": distribution
+            "distribution": distribution,
         }
 
-    async def create_or_update_rating(self, solution_slug: str, rating: RatingCreate, username: str) -> RatingInDB:
+    async def create_or_update_rating(
+        self, solution_slug: str, rating: RatingCreate, username: str
+    ) -> RatingInDB:
         # First check if solution exists
         solution = await self.db.solutions.find_one({"slug": solution_slug})
         if not solution:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Solution with slug '{solution_slug}' not found"
+                detail=f"Solution with slug '{solution_slug}' not found",
             )
 
         now = datetime.utcnow()
         rating_data = rating.model_dump()
-        
+
         # Try to update existing rating first
         result = await self.db.ratings.update_one(
             {"solution_slug": solution_slug, "username": username},
@@ -131,11 +153,11 @@ class RatingService:
                 "$set": {
                     "score": rating_data["score"],
                     "comment": rating_data.get("comment"),
-                    "updated_at": now
+                    "updated_at": now,
                 }
-            }
+            },
         )
-        
+
         # If no existing rating was updated, create a new one
         if result.modified_count == 0:
             new_rating = {
@@ -144,24 +166,20 @@ class RatingService:
                 "score": rating_data["score"],
                 "comment": rating_data.get("comment"),
                 "created_at": now,
-                "updated_at": now
+                "updated_at": now,
             }
             await self.db.ratings.insert_one(new_rating)
             return RatingInDB(**new_rating)
-        
+
         # Return the updated rating
         return await self.get_user_rating(solution_slug, username)
 
     async def get_user_ratings(
-        self,
-        username: str,
-        skip: int = 0,
-        limit: int = 20,
-        sort: str = "-created_at"
+        self, username: str, skip: int = 0, limit: int = 20, sort: str = "-created_at"
     ) -> Tuple[List[Rating], int]:
         """Get all ratings created by a specific user with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
-        
+
         # Parse sort parameter
         if sort.startswith("-"):
             sort_field = sort[1:]  # Remove the minus sign
@@ -172,16 +190,23 @@ class RatingService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+            raise ValueError(
+                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
+            )
 
         # Query for user's ratings
         query = {"username": username}
-        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
-        
+        cursor = (
+            self.db.ratings.find(query)
+            .sort(sort_field, sort_direction)
+            .skip(skip)
+            .limit(limit)
+        )
+
         # Convert to Rating objects with user full names
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
-        
+
         return ratings, total
 
     async def _get_rating_or_404(self, rating_id: str) -> RatingInDB:
@@ -190,29 +215,24 @@ class RatingService:
             rating = await self.db.ratings.find_one({"_id": ObjectId(rating_id)})
             if not rating:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Rating not found"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found"
                 )
             return RatingInDB(**rating)
-        except Exception as e:
+        except Exception:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invalid rating ID"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid rating ID"
             )
 
     def check_rating_permission(
-        self,
-        rating: RatingInDB,
-        username: str,
-        is_superuser: bool
+        self, rating: RatingInDB, username: str, is_superuser: bool
     ) -> bool:
         """Check if user has permission to modify the rating.
-        
+
         Args:
             rating: The rating to check
             username: The username of the user
             is_superuser: Whether the user is a superuser
-            
+
         Returns:
             True if user has permission, False otherwise
         """
@@ -223,47 +243,39 @@ class RatingService:
         rating_id: str,
         rating_update: RatingCreate,
         username: str,
-        is_superuser: bool
+        is_superuser: bool,
     ) -> Optional[RatingInDB]:
         """Update a rating.
         Only the rating creator or superusers can update it."""
         rating = await self._get_rating_or_404(rating_id)
-        
+
         # Check permission
         if not self.check_rating_permission(rating, username, is_superuser):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You don't have permission to update this rating"
+                detail="You don't have permission to update this rating",
             )
 
         update_dict = rating_update.model_dump()
-        update_dict.update({
-            "updated_at": datetime.utcnow(),
-            "updated_by": username
-        })
+        update_dict.update({"updated_at": datetime.utcnow(), "updated_by": username})
 
         result = await self.db.ratings.find_one_and_update(
-            {"_id": ObjectId(rating_id)},
-            {"$set": update_dict},
-            return_document=True
+            {"_id": ObjectId(rating_id)}, {"$set": update_dict}, return_document=True
         )
         return RatingInDB(**result) if result else None
 
     async def delete_rating(
-        self,
-        rating_id: str,
-        username: str,
-        is_superuser: bool
+        self, rating_id: str, username: str, is_superuser: bool
     ) -> bool:
         """Delete a rating.
         Only the rating creator or superusers can delete it."""
         rating = await self._get_rating_or_404(rating_id)
-        
+
         # Check permission
         if not self.check_rating_permission(rating, username, is_superuser):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You don't have permission to delete this rating"
+                detail="You don't have permission to delete this rating",
             )
 
         result = await self.db.ratings.delete_one({"_id": ObjectId(rating_id)})

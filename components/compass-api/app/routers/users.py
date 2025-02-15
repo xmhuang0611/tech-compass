@@ -1,17 +1,17 @@
 from typing import Any, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.core.auth import get_current_active_user, get_current_superuser
+from app.models.response import StandardResponse
 from app.models.user import (
+    AdminUserUpdate,
     User,
     UserCreate,
-    UserUpdate,
     UserPasswordUpdate,
-    AdminUserUpdate,
+    UserUpdate,
 )
 from app.services.user_service import UserService
-from app.models.response import StandardResponse
 
 router = APIRouter()
 

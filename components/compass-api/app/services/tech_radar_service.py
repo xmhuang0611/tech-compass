@@ -1,9 +1,9 @@
 from typing import Dict, List
 
 from app.core.database import get_database
-from app.models.tech_radar import TechRadarEntry, TechRadarData
 from app.models.category import CategoryInDB
 from app.models.solution import RecommendStatusEnum
+from app.models.tech_radar import TechRadarData, TechRadarEntry
 
 
 class TechRadarService:

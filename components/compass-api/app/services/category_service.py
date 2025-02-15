@@ -12,7 +12,9 @@ class CategoryService:
         self.db = get_database()
         self.collection = self.db.categories
 
-    async def create_category(self, category: CategoryCreate, username: Optional[str] = None) -> CategoryInDB:
+    async def create_category(
+        self, category: CategoryCreate, username: Optional[str] = None
+    ) -> CategoryInDB:
         """Create a new category"""
         # Name is already trimmed by the model validator
         name = category.name
@@ -47,23 +49,24 @@ class CategoryService:
             return CategoryInDB(**category)
         return None
 
-    async def get_or_create_category(self, name: str, username: Optional[str] = None) -> CategoryInDB:
+    async def get_or_create_category(
+        self, name: str, username: Optional[str] = None
+    ) -> CategoryInDB:
         """Get a category by name or create it if it doesn't exist"""
         # Try to get existing category
         existing = await self.get_category_by_name(name)
         if existing:
             return existing
-        
+
         # Create new category with minimal info
-        category = CategoryCreate(
-            name=name,
-            description=f"Category for {name}"
-        )
+        category = CategoryCreate(name=name, description=f"Category for {name}")
         return await self.create_category(category, username)
 
-    async def get_categories(self, skip: int = 0, limit: int = 100, sort: str = "radar_quadrant") -> list[CategoryInDB]:
+    async def get_categories(
+        self, skip: int = 0, limit: int = 100, sort: str = "radar_quadrant"
+    ) -> list[CategoryInDB]:
         """Get all categories with pagination and sorting
-        
+
         Args:
             skip: Number of records to skip
             limit: Maximum number of records to return
@@ -72,14 +75,14 @@ class CategoryService:
         # Parse sort parameter
         sort_field = sort.lstrip("-")
         sort_direction = -1 if sort.startswith("-") else 1
-        
+
         # Build sort query
         sort_query = [(sort_field, sort_direction)]
-        
+
         # Add name as secondary sort if not already sorting by name
         if sort_field != "name":
             sort_query.append(("name", 1))
-        
+
         cursor = self.collection.find().sort(sort_query).skip(skip).limit(limit)
         categories = await cursor.to_list(length=limit)
         return [CategoryInDB(**category) for category in categories]
@@ -88,7 +91,7 @@ class CategoryService:
         self,
         category_id: str,
         category_update: CategoryUpdate,
-        username: Optional[str] = None
+        username: Optional[str] = None,
     ) -> Optional[CategoryInDB]:
         """Update a category by ID"""
         # Get existing category
@@ -97,7 +100,7 @@ class CategoryService:
             return None
 
         update_dict = category_update.model_dump(exclude_unset=True)
-        
+
         # Check name uniqueness if being updated
         if "name" in update_dict and update_dict["name"] != existing_category.name:
             other_category = await self.get_category_by_name(update_dict["name"])
@@ -107,11 +110,13 @@ class CategoryService:
             # Update all solutions using this category
             await self.db.solutions.update_many(
                 {"category": existing_category.name},
-                {"$set": {
-                    "category": update_dict["name"],
-                    "updated_at": datetime.utcnow(),
-                    "updated_by": username if username else None
-                }}
+                {
+                    "$set": {
+                        "category": update_dict["name"],
+                        "updated_at": datetime.utcnow(),
+                        "updated_by": username if username else None,
+                    }
+                },
             )
 
         update_dict["updated_at"] = datetime.utcnow()
@@ -119,8 +124,7 @@ class CategoryService:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one(
-            {"_id": ObjectId(category_id)},
-            {"$set": update_dict}
+            {"_id": ObjectId(category_id)}, {"$set": update_dict}
         )
         if result.modified_count:
             return await self.get_category_by_id(category_id)
@@ -134,9 +138,13 @@ class CategoryService:
             return False
 
         # Check if category is being used by any solutions
-        solutions_using_category = await self.db.solutions.find_one({"category": category.name})
+        solutions_using_category = await self.db.solutions.find_one(
+            {"category": category.name}
+        )
         if solutions_using_category:
-            raise ValueError(f"Cannot delete category '{category.name}' as it is being used by solutions")
+            raise ValueError(
+                f"Cannot delete category '{category.name}' as it is being used by solutions"
+            )
 
         result = await self.collection.delete_one({"_id": ObjectId(category_id)})
         return result.deleted_count > 0
@@ -147,9 +155,7 @@ class CategoryService:
 
     async def get_category_usage_count(self, name: str) -> int:
         """Get the number of approved solutions using this category"""
-        return await self.db.solutions.count_documents({
-            "category": name
-        })
+        return await self.db.solutions.count_documents({"category": name})
 
     async def get_category_with_usage(self, category: CategoryInDB) -> Category:
         """Convert CategoryInDB to Category with usage count"""

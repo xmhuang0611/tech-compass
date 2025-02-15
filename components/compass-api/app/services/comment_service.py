@@ -1,14 +1,22 @@
-from typing import List, Optional, Tuple
 from datetime import datetime
+from typing import List, Optional, Tuple
+
 from bson import ObjectId
-from pymongo import DESCENDING, ASCENDING
 from fastapi import HTTPException, status
+from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
-from app.models.comment import CommentCreate, CommentInDB, Comment, CommentUpdate, CommentType
+from app.models.comment import (
+    Comment,
+    CommentCreate,
+    CommentInDB,
+    CommentType,
+    CommentUpdate,
+)
 from app.services.user_service import UserService
 
-VALID_SORT_FIELDS = {'created_at', 'updated_at'}
+VALID_SORT_FIELDS = {"created_at", "updated_at"}
+
 
 class CommentService:
     def __init__(self):
@@ -30,7 +38,7 @@ class CommentService:
         limit: int = 20,
         sort: str = "-created_at",  # Default sort by created_at desc
         type: Optional[CommentType] = None,
-        solution_slug: Optional[str] = None
+        solution_slug: Optional[str] = None,
     ) -> Tuple[List[Comment], int]:
         """Get all comments with pagination, sorting and optional type filtering."""
         query = {}
@@ -49,11 +57,18 @@ class CommentService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+            raise ValueError(
+                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
+            )
 
         # Execute query with sort
-        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
-        
+        cursor = (
+            self.collection.find(query)
+            .sort(sort_field, sort_direction)
+            .skip(skip)
+            .limit(limit)
+        )
+
         # Convert to Comment objects with user full names
         comments = []
         async for comment in cursor:
@@ -61,9 +76,9 @@ class CommentService:
             if "username" not in comment:
                 comment["username"] = comment["created_by"]
             comments.append(await self._convert_to_comment(comment))
-            
+
         total = await self.collection.count_documents(query)
-        
+
         return comments, total
 
     async def get_solution_comments(
@@ -72,7 +87,7 @@ class CommentService:
         skip: int = 0,
         limit: int = 20,
         sort_by: str = "created_at",
-        type: Optional[CommentType] = None
+        type: Optional[CommentType] = None,
     ) -> Tuple[List[Comment], int]:
         """Get all comments for a solution with pagination and optional type filtering."""
         query = {"solution_slug": solution_slug}
@@ -80,8 +95,13 @@ class CommentService:
             query["type"] = type
 
         sort_field = sort_by
-        cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
-        
+        cursor = (
+            self.collection.find(query)
+            .sort(sort_field, DESCENDING)
+            .skip(skip)
+            .limit(limit)
+        )
+
         # Convert to Comment objects with user full names
         comments = []
         async for comment in cursor:
@@ -89,7 +109,7 @@ class CommentService:
             if "username" not in comment:
                 comment["username"] = comment["created_by"]
             comments.append(await self._convert_to_comment(comment))
-            
+
         total = await self.collection.count_documents(query)
         return comments, total
 
@@ -106,39 +126,31 @@ class CommentService:
             comment = await self.collection.find_one({"_id": ObjectId(comment_id)})
             if not comment:
                 raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Comment not found"
+                    status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
                 )
             return CommentInDB(**comment)
         except Exception:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Invalid comment ID"
+                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid comment ID"
             )
 
     def check_comment_permission(
-        self,
-        comment: CommentInDB,
-        username: str,
-        is_superuser: bool
+        self, comment: CommentInDB, username: str, is_superuser: bool
     ) -> bool:
         """Check if user has permission to modify the comment.
-        
+
         Args:
             comment: The comment to check
             username: The username of the user
             is_superuser: Whether the user is a superuser
-            
+
         Returns:
             True if user has permission, False otherwise
         """
         return is_superuser or comment.created_by == username
 
     async def create_comment(
-        self,
-        solution_slug: str,
-        comment: CommentCreate,
-        username: str
+        self, solution_slug: str, comment: CommentCreate, username: str
     ) -> CommentInDB:
         """Create a new comment"""
         # Check if solution exists
@@ -146,20 +158,22 @@ class CommentService:
         if not solution:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Solution with slug '{solution_slug}' not found"
+                detail=f"Solution with slug '{solution_slug}' not found",
             )
 
         now = datetime.utcnow()
         comment_dict = comment.model_dump()
-        comment_dict.update({
-            "solution_slug": solution_slug,
-            "username": username,
-            "type": CommentType.USER,  # Always set type to USER for new comments
-            "created_at": now,
-            "updated_at": now,
-            "created_by": username,
-            "updated_by": username
-        })
+        comment_dict.update(
+            {
+                "solution_slug": solution_slug,
+                "username": username,
+                "type": CommentType.USER,  # Always set type to USER for new comments
+                "created_at": now,
+                "updated_at": now,
+                "created_by": username,
+                "updated_by": username,
+            }
+        )
         result = await self.collection.insert_one(comment_dict)
         comment_dict["_id"] = result.inserted_id
         return CommentInDB(**comment_dict)
@@ -169,54 +183,46 @@ class CommentService:
         comment_id: str,
         comment_update: CommentUpdate,
         username: str,
-        is_superuser: bool
+        is_superuser: bool,
     ) -> Optional[CommentInDB]:
         """Update a comment.
         Only the comment creator or superusers can update it.
         Only superusers can update the type field, for non-admin users the type field will be ignored."""
         comment = await self._get_comment_or_404(comment_id)
-        
+
         # Check permission
         if not self.check_comment_permission(comment, username, is_superuser):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You don't have permission to update this comment"
+                detail="You don't have permission to update this comment",
             )
 
         # Get update fields
         update_dict = comment_update.model_dump(exclude_unset=True)
-        
+
         # Remove type field for non-admin users
         if not is_superuser and "type" in update_dict:
             del update_dict["type"]
 
-        update_dict.update({
-            "updated_at": datetime.utcnow(),
-            "updated_by": username
-        })
+        update_dict.update({"updated_at": datetime.utcnow(), "updated_by": username})
 
         result = await self.collection.find_one_and_update(
-            {"_id": ObjectId(comment_id)},
-            {"$set": update_dict},
-            return_document=True
+            {"_id": ObjectId(comment_id)}, {"$set": update_dict}, return_document=True
         )
         return CommentInDB(**result) if result else None
 
     async def delete_comment(
-        self,
-        comment_id: str,
-        username: str,
-        is_superuser: bool
+        self, comment_id: str, username: str, is_superuser: bool
     ) -> bool:
         """Delete a comment.
         Only the comment creator or superusers can delete it."""
         comment = await self._get_comment_or_404(comment_id)
-        
+
         # Check permission
         if not self.check_comment_permission(comment, username, is_superuser):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="You don't have permission to delete this comment"
+                detail="You don't have permission to delete this comment",
             )
 
         result = await self.collection.delete_one({"_id": ObjectId(comment_id)})
@@ -227,15 +233,11 @@ class CommentService:
         return await self.collection.count_documents({"solution_slug": solution_slug})
 
     async def get_user_comments(
-        self,
-        username: str,
-        skip: int = 0,
-        limit: int = 20,
-        sort: str = "-created_at"
+        self, username: str, skip: int = 0, limit: int = 20, sort: str = "-created_at"
     ) -> Tuple[List[Comment], int]:
         """Get all comments created by a specific user with pagination and sorting.
         Default sort is by created_at in descending order (newest first)."""
-        
+
         # Parse sort parameter
         if sort.startswith("-"):
             sort_field = sort[1:]  # Remove the minus sign
@@ -246,16 +248,23 @@ class CommentService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
+            raise ValueError(
+                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
+            )
 
         # Query for user's comments
         query = {"username": username}
-        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
-        
+        cursor = (
+            self.collection.find(query)
+            .sort(sort_field, sort_direction)
+            .skip(skip)
+            .limit(limit)
+        )
+
         # Convert to Comment objects with user full names
         comments = []
         async for comment in cursor:
             comments.append(await self._convert_to_comment(comment))
-            
+
         total = await self.collection.count_documents(query)
         return comments, total

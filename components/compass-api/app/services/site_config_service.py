@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Optional
+
 from bson import ObjectId
 
 from app.core.database import get_database
-from app.models.site_config import SiteConfigBase, SiteConfigUpdate, SiteConfigInDB
+from app.models.site_config import SiteConfigBase, SiteConfigInDB, SiteConfigUpdate
+
 
 class SiteConfigService:
     def __init__(self):
@@ -16,7 +18,9 @@ class SiteConfigService:
             return SiteConfigInDB(**config)
         return None
 
-    async def create_site_config(self, config: SiteConfigBase, username: str) -> SiteConfigInDB:
+    async def create_site_config(
+        self, config: SiteConfigBase, username: str
+    ) -> SiteConfigInDB:
         """Create initial site configuration"""
         # Check if config already exists
         existing = await self.get_site_config()
@@ -30,21 +34,19 @@ class SiteConfigService:
             **config_dict,
             "created_at": now,
             "updated_at": now,
-            "updated_by": username
+            "updated_by": username,
         }
-        
+
         await self.db.site_config.insert_one(new_config)
         return SiteConfigInDB(**new_config)
 
     async def update_site_config(
-        self,
-        config_update: SiteConfigUpdate,
-        username: str
+        self, config_update: SiteConfigUpdate, username: str
     ) -> Optional[SiteConfigInDB]:
         """Update site configuration"""
         now = datetime.utcnow()
         update_dict = config_update.model_dump(exclude_unset=True)
-        
+
         if not update_dict:
             return await self.get_site_config()
 
@@ -54,7 +56,7 @@ class SiteConfigService:
         result = await self.db.site_config.find_one_and_update(
             {},  # Update the first (and only) config document
             {"$set": update_dict},
-            return_document=True
+            return_document=True,
         )
 
         if result:
@@ -65,7 +67,7 @@ class SiteConfigService:
         """Reset site configuration to defaults"""
         # Delete existing config
         await self.db.site_config.delete_many({})
-        
+
         # Create default config
         default_config = SiteConfigBase(
             site_name="Tech Compass",
@@ -75,8 +77,8 @@ class SiteConfigService:
             features={
                 "ratings_enabled": True,
                 "comments_enabled": True,
-                "tags_enabled": True
-            }
+                "tags_enabled": True,
+            },
         )
-        
-        return await self.create_site_config(default_config, username) 
+
+        return await self.create_site_config(default_config, username)
