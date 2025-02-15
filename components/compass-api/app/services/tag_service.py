@@ -12,9 +12,7 @@ class TagService:
         self.db = get_database()
         self.collection = self.db.tags
 
-    async def create_tag(
-        self, tag: TagCreate, username: Optional[str] = None
-    ) -> TagInDB:
+    async def create_tag(self, tag: TagCreate, username: Optional[str] = None) -> TagInDB:
         """Create a new tag"""
         # Name is already formatted by the model validator
         formatted_name = tag.name
@@ -80,9 +78,7 @@ class TagService:
         # Convert to dictionary
         return {doc["_id"]: doc["count"] for doc in results}
 
-    async def get_tags(
-        self, skip: int = 0, limit: int = 100, show_all: bool = False
-    ) -> List[Tag]:
+    async def get_tags(self, skip: int = 0, limit: int = 100, show_all: bool = False) -> List[Tag]:
         """Get all tags with pagination
         Args:
             skip: Number of items to skip
@@ -123,9 +119,7 @@ class TagService:
 
     async def get_tag_usage_count(self, name: str) -> int:
         """Get the number of solutions using this tag"""
-        return await self.db.solutions.count_documents(
-            {"tags": name, "review_status": "APPROVED"}
-        )
+        return await self.db.solutions.count_documents({"tags": name, "review_status": "APPROVED"})
 
     async def merge_tags(
         self, source_tag_id: str, target_tag_name: str, username: Optional[str] = None
@@ -171,9 +165,7 @@ class TagService:
             )
 
             # Then remove the source tag
-            await self.db.solutions.update_many(
-                {"tags": source_tag.name}, {"$pull": {"tags": source_tag.name}}
-            )
+            await self.db.solutions.update_many({"tags": source_tag.name}, {"$pull": {"tags": source_tag.name}})
 
             # Delete the source tag
             await self.collection.delete_one({"_id": ObjectId(source_tag_id)})
@@ -224,9 +216,7 @@ class TagService:
             if username:
                 update_dict["updated_by"] = username
 
-            result = await self.collection.update_one(
-                {"_id": ObjectId(tag_id)}, {"$set": update_dict}
-            )
+            result = await self.collection.update_one({"_id": ObjectId(tag_id)}, {"$set": update_dict})
             if result.modified_count:
                 return await self.get_tag_by_id(tag_id)
             return None
@@ -275,9 +265,7 @@ class TagService:
             return []
 
         # Get all tags in a single query
-        tags = await self.collection.find({"name": {"$in": solution["tags"]}}).to_list(
-            length=None
-        )
+        tags = await self.collection.find({"name": {"$in": solution["tags"]}}).to_list(length=None)
         if not tags:
             return []
 
@@ -310,9 +298,7 @@ class TagService:
         if not tag:
             return False
 
-        result = await self.db.solutions.update_one(
-            {"slug": solution_slug}, {"$addToSet": {"tags": formatted_name}}
-        )
+        result = await self.db.solutions.update_one({"slug": solution_slug}, {"$addToSet": {"tags": formatted_name}})
         return result.modified_count > 0
 
     async def remove_solution_tag_by_name(self, solution_slug: str, name: str) -> bool:
@@ -330,9 +316,7 @@ class TagService:
         if not tag:
             return False
 
-        result = await self.db.solutions.update_one(
-            {"slug": solution_slug}, {"$pull": {"tags": formatted_name}}
-        )
+        result = await self.db.solutions.update_one({"slug": solution_slug}, {"$pull": {"tags": formatted_name}})
         return result.modified_count > 0
 
     async def count_tags(self, show_all: bool = False) -> int:

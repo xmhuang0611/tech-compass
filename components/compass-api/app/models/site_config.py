@@ -16,9 +16,7 @@ class SiteConfigBase(BaseModel):
         default_factory=dict,
         description="Feature flags for enabling/disabling functionality",
     )
-    custom_links: List[dict] = Field(
-        default_factory=list, description="Custom navigation links"
-    )
+    custom_links: List[dict] = Field(default_factory=list, description="Custom navigation links")
     theme: dict = Field(
         default_factory=lambda: {
             "primary_color": "#1890ff",

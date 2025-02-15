@@ -18,27 +18,21 @@ class UserService:
         """Get a user by username or raise 404 if not found."""
         user = await self.get_user_by_username(username)
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return user
 
     def _is_external_user(self, user: UserInDB) -> bool:
         """Check if a user is an external user (empty hashed_password)."""
         return not user.hashed_password
 
-    def _prepare_update_data(
-        self, update_dict: Dict[str, Any], username: str
-    ) -> Dict[str, Any]:
+    def _prepare_update_data(self, update_dict: Dict[str, Any], username: str) -> Dict[str, Any]:
         """Prepare update data with audit fields."""
         update_data = update_dict.copy()
         update_data["updated_at"] = datetime.utcnow()
         update_data["updated_by"] = username
         return update_data
 
-    async def _check_username_uniqueness(
-        self, new_username: str, current_username: str
-    ) -> None:
+    async def _check_username_uniqueness(self, new_username: str, current_username: str) -> None:
         """Check if a username is unique, excluding the current user."""
         if new_username != current_username:
             existing_user = await self.get_user_by_username(new_username)
@@ -155,9 +149,7 @@ class UserService:
             {
                 "created_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
-                "hashed_password": get_password_hash(user.password)
-                if user.password
-                else "",
+                "hashed_password": get_password_hash(user.password) if user.password else "",
             }
         )
 
@@ -195,9 +187,7 @@ class UserService:
             current_username,
         )
 
-        result = await self.collection.update_one(
-            {"username": username}, {"$set": update_data}
-        )
+        result = await self.collection.update_one({"username": username}, {"$set": update_data})
         return result.modified_count > 0
 
     async def update_user_by_username(
@@ -230,13 +220,9 @@ class UserService:
         )
         return User(**result) if result else None
 
-    async def update_external_user(
-        self, username: str, full_name: str, email: str
-    ) -> Optional[User]:
+    async def update_external_user(self, username: str, full_name: str, email: str) -> Optional[User]:
         """System level update for external user information during authentication."""
-        update_data = self._prepare_update_data(
-            {"full_name": full_name, "email": email}, "system"
-        )
+        update_data = self._prepare_update_data({"full_name": full_name, "email": email}, "system")
 
         result = await self.collection.find_one_and_update(
             {"username": username}, {"$set": update_data}, return_document=True

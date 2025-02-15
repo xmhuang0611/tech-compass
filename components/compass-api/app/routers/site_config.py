@@ -18,28 +18,20 @@ async def get_site_config():
     config = await config_service.get_site_config()
 
     if not config:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Site configuration not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Site configuration not found")
 
     return {"status": "success", "data": config}
 
 
-@router.post(
-    "", response_model=dict, status_code=status.HTTP_201_CREATED, tags=["site-config"]
-)
-async def create_site_config(
-    config: SiteConfigBase, current_user: User = Depends(get_current_active_user)
-):
+@router.post("", response_model=dict, status_code=status.HTTP_201_CREATED, tags=["site-config"])
+async def create_site_config(config: SiteConfigBase, current_user: User = Depends(get_current_active_user)):
     """
     Create initial site configuration.
     Requires authentication. Can only be called once when no configuration exists.
     """
     config_service = SiteConfigService()
     try:
-        new_config = await config_service.create_site_config(
-            config=config, username=current_user.username
-        )
+        new_config = await config_service.create_site_config(config=config, username=current_user.username)
         return {"status": "success", "data": new_config}
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
@@ -65,9 +57,7 @@ async def update_site_config(
     )
 
     if not updated_config:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Site configuration not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Site configuration not found")
 
     return {"status": "success", "data": updated_config}
 
@@ -80,9 +70,7 @@ async def reset_site_config(current_user: User = Depends(get_current_active_user
     """
     config_service = SiteConfigService()
     try:
-        new_config = await config_service.reset_site_config(
-            username=current_user.username
-        )
+        new_config = await config_service.reset_site_config(username=current_user.username)
         return {"status": "success", "data": new_config}
     except Exception as e:
         raise HTTPException(

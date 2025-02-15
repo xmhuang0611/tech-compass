@@ -35,9 +35,7 @@ async def get_solution_ratings(
     ratings, total = await rating_service.get_solution_ratings(
         solution_slug=solution_slug, skip=skip, limit=page_size, sort_by=sort_by
     )
-    return StandardResponse.paginated(
-        data=ratings, total=total, skip=skip, limit=page_size
-    )
+    return StandardResponse.paginated(data=ratings, total=total, skip=skip, limit=page_size)
 
 
 @router.get(
@@ -45,9 +43,7 @@ async def get_solution_ratings(
     response_model=StandardResponse[Rating],
     tags=["ratings"],
 )
-async def get_user_rating(
-    solution_slug: str, current_user: User = Depends(get_current_active_user)
-):
+async def get_user_rating(solution_slug: str, current_user: User = Depends(get_current_active_user)):
     """
     Get the current user's rating for a solution.
 
@@ -56,9 +52,7 @@ async def get_user_rating(
     rating_service = RatingService()
     rating = await rating_service.get_user_rating(solution_slug, current_user.username)
     if not rating:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found")
     return StandardResponse.of(rating)
 
 
@@ -119,15 +113,11 @@ async def get_solution_rating_summary(
 async def get_all_ratings(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
-    sort: str = Query(
-        "-created_at", description="Sort field (prefix with - for descending order)"
-    ),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
     solution_slug: Optional[str] = Query(
         None, description="Filter ratings by solution slug (supports partial matching)"
     ),
-    score: Optional[int] = Query(
-        None, ge=1, le=5, description="Filter ratings by exact score (1-5)"
-    ),
+    score: Optional[int] = Query(None, ge=1, le=5, description="Filter ratings by exact score (1-5)"),
     rating_service: RatingService = Depends(),
 ):
     """
@@ -149,9 +139,7 @@ async def get_all_ratings(
             solution_slug=solution_slug,
             score=score,
         )
-        return StandardResponse.paginated(
-            data=ratings, total=total, skip=skip, limit=page_size
-        )
+        return StandardResponse.paginated(data=ratings, total=total, skip=skip, limit=page_size)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -161,12 +149,8 @@ async def get_all_ratings(
 @router.get("/my/", response_model=StandardResponse[list[Rating]], tags=["ratings"])
 async def get_my_ratings(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
-    limit: int = Query(
-        20, ge=1, le=100, description="Maximum number of items to return"
-    ),
-    sort: str = Query(
-        "-created_at", description="Sort field (prefix with - for descending order)"
-    ),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
     current_user: User = Depends(get_current_active_user),
     rating_service: RatingService = Depends(),
 ) -> StandardResponse[list[Rating]]:
@@ -187,9 +171,7 @@ async def get_my_ratings(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error getting user ratings: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error getting user ratings: {str(e)}")
 
 
 @router.put("/{rating_id}", response_model=StandardResponse[Rating], tags=["ratings"])
@@ -218,9 +200,7 @@ async def update_rating(
             is_superuser=current_user.is_superuser,
         )
         if not updated_rating:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found")
         return StandardResponse.of(updated_rating)
     except HTTPException as e:
         raise e

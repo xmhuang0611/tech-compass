@@ -23,9 +23,7 @@ class TechRadarData(BaseModel):
     """Tech Radar data model"""
 
     date: str = Field(..., description="Current date in YYYY-MM format")
-    entries: List[TechRadarEntry] = Field(
-        default_factory=list, description="List of tech radar entries"
-    )
+    entries: List[TechRadarEntry] = Field(default_factory=list, description="List of tech radar entries")
 
     @classmethod
     def create_current(cls, entries: List[TechRadarEntry]) -> "TechRadarData":

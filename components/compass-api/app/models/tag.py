@@ -22,9 +22,7 @@ def format_tag_name(name: str) -> str:
 class TagBase(BaseModel):
     """Base tag model"""
 
-    name: str = Field(
-        ..., description="Tag name (will be formatted to lowercase with hyphens)"
-    )
+    name: str = Field(..., description="Tag name (will be formatted to lowercase with hyphens)")
     description: Optional[str] = Field(None, description="Tag description")
 
     @field_validator("name")
@@ -55,6 +53,4 @@ class TagInDB(TagBase, AuditModel):
 class Tag(TagInDB):
     """API response model for tag"""
 
-    usage_count: int = Field(
-        default=0, description="Number of solutions using this tag"
-    )
+    usage_count: int = Field(default=0, description="Number of solutions using this tag")

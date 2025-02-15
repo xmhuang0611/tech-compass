@@ -57,17 +57,10 @@ class CommentService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Execute query with sort
-        cursor = (
-            self.collection.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
 
         # Convert to Comment objects with user full names
         comments = []
@@ -95,12 +88,7 @@ class CommentService:
             query["type"] = type
 
         sort_field = sort_by
-        cursor = (
-            self.collection.find(query)
-            .sort(sort_field, DESCENDING)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.collection.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
 
         # Convert to Comment objects with user full names
         comments = []
@@ -125,18 +113,12 @@ class CommentService:
         try:
             comment = await self.collection.find_one({"_id": ObjectId(comment_id)})
             if not comment:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-                )
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
             return CommentInDB(**comment)
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid comment ID"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid comment ID")
 
-    def check_comment_permission(
-        self, comment: CommentInDB, username: str, is_superuser: bool
-    ) -> bool:
+    def check_comment_permission(self, comment: CommentInDB, username: str, is_superuser: bool) -> bool:
         """Check if user has permission to modify the comment.
 
         Args:
@@ -149,9 +131,7 @@ class CommentService:
         """
         return is_superuser or comment.created_by == username
 
-    async def create_comment(
-        self, solution_slug: str, comment: CommentCreate, username: str
-    ) -> CommentInDB:
+    async def create_comment(self, solution_slug: str, comment: CommentCreate, username: str) -> CommentInDB:
         """Create a new comment"""
         # Check if solution exists
         solution = await self.db.solutions.find_one({"slug": solution_slug})
@@ -211,9 +191,7 @@ class CommentService:
         )
         return CommentInDB(**result) if result else None
 
-    async def delete_comment(
-        self, comment_id: str, username: str, is_superuser: bool
-    ) -> bool:
+    async def delete_comment(self, comment_id: str, username: str, is_superuser: bool) -> bool:
         """Delete a comment.
         Only the comment creator or superusers can delete it."""
         comment = await self._get_comment_or_404(comment_id)
@@ -248,18 +226,11 @@ class CommentService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Query for user's comments
         query = {"username": username}
-        cursor = (
-            self.collection.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
 
         # Convert to Comment objects with user full names
         comments = []

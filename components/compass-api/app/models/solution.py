@@ -64,19 +64,11 @@ class SolutionBase(BaseModel):
         default="PILOT",
         description="Current adoption level (PILOT/TEAM/DEPARTMENT/ENTERPRISE/INDUSTRY)",
     )
-    adoption_user_count: Optional[int] = Field(
-        0, ge=0, description="Number of users currently using this solution"
-    )
+    adoption_user_count: Optional[int] = Field(0, ge=0, description="Number of users currently using this solution")
     tags: List[str] = Field(default_factory=list, description="List of tag names")
-    pros: Optional[List[str]] = Field(
-        default_factory=list, description="List of advantages"
-    )
-    cons: Optional[List[str]] = Field(
-        default_factory=list, description="List of disadvantages"
-    )
-    stage: Optional[StageEnum] = Field(
-        default="UAT", description="Development stage status"
-    )
+    pros: Optional[List[str]] = Field(default_factory=list, description="List of advantages")
+    cons: Optional[List[str]] = Field(default_factory=list, description="List of disadvantages")
+    stage: Optional[StageEnum] = Field(default="UAT", description="Development stage status")
     recommend_status: Optional[RecommendStatusEnum] = Field(
         default="ASSESS",
         description="Strategic recommendation (ADOPT/TRIAL/ASSESS/HOLD)",
@@ -92,9 +84,7 @@ class SolutionCreate(SolutionBase):
 class SolutionInDBBase(SolutionBase):
     """Base model for database solutions with review status"""
 
-    review_status: ReviewStatusEnum = Field(
-        default="PENDING", description="Review status (PENDING/APPROVED/REJECTED)"
-    )
+    review_status: ReviewStatusEnum = Field(default="PENDING", description="Review status (PENDING/APPROVED/REJECTED)")
 
 
 class SolutionUpdate(BaseModel):

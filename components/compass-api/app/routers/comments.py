@@ -18,29 +18,19 @@ from app.services.solution_service import SolutionService
 router = APIRouter()
 
 
-async def verify_solution_exists(
-    solution_slug: str, solution_service: SolutionService = Depends()
-) -> None:
+async def verify_solution_exists(solution_slug: str, solution_service: SolutionService = Depends()) -> None:
     """Verify that a solution exists or raise 404."""
     solution = await solution_service.get_solution_by_slug(solution_slug)
     if not solution:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
 
 
 @router.get("/", response_model=StandardResponse[list[Comment]], tags=["comments"])
 async def get_all_comments(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
-    limit: int = Query(
-        20, ge=1, le=100, description="Maximum number of items to return"
-    ),
-    sort: str = Query(
-        "-created_at", description="Sort field (prefix with - for descending order)"
-    ),
-    type: Optional[CommentType] = Query(
-        None, description="Filter comments by type (OFFICIAL or USER)"
-    ),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
+    type: Optional[CommentType] = Query(None, description="Filter comments by type (OFFICIAL or USER)"),
     solution_slug: Optional[str] = Query(
         None, description="Filter comments by solution slug (supports partial matching)"
     ),
@@ -76,15 +66,9 @@ async def get_all_comments(
 async def get_solution_comments(
     solution_slug: str,
     skip: int = Query(0, ge=0, description="Number of items to skip"),
-    limit: int = Query(
-        20, ge=1, le=100, description="Maximum number of items to return"
-    ),
-    sort_by: str = Query(
-        "created_at", regex="^(created_at)$", description="Field to sort by"
-    ),
-    type: Optional[CommentType] = Query(
-        None, description="Filter comments by type (OFFICIAL or USER)"
-    ),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort_by: str = Query("created_at", regex="^(created_at)$", description="Field to sort by"),
+    type: Optional[CommentType] = Query(None, description="Filter comments by type (OFFICIAL or USER)"),
     comment_service: CommentService = Depends(),
     _: None = Depends(verify_solution_exists),
 ) -> StandardResponse[list[Comment]]:
@@ -157,9 +141,7 @@ async def update_comment(
             is_superuser=current_user.is_superuser,
         )
         if not result:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
         return StandardResponse.of(result)
     except HTTPException:
         raise
@@ -184,9 +166,7 @@ async def delete_comment(
             is_superuser=current_user.is_superuser,
         )
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found")
     except HTTPException:
         raise
     except Exception as e:
@@ -196,12 +176,8 @@ async def delete_comment(
 @router.get("/my/", response_model=StandardResponse[list[Comment]], tags=["comments"])
 async def get_my_comments(
     skip: int = Query(0, ge=0, description="Number of items to skip"),
-    limit: int = Query(
-        20, ge=1, le=100, description="Maximum number of items to return"
-    ),
-    sort: str = Query(
-        "-created_at", description="Sort field (prefix with - for descending order)"
-    ),
+    limit: int = Query(20, ge=1, le=100, description="Maximum number of items to return"),
+    sort: str = Query("-created_at", description="Sort field (prefix with - for descending order)"),
     current_user: User = Depends(get_current_active_user),
     comment_service: CommentService = Depends(),
 ) -> StandardResponse[list[Comment]]:
@@ -222,6 +198,4 @@ async def get_my_comments(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error getting user comments: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error getting user comments: {str(e)}")

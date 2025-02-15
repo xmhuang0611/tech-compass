@@ -18,9 +18,7 @@ class UserCreate(UserBase):
 
     password: str = Field(..., description="User's password (will be hashed)")
     is_active: bool = Field(default=True, description="Whether the user is active")
-    is_superuser: bool = Field(
-        default=False, description="Whether the user is a superuser"
-    )
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
 
 
 class UserPasswordUpdate(BaseModel):
@@ -49,12 +47,8 @@ class UserUpdate(UserUpdateBase):
 class AdminUserUpdate(UserUpdateBase):
     """Admin user update model that includes all fields"""
 
-    is_active: bool | None = Field(
-        default=None, description="Whether the user is active"
-    )
-    is_superuser: bool | None = Field(
-        default=None, description="Whether the user is a superuser"
-    )
+    is_active: bool | None = Field(default=None, description="Whether the user is active")
+    is_superuser: bool | None = Field(default=None, description="Whether the user is a superuser")
     password: str | None = Field(default=None, description="New password (optional)")
 
 
@@ -63,15 +57,11 @@ class UserInDB(UserBase, AuditModel):
 
     hashed_password: str = Field(..., description="Hashed password")
     is_active: bool = Field(default=True, description="Whether the user is active")
-    is_superuser: bool = Field(
-        default=False, description="Whether the user is a superuser"
-    )
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")
 
 
 class User(UserBase, AuditModel):
     """User model for API responses - excludes password fields"""
 
     is_active: bool = Field(default=True, description="Whether the user is active")
-    is_superuser: bool = Field(
-        default=False, description="Whether the user is a superuser"
-    )
+    is_superuser: bool = Field(default=False, description="Whether the user is a superuser")

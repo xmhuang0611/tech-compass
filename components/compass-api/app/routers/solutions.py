@@ -27,15 +27,11 @@ async def create_solution(
 ) -> Any:
     """Create a new solution."""
     try:
-        solution_in_db = await solution_service.create_solution(
-            solution, current_user.username
-        )
+        solution_in_db = await solution_service.create_solution(solution, current_user.username)
         return StandardResponse.of(solution_in_db)
     except Exception as e:
         logger.error(f"Error creating solution: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error creating solution: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error creating solution: {str(e)}")
 
 
 @router.get("/", response_model=StandardResponse[List[Solution]])
@@ -52,15 +48,9 @@ async def get_solutions(
         None,
         description="Filter by stage (DEVELOPING/UAT/PRODUCTION/DEPRECATED/RETIRED)",
     ),
-    review_status: Optional[str] = Query(
-        None, description="Filter by review status (PENDING/APPROVED/REJECTED)"
-    ),
-    tags: Optional[str] = Query(
-        None, description="Filter by tags (comma-separated list of tag names)"
-    ),
-    sort: str = Query(
-        "name", description="Sort field (prefix with - for descending order)"
-    ),
+    review_status: Optional[str] = Query(None, description="Filter by review status (PENDING/APPROVED/REJECTED)"),
+    tags: Optional[str] = Query(None, description="Filter by tags (comma-separated list of tag names)"),
+    sort: str = Query("name", description="Sort field (prefix with - for descending order)"),
     solution_service: SolutionService = Depends(),
 ) -> Any:
     """Get all solutions with pagination, filtering and sorting.
@@ -122,21 +112,15 @@ async def get_solutions(
             sort=sort,
         )
         total = await solution_service.count_solutions()
-        return StandardResponse.paginated(
-            data=solutions, total=total, skip=skip, limit=limit
-        )
+        return StandardResponse.paginated(data=solutions, total=total, skip=skip, limit=limit)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error listing solutions: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error listing solutions: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error listing solutions: {str(e)}")
 
 
-@router.get(
-    "/departments", response_model=StandardResponse[List[str]], tags=["solutions"]
-)
+@router.get("/departments", response_model=StandardResponse[List[str]], tags=["solutions"])
 async def get_departments(solution_service: SolutionService = Depends()):
     """
     Get all unique department names from solutions.
@@ -150,16 +134,12 @@ async def get_departments(solution_service: SolutionService = Depends()):
         return StandardResponse.paginated(departments, len(departments), 0, 0)
     except Exception as e:
         logger.error(f"Error getting departments: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error getting departments: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error getting departments: {str(e)}")
 
 
 @router.get("/search/", response_model=StandardResponse[List[Solution]])
 async def search_solutions(
-    keyword: str = Query(
-        ..., description="Search keyword to match against solution fields"
-    ),
+    keyword: str = Query(..., description="Search keyword to match against solution fields"),
     solution_service: SolutionService = Depends(),
 ) -> Any:
     """Search solutions by keyword using text similarity.
@@ -171,9 +151,7 @@ async def search_solutions(
         return StandardResponse.of(solutions)
     except Exception as e:
         logger.error(f"Error searching solutions: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error searching solutions: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error searching solutions: {str(e)}")
 
 
 @router.get("/my/", response_model=StandardResponse[List[Solution]])
@@ -197,16 +175,12 @@ async def get_my_solutions(
             username=current_user.username, skip=skip, limit=limit, sort=sort
         )
         total = await solution_service.count_user_solutions(current_user.username)
-        return StandardResponse.paginated(
-            data=solutions, total=total, skip=skip, limit=limit
-        )
+        return StandardResponse.paginated(data=solutions, total=total, skip=skip, limit=limit)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error listing user solutions: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error listing user solutions: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error listing user solutions: {str(e)}")
 
 
 @router.get("/{slug}", response_model=StandardResponse[Solution])
@@ -214,9 +188,7 @@ async def get_solution(slug: str, solution_service: SolutionService = Depends())
     """Get a specific solution by slug."""
     solution = await solution_service.get_solution_by_slug_with_rating(slug)
     if not solution:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
     return StandardResponse.of(solution)
 
 
@@ -235,9 +207,7 @@ async def update_solution(
         # Get existing solution first
         existing_solution = await solution_service.get_solution_by_slug(slug)
         if not existing_solution:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
 
         # Check user permission
         has_permission = await solution_service.check_user_solution_permission(
@@ -258,22 +228,16 @@ async def update_solution(
                 detail="Only superusers can modify the review status",
             )
 
-        solution_in_db = await solution_service.update_solution_by_slug(
-            slug, solution_update, current_user.username
-        )
+        solution_in_db = await solution_service.update_solution_by_slug(slug, solution_update, current_user.username)
         return StandardResponse.of(solution_in_db)
     except HTTPException as e:
         raise e
     except Exception as e:
         logger.error(f"Error updating solution: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error updating solution: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error updating solution: {str(e)}")
 
 
-@router.delete(
-    "/{slug}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
-)
+@router.delete("/{slug}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
 async def delete_solution(
     slug: str,
     current_user: User = Depends(get_current_active_user),
@@ -286,9 +250,7 @@ async def delete_solution(
     # Get existing solution first
     existing_solution = await solution_service.get_solution_by_slug(slug)
     if not existing_solution:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
 
     # Check user permission
     has_permission = await solution_service.check_user_solution_permission(
@@ -304,15 +266,11 @@ async def delete_solution(
 
     success = await solution_service.delete_solution_by_slug(slug)
     if not success:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
 
 
 @router.get("/check-name/{name}", response_model=StandardResponse[Tuple[bool, int]])
-async def check_solution_name(
-    name: str, solution_service: SolutionService = Depends()
-) -> Any:
+async def check_solution_name(name: str, solution_service: SolutionService = Depends()) -> Any:
     """Check if a solution name exists and get count of similar names.
 
     Returns:
@@ -324,9 +282,7 @@ async def check_solution_name(
         return StandardResponse.of((exists, count))
     except Exception as e:
         logger.error(f"Error checking solution name: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error checking solution name: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error checking solution name: {str(e)}")
 
 
 @router.delete("/by-name/{name}", status_code=status.HTTP_200_OK)
@@ -344,9 +300,7 @@ async def delete_solutions_by_name(
         return StandardResponse.of(deleted_count)
     except Exception as e:
         logger.error(f"Error deleting solutions by name: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error deleting solutions by name: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error deleting solutions by name: {str(e)}")
 
 
 @router.put("/by-name/{name}", response_model=StandardResponse[List[SolutionInDB]])
@@ -377,6 +331,4 @@ async def update_solutions_by_name(
         raise e
     except Exception as e:
         logger.error(f"Error updating solutions by name: {str(e)}")
-        raise HTTPException(
-            status_code=500, detail=f"Error updating solutions by name: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Error updating solutions by name: {str(e)}")

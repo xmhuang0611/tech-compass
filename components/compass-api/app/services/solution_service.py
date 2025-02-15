@@ -46,9 +46,7 @@ class SolutionService:
         """
         return await self.db.users.find_one({"username": username})
 
-    async def _process_category(
-        self, category_name: str, username: Optional[str] = None
-    ) -> str:
+    async def _process_category(self, category_name: str, username: Optional[str] = None) -> str:
         """Process category creation/update
 
         Args:
@@ -58,14 +56,10 @@ class SolutionService:
         Returns:
             The processed category name
         """
-        category = await self.category_service.get_or_create_category(
-            category_name, username
-        )
+        category = await self.category_service.get_or_create_category(category_name, username)
         return category.name
 
-    async def _process_tags(
-        self, tags: List[str], username: Optional[str] = None
-    ) -> List[str]:
+    async def _process_tags(self, tags: List[str], username: Optional[str] = None) -> List[str]:
         """Process tags creation/update
 
         Args:
@@ -104,15 +98,11 @@ class SolutionService:
         """
         # Handle category update
         if "category" in update_dict:
-            update_dict["category"] = await self._process_category(
-                update_dict["category"], username
-            )
+            update_dict["category"] = await self._process_category(update_dict["category"], username)
 
         # Handle tags update
         if "tags" in update_dict:
-            update_dict["tags"] = await self._process_tags(
-                update_dict["tags"], username
-            )
+            update_dict["tags"] = await self._process_tags(update_dict["tags"], username)
 
         # Handle maintainer fields update
         maintainer_fields = {"maintainer_id", "maintainer_name", "maintainer_email"}
@@ -123,13 +113,9 @@ class SolutionService:
 
         if existing_solution:
             # Check if existing solution has any maintainer field
-            has_existing_maintainer = any(
-                getattr(existing_solution, field) for field in maintainer_fields
-            )
+            has_existing_maintainer = any(getattr(existing_solution, field) for field in maintainer_fields)
 
-            has_maintainer_update = any(
-                field in update_dict for field in maintainer_fields
-            )
+            has_maintainer_update = any(field in update_dict for field in maintainer_fields)
 
             if not has_existing_maintainer and not has_maintainer_update and username:
                 # If no maintainer info exists and no update provided, use current user
@@ -205,9 +191,7 @@ class SolutionService:
 
         return updated_solutions
 
-    async def create_solution(
-        self, solution: SolutionCreate, username: Optional[str] = None
-    ) -> SolutionInDB:
+    async def create_solution(self, solution: SolutionCreate, username: Optional[str] = None) -> SolutionInDB:
         """Create a new solution"""
         solution_dict = solution.model_dump(exclude_unset=True)
         solution_dict["review_status"] = "PENDING"
@@ -279,16 +263,9 @@ class SolutionService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
-        cursor = (
-            self.collection.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
         return [SolutionInDB(**solution) for solution in solutions]
 
@@ -299,9 +276,7 @@ class SolutionService:
             return SolutionInDB(**solution)
         return None
 
-    async def ensure_unique_slug(
-        self, slug: str, exclude_id: Optional[str] = None
-    ) -> str:
+    async def ensure_unique_slug(self, slug: str, exclude_id: Optional[str] = None) -> str:
         """Ensure the slug is unique by appending a number if necessary"""
         base_slug = slug
         counter = 1
@@ -338,16 +313,12 @@ class SolutionService:
         # Handle slug update if name changes
         if "name" in update_dict:
             base_slug = generate_slug(update_dict["name"])
-            update_dict["slug"] = await self.ensure_unique_slug(
-                base_slug, str(existing_solution.id)
-            )
+            update_dict["slug"] = await self.ensure_unique_slug(base_slug, str(existing_solution.id))
 
         # Process common update operations
         await self._process_solution_update(update_dict, username, existing_solution)
 
-        result = await self.collection.update_one(
-            {"_id": existing_solution.id}, {"$set": update_dict}
-        )
+        result = await self.collection.update_one({"_id": existing_solution.id}, {"$set": update_dict})
         if result.modified_count:
             return await self.get_solution_by_id(str(existing_solution.id))
         return None
@@ -418,18 +389,14 @@ class SolutionService:
         for solution_in_db in solutions:
             # Convert to dict to allow adding rating fields
             solution_dict = solution_in_db.model_dump()
-            rating_summary = await self.rating_service.get_rating_summary(
-                solution_in_db.slug
-            )
+            rating_summary = await self.rating_service.get_rating_summary(solution_in_db.slug)
             solution_dict["rating"] = rating_summary["average"]
             solution_dict["rating_count"] = rating_summary["count"]
             result.append(Solution(**solution_dict))
 
         return result
 
-    async def get_solution_by_id_with_rating(
-        self, solution_id: str
-    ) -> Optional[Solution]:
+    async def get_solution_by_id_with_rating(self, solution_id: str) -> Optional[Solution]:
         """Get a solution by ID with rating"""
         solution = await self.get_solution_by_id(solution_id)
         if solution:
@@ -496,9 +463,7 @@ class SolutionService:
         await self.collection.create_index([("recommend_status", 1)])
 
         # Perform text search with simple match
-        pipeline = [
-            {"$match": {"$text": {"$search": keyword}, "review_status": "APPROVED"}}
-        ]
+        pipeline = [{"$match": {"$text": {"$search": keyword}, "review_status": "APPROVED"}}]
 
         solutions = await self.collection.aggregate(pipeline).to_list(length=None)
 
@@ -511,9 +476,7 @@ class SolutionService:
 
         # Add ratings and group by status
         for solution in solutions:
-            rating_summary = await self.rating_service.get_rating_summary(
-                solution["slug"]
-            )
+            rating_summary = await self.rating_service.get_rating_summary(solution["slug"])
             solution["rating"] = rating_summary["average"]
             solution["rating_count"] = rating_summary["count"]
             solution_obj = Solution(**solution)
@@ -541,13 +504,7 @@ class SolutionService:
             solutions_list.sort(key=lambda x: (x.rating or 0), reverse=True)
 
         # Combine all groups maintaining order by status
-        return (
-            adopt_solutions
-            + trial_solutions
-            + assess_solutions
-            + hold_solutions
-            + other_solutions
-        )
+        return adopt_solutions + trial_solutions + assess_solutions + hold_solutions + other_solutions
 
     async def get_user_solutions(
         self, username: str, skip: int = 0, limit: int = 100, sort: str = "name"
@@ -578,16 +535,9 @@ class SolutionService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
-        cursor = (
-            self.collection.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.collection.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         solutions = await cursor.to_list(length=limit)
 
         # Convert to Solution model and add ratings
@@ -595,9 +545,7 @@ class SolutionService:
         for solution in solutions:
             # Convert to dict to allow adding rating fields
             solution_dict = solution
-            rating_summary = await self.rating_service.get_rating_summary(
-                solution["slug"]
-            )
+            rating_summary = await self.rating_service.get_rating_summary(solution["slug"])
             solution_dict["rating"] = rating_summary["average"]
             solution_dict["rating_count"] = rating_summary["count"]
             result.append(Solution(**solution_dict))
@@ -609,9 +557,7 @@ class SolutionService:
         query = {"$or": [{"created_by": username}, {"maintainer_id": username}]}
         return await self.collection.count_documents(query)
 
-    async def check_user_solution_permission(
-        self, solution: SolutionInDB, username: str, is_superuser: bool
-    ) -> bool:
+    async def check_user_solution_permission(self, solution: SolutionInDB, username: str, is_superuser: bool) -> bool:
         """Check if user has permission to modify the solution.
 
         Args:

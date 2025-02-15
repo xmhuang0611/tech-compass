@@ -49,13 +49,9 @@ async def verify_credentials(username: str, password: str) -> bool:
             }
 
             if settings.AUTH_SERVER_CONTENT_TYPE == "form":
-                response = await client.post(
-                    settings.AUTH_SERVER_URL, data=data, headers=headers, timeout=5.0
-                )
+                response = await client.post(settings.AUTH_SERVER_URL, data=data, headers=headers, timeout=5.0)
             else:
-                response = await client.post(
-                    settings.AUTH_SERVER_URL, json=data, headers=headers, timeout=5.0
-                )
+                response = await client.post(settings.AUTH_SERVER_URL, json=data, headers=headers, timeout=5.0)
 
             if response.status_code != 200:
                 return False
@@ -66,9 +62,7 @@ async def verify_credentials(username: str, password: str) -> bool:
                 # Get full_name from configured field or fallback to username
                 full_name = auth_data.get(settings.AUTH_SERVER_FULLNAME_FIELD, username)
                 # Get email from configured field or use fallback
-                email = auth_data.get(
-                    settings.AUTH_SERVER_EMAIL_FIELD, f"{username}@external.auth"
-                )
+                email = auth_data.get(settings.AUTH_SERVER_EMAIL_FIELD, f"{username}@external.auth")
 
                 # Create or update local user
                 from app.services.user_service import UserService
@@ -88,9 +82,7 @@ async def verify_credentials(username: str, password: str) -> bool:
                 else:
                     # Update existing user's info if changed
                     if user.full_name != full_name or user.email != email:
-                        await user_service.update_external_user(
-                            username=username, full_name=full_name, email=email
-                        )
+                        await user_service.update_external_user(username=username, full_name=full_name, email=email)
 
                 return True
             except (ValueError, KeyError):
@@ -108,11 +100,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(
-            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-        )
+        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(
-        to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
+    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt

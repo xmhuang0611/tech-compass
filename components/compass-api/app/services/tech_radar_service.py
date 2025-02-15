@@ -30,9 +30,7 @@ class TechRadarService:
         entries: List[TechRadarEntry] = []
         async for solution in cursor:
             # Get category information
-            category_data = await self.categories.find_one(
-                {"name": solution["category"]}
-            )
+            category_data = await self.categories.find_one({"name": solution["category"]})
             if not category_data:
                 continue  # Skip if category not found
 
@@ -62,9 +60,9 @@ class TechRadarService:
         Returns categories with radar_quadrant >= 0, ordered by radar_quadrant.
         """
         # Find all categories with radar_quadrant >= 0 and sort by radar_quadrant
-        cursor = self.categories.find(
-            {"radar_quadrant": {"$gte": 0}}, {"name": 1, "radar_quadrant": 1, "_id": 0}
-        ).sort("radar_quadrant", 1)
+        cursor = self.categories.find({"radar_quadrant": {"$gte": 0}}, {"name": 1, "radar_quadrant": 1, "_id": 0}).sort(
+            "radar_quadrant", 1
+        )
 
         # Create a list to store quadrants in order
         quadrants = [None] * 4  # Initialize with None for all possible positions

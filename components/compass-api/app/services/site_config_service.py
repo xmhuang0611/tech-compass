@@ -18,9 +18,7 @@ class SiteConfigService:
             return SiteConfigInDB(**config)
         return None
 
-    async def create_site_config(
-        self, config: SiteConfigBase, username: str
-    ) -> SiteConfigInDB:
+    async def create_site_config(self, config: SiteConfigBase, username: str) -> SiteConfigInDB:
         """Create initial site configuration"""
         # Check if config already exists
         existing = await self.get_site_config()
@@ -40,9 +38,7 @@ class SiteConfigService:
         await self.db.site_config.insert_one(new_config)
         return SiteConfigInDB(**new_config)
 
-    async def update_site_config(
-        self, config_update: SiteConfigUpdate, username: str
-    ) -> Optional[SiteConfigInDB]:
+    async def update_site_config(self, config_update: SiteConfigUpdate, username: str) -> Optional[SiteConfigInDB]:
         """Update site configuration"""
         now = datetime.utcnow()
         update_dict = config_update.model_dump(exclude_unset=True)

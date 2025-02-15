@@ -12,9 +12,7 @@ class CategoryService:
         self.db = get_database()
         self.collection = self.db.categories
 
-    async def create_category(
-        self, category: CategoryCreate, username: Optional[str] = None
-    ) -> CategoryInDB:
+    async def create_category(self, category: CategoryCreate, username: Optional[str] = None) -> CategoryInDB:
         """Create a new category"""
         # Name is already trimmed by the model validator
         name = category.name
@@ -49,9 +47,7 @@ class CategoryService:
             return CategoryInDB(**category)
         return None
 
-    async def get_or_create_category(
-        self, name: str, username: Optional[str] = None
-    ) -> CategoryInDB:
+    async def get_or_create_category(self, name: str, username: Optional[str] = None) -> CategoryInDB:
         """Get a category by name or create it if it doesn't exist"""
         # Try to get existing category
         existing = await self.get_category_by_name(name)
@@ -62,9 +58,7 @@ class CategoryService:
         category = CategoryCreate(name=name, description=f"Category for {name}")
         return await self.create_category(category, username)
 
-    async def get_categories(
-        self, skip: int = 0, limit: int = 100, sort: str = "radar_quadrant"
-    ) -> list[CategoryInDB]:
+    async def get_categories(self, skip: int = 0, limit: int = 100, sort: str = "radar_quadrant") -> list[CategoryInDB]:
         """Get all categories with pagination and sorting
 
         Args:
@@ -123,9 +117,7 @@ class CategoryService:
         if username:
             update_dict["updated_by"] = username
 
-        result = await self.collection.update_one(
-            {"_id": ObjectId(category_id)}, {"$set": update_dict}
-        )
+        result = await self.collection.update_one({"_id": ObjectId(category_id)}, {"$set": update_dict})
         if result.modified_count:
             return await self.get_category_by_id(category_id)
         return existing_category
@@ -138,13 +130,9 @@ class CategoryService:
             return False
 
         # Check if category is being used by any solutions
-        solutions_using_category = await self.db.solutions.find_one(
-            {"category": category.name}
-        )
+        solutions_using_category = await self.db.solutions.find_one({"category": category.name})
         if solutions_using_category:
-            raise ValueError(
-                f"Cannot delete category '{category.name}' as it is being used by solutions"
-            )
+            raise ValueError(f"Cannot delete category '{category.name}' as it is being used by solutions")
 
         result = await self.collection.delete_one({"_id": ObjectId(category_id)})
         return result.deleted_count > 0

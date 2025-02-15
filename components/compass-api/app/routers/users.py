@@ -16,9 +16,7 @@ from app.services.user_service import UserService
 router = APIRouter()
 
 
-@router.post(
-    "/", response_model=StandardResponse[User], status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=StandardResponse[User], status_code=status.HTTP_201_CREATED)
 async def create_user(
     user: UserCreate,
     current_user: User = Depends(get_current_superuser),
@@ -36,13 +34,9 @@ async def create_user(
 async def get_users(
     skip: int = 0,
     limit: int = 10,
-    username: Optional[str] = Query(
-        None, description="Filter by username (case-insensitive partial match)"
-    ),
+    username: Optional[str] = Query(None, description="Filter by username (case-insensitive partial match)"),
     is_active: Optional[bool] = Query(None, description="Filter by active status"),
-    is_superuser: Optional[bool] = Query(
-        None, description="Filter by superuser status"
-    ),
+    is_superuser: Optional[bool] = Query(None, description="Filter by superuser status"),
     user_service: UserService = Depends(),
 ) -> Any:
     """Get all users with pagination and filtering.
@@ -61,9 +55,7 @@ async def get_users(
         is_active=is_active,
         is_superuser=is_superuser,
     )
-    total = await user_service.count_users(
-        username=username, is_active=is_active, is_superuser=is_superuser
-    )
+    total = await user_service.count_users(username=username, is_active=is_active, is_superuser=is_superuser)
     return StandardResponse.paginated(data=users, total=total, skip=skip, limit=limit)
 
 
@@ -82,9 +74,7 @@ async def get_user(
     """Get a specific user by username."""
     user = await user_service.get_user_for_api(username)
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return StandardResponse.of(user)
 
 
@@ -103,9 +93,7 @@ async def update_user_password(
             current_username=current_user.username,
         )
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return StandardResponse.of({"message": "Password updated successfully"})
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -126,17 +114,13 @@ async def update_user(
             current_username=current_user.username,
         )
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return StandardResponse.of(user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete(
-    "/{username}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK
-)
+@router.delete("/{username}", response_model=StandardResponse[dict], status_code=status.HTTP_200_OK)
 async def delete_user(
     username: str,
     current_user: User = Depends(get_current_superuser),
@@ -144,13 +128,9 @@ async def delete_user(
 ) -> Any:
     """Delete a user by username (superuser only)."""
     try:
-        success = await user_service.admin_delete_user(
-            username=username, admin_username=current_user.username
-        )
+        success = await user_service.admin_delete_user(username=username, admin_username=current_user.username)
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return StandardResponse.of({"message": "User deleted successfully"})
     except HTTPException as e:
         raise e
@@ -180,9 +160,7 @@ async def admin_update_user(
             new_password=user_update.password,
         )
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return StandardResponse.of(user)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -196,13 +174,9 @@ async def admin_delete_user(
 ) -> Any:
     """Delete any user (admin only)."""
     try:
-        success = await user_service.admin_delete_user(
-            username=username, admin_username=current_user.username
-        )
+        success = await user_service.admin_delete_user(username=username, admin_username=current_user.username)
         if not success:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return StandardResponse.of({"message": "User deleted successfully"})
     except HTTPException as e:
         raise e

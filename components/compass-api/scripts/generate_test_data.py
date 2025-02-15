@@ -41,9 +41,7 @@ required_env_vars = [
 ]
 missing_vars = [var for var in required_env_vars if not os.getenv(var)]
 if missing_vars:
-    raise ValueError(
-        f"Missing required environment variables: {', '.join(missing_vars)}"
-    )
+    raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
 
 def debug_request(method: str, url: str, **kwargs):
@@ -208,9 +206,7 @@ class TestDataGenerator:
             "demo_url": fake.url(),
             "version": f"{random.randint(1, 5)}.{random.randint(0, 9)}.{random.randint(0, 9)}",
             "adoption_level": random.choice(adoption_levels),
-            "adoption_user_count": random.randint(
-                0, 1000
-            ),  # Generate random user count between 0 and 1000
+            "adoption_user_count": random.randint(0, 1000),  # Generate random user count between 0 and 1000
             "tags": tags,
             "pros": [fake.sentence() for _ in range(random.randint(2, 4))],
             "cons": [fake.sentence() for _ in range(random.randint(1, 3))],

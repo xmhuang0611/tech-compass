@@ -57,17 +57,10 @@ class RatingService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Execute query with sort
-        cursor = (
-            self.db.ratings.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
 
@@ -78,22 +71,13 @@ class RatingService:
     ) -> Tuple[List[Rating], int]:
         query = {"solution_slug": solution_slug}
         sort_field = "created_at" if sort_by == "created_at" else "score"
-        cursor = (
-            self.db.ratings.find(query)
-            .sort(sort_field, DESCENDING)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.db.ratings.find(query).sort(sort_field, DESCENDING).skip(skip).limit(limit)
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
         total = await self.db.ratings.count_documents(query)
         return ratings, total
 
-    async def get_user_rating(
-        self, solution_slug: str, username: str
-    ) -> Optional[Rating]:
-        rating = await self.db.ratings.find_one(
-            {"solution_slug": solution_slug, "username": username}
-        )
+    async def get_user_rating(self, solution_slug: str, username: str) -> Optional[Rating]:
+        rating = await self.db.ratings.find_one({"solution_slug": solution_slug, "username": username})
         if rating:
             return await self._convert_to_rating(rating)
         return None
@@ -132,9 +116,7 @@ class RatingService:
             "distribution": distribution,
         }
 
-    async def create_or_update_rating(
-        self, solution_slug: str, rating: RatingCreate, username: str
-    ) -> RatingInDB:
+    async def create_or_update_rating(self, solution_slug: str, rating: RatingCreate, username: str) -> RatingInDB:
         # First check if solution exists
         solution = await self.db.solutions.find_one({"slug": solution_slug})
         if not solution:
@@ -190,18 +172,11 @@ class RatingService:
 
         # Validate sort field
         if sort_field not in VALID_SORT_FIELDS:
-            raise ValueError(
-                f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}"
-            )
+            raise ValueError(f"Invalid sort field: {sort_field}. Valid fields are: {', '.join(VALID_SORT_FIELDS)}")
 
         # Query for user's ratings
         query = {"username": username}
-        cursor = (
-            self.db.ratings.find(query)
-            .sort(sort_field, sort_direction)
-            .skip(skip)
-            .limit(limit)
-        )
+        cursor = self.db.ratings.find(query).sort(sort_field, sort_direction).skip(skip).limit(limit)
 
         # Convert to Rating objects with user full names
         ratings = [await self._convert_to_rating(rating) async for rating in cursor]
@@ -214,18 +189,12 @@ class RatingService:
         try:
             rating = await self.db.ratings.find_one({"_id": ObjectId(rating_id)})
             if not rating:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found"
-                )
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rating not found")
             return RatingInDB(**rating)
         except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Invalid rating ID"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invalid rating ID")
 
-    def check_rating_permission(
-        self, rating: RatingInDB, username: str, is_superuser: bool
-    ) -> bool:
+    def check_rating_permission(self, rating: RatingInDB, username: str, is_superuser: bool) -> bool:
         """Check if user has permission to modify the rating.
 
         Args:
@@ -264,9 +233,7 @@ class RatingService:
         )
         return RatingInDB(**result) if result else None
 
-    async def delete_rating(
-        self, rating_id: str, username: str, is_superuser: bool
-    ) -> bool:
+    async def delete_rating(self, rating_id: str, username: str, is_superuser: bool) -> bool:
         """Delete a rating.
         Only the rating creator or superusers can delete it."""
         rating = await self._get_rating_or_404(rating_id)
