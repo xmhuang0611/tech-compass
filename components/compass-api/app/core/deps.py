@@ -9,12 +9,12 @@ from app.core.config import settings
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
+
 async def get_db() -> AsyncIOMotorDatabase:
     return get_database()
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme)
-) -> dict:
+
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -22,22 +22,21 @@ async def get_current_user(
     )
     try:
         payload = jwt.decode(
-            token, 
-            settings.JWT_SECRET_KEY, 
-            algorithms=[settings.JWT_ALGORITHM]
+            token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
         )
         user_id: str = payload.get("sub")
         username: str = payload.get("username")
         if user_id is None or username is None:
             raise credentials_exception
-            
+
         return {
             "id": user_id,
             "username": username,
-            "is_active": True  # For development, assume all users are active
+            "is_active": True,  # For development, assume all users are active
         }
     except InvalidTokenError:
         raise credentials_exception
+
 
 async def get_current_active_user(
     current_user: dict = Depends(get_current_user),
