@@ -6,7 +6,7 @@ import jwt
 
 from app.core.config import settings
 from app.core.password import verify_password
-from app.models.user import UserInDB, UserCreate
+from app.models.user import UserCreate, UserInDB
 
 
 async def get_user_from_db(username: str) -> Optional[UserInDB]:

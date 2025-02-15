@@ -1,6 +1,6 @@
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 from jwt.exceptions import InvalidTokenError
 
 from app.core.config import settings

@@ -1,11 +1,11 @@
-from app.core.database import get_database
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 from jwt.exceptions import InvalidTokenError
 from motor.motor_asyncio import AsyncIOMotorDatabase
 
 from app.core.config import settings
+from app.core.database import get_database
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 

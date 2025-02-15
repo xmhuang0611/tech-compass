@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Any
+from typing import Any, Dict
 
 from motor.motor_asyncio import AsyncIOMotorClient
 
