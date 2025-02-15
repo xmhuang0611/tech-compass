@@ -61,3 +61,52 @@ Once the server is running, you can access:
 2. Use the Swagger UI to test API endpoints interactively
 3. For development, the authentication is set to accept any username/password combination
 4. MongoDB connection is verified on startup
+
+## VSCode Settings
+
+Install the following extensions:
+- Python
+- Ruff
+- Prettier - Code formatter
+- Material Icon Theme
+
+```json
+{
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+  "workbench.iconTheme": "material-icon-theme",
+  "files.autoSave": "afterDelay",
+  "cursor.cpp.enablePartialAccepts": true,
+  "cursor.composer.collapsePaneInputBoxPills": true,
+  "cursor.composer.renderPillsInsteadOfBlocks": true,
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.idea": true
+  },
+  "explorer.confirmDelete": false,
+  "search.useParentIgnoreFiles": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "ruff.lineLength": 120,
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit"
+    }
+  },
+  "ruff.importStrategy": "useBundled",
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "explorer.confirmDragAndDrop": false,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.unusedImports": "always",
+    "source.fixAll.ruff": "explicit"
+  }
+}
+```
