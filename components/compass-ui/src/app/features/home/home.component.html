@@ -34,7 +34,7 @@
     </div>
 
     <div class="no-results" *ngIf="!loadingSearch && searchResults.length === 0">
-      <p>No solutions found for "{{ searchKeyword }}"</p>
+      <p>No solutions found for "{{ searchKeyword }}". Would you like to <a routerLink="/solutions/new">submit your own solution</a>?</p>
     </div>
   </section>
 
