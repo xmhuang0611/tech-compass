@@ -61,7 +61,7 @@
               <h3>Add a Comment</h3>
               <div *ngIf="isLoggedIn; else loginToComment">
                 <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
-                <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()"></p-button>
+                <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()" styleClass="p-button-primary p-button-rounded"></p-button>
               </div>
               <ng-template #loginToComment>
                 <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a comment.</p>
@@ -124,7 +124,7 @@
                   <p-rating [(ngModel)]="newRating.score" [cancel]="false"></p-rating>
                   <textarea pInputTextarea [(ngModel)]="newRating.comment" rows="3" placeholder="Add a comment (optional)"></textarea>
                 </div>
-                <p-button label="Submit" (click)="submitRating(solution$.value?.slug || '')" [disabled]="newRating.score === 0"></p-button>
+                <p-button label="Submit" (click)="submitRating(solution$.value?.slug || '')" [disabled]="newRating.score === 0" styleClass="p-button-primary p-button-rounded"></p-button>
               </div>
               <ng-template #loginToRate>
                 <p>Please <a href="javascript:void(0)" (click)="showLoginDialog()">sign in</a> to add a rating.</p>
