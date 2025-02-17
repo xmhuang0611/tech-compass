@@ -12,3 +12,4 @@ email-validator==2.1.0.post1
 python-dotenv==1.0.0
 httpx==0.26.0
 requests==2.32.0
+cachetools==4.2.4

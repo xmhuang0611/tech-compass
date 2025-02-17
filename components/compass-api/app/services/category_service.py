@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from bson import ObjectId
+from cachetools import TTLCache, keys
 
 from app.core.database import get_database
 from app.models.category import Category, CategoryCreate, CategoryInDB, CategoryUpdate
@@ -11,6 +12,8 @@ class CategoryService:
     def __init__(self):
         self.db = get_database()
         self.collection = self.db.categories
+        # Create a cache with 1-hour TTL
+        self.categories_cache = TTLCache(maxsize=1, ttl=3600)
 
     async def create_category(self, category: CategoryCreate, username: Optional[str] = None) -> CategoryInDB:
         """Create a new category"""
@@ -30,6 +33,8 @@ class CategoryService:
             category_dict["updated_by"] = username
 
         result = await self.collection.insert_one(category_dict)
+        # Clear cache since data has been updated
+        self.categories_cache.clear()
         return await self.get_category_by_id(str(result.inserted_id))
 
     async def get_category_by_id(self, category_id: str) -> Optional[CategoryInDB]:
@@ -66,6 +71,13 @@ class CategoryService:
             limit: Maximum number of records to return
             sort: Sort field (prefix with - for descending order)
         """
+        # Generate cache key
+        cache_key = keys.hashkey(skip, limit, sort)
+
+        # Try to get data from cache
+        if cache_key in self.categories_cache:
+            return self.categories_cache[cache_key]
+
         # Parse sort parameter
         sort_field = sort.lstrip("-")
         sort_direction = -1 if sort.startswith("-") else 1
@@ -79,7 +91,11 @@ class CategoryService:
 
         cursor = self.collection.find().sort(sort_query).skip(skip).limit(limit)
         categories = await cursor.to_list(length=limit)
-        return [CategoryInDB(**category) for category in categories]
+        result = [CategoryInDB(**category) for category in categories]
+
+        # Store result in cache
+        self.categories_cache[cache_key] = result
+        return result
 
     async def update_category_by_id(
         self,
@@ -118,6 +134,8 @@ class CategoryService:
             update_dict["updated_by"] = username
 
         result = await self.collection.update_one({"_id": ObjectId(category_id)}, {"$set": update_dict})
+        # Clear cache since data has been updated
+        self.categories_cache.clear()
         if result.modified_count:
             return await self.get_category_by_id(category_id)
         return existing_category
@@ -135,6 +153,8 @@ class CategoryService:
             raise ValueError(f"Cannot delete category '{category.name}' as it is being used by solutions")
 
         result = await self.collection.delete_one({"_id": ObjectId(category_id)})
+        # Clear cache since data has been updated
+        self.categories_cache.clear()
         return result.deleted_count > 0
 
     async def count_categories(self) -> int:

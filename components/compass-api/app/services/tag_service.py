@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import List, Optional
 
 from bson import ObjectId
+from cachetools import TTLCache, keys
 
 from app.core.database import get_database
 from app.models.tag import Tag, TagCreate, TagInDB, TagUpdate, format_tag_name
@@ -11,6 +12,8 @@ class TagService:
     def __init__(self):
         self.db = get_database()
         self.collection = self.db.tags
+        # Create a cache with 1-hour TTL
+        self.tags_cache = TTLCache(maxsize=100, ttl=3600)
 
     async def create_tag(self, tag: TagCreate, username: Optional[str] = None) -> TagInDB:
         """Create a new tag"""
@@ -31,6 +34,8 @@ class TagService:
             tag_dict["updated_by"] = username
 
         result = await self.collection.insert_one(tag_dict)
+        # Clear cache since data has been updated
+        self.tags_cache.clear()
         return await self.get_tag_by_id(str(result.inserted_id))
 
     async def get_tag_by_id(self, tag_id: str) -> Optional[TagInDB]:
@@ -85,6 +90,13 @@ class TagService:
             limit: Maximum number of items to return
             show_all: If True, return all tags; if False, only return tags with usage_count > 0
         """
+        # Generate cache key
+        cache_key = keys.hashkey(skip, limit, show_all)
+
+        # Try to get data from cache
+        if cache_key in self.tags_cache:
+            return self.tags_cache[cache_key]
+
         # Get all tags first
         cursor = self.collection.find().sort("name", 1).skip(skip).limit(limit)
         tags = await cursor.to_list(length=limit)
@@ -108,6 +120,8 @@ class TagService:
                 tag_dict["usage_count"] = usage_count
                 result.append(Tag(**tag_dict))
 
+        # Store result in cache
+        self.tags_cache[cache_key] = result
         return result
 
     async def get_tag_with_usage(self, tag: TagInDB) -> Tag:
@@ -170,6 +184,9 @@ class TagService:
             # Delete the source tag
             await self.collection.delete_one({"_id": ObjectId(source_tag_id)})
 
+            # Clear cache since data has been updated
+            self.tags_cache.clear()
+
             # Return the target tag
             return target_tag
         except Exception as e:
@@ -217,6 +234,8 @@ class TagService:
                 update_dict["updated_by"] = username
 
             result = await self.collection.update_one({"_id": ObjectId(tag_id)}, {"$set": update_dict})
+            # Clear cache since data has been updated
+            self.tags_cache.clear()
             if result.modified_count:
                 return await self.get_tag_by_id(tag_id)
             return None
@@ -248,6 +267,8 @@ class TagService:
 
             # Delete the tag
             result = await self.collection.delete_one({"_id": object_id})
+            # Clear cache since data has been updated
+            self.tags_cache.clear()
             return result.deleted_count > 0
         except ValueError as e:
             raise e
