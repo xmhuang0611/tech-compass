@@ -30,14 +30,12 @@
         </div>
         <div class="actions">
           <button class="btn-add" 
-                  (click)="addSolution(category); $event.stopPropagation()"
-                  [pTooltip]="'Add new solution to ' + category.name">
+                  (click)="addSolution(category); $event.stopPropagation()">
             <i class="pi pi-plus"></i>
             <span>Add Solution</span>
           </button>
           <button class="btn-view" 
-                  (click)="navigateToSolutions(category)"
-                  [pTooltip]="'View all solutions in ' + category.name">
+                  (click)="navigateToSolutions(category)">
             <span>View All</span>
             <i class="pi pi-arrow-right"></i>
           </button>

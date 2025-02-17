@@ -268,6 +268,10 @@
   }
 
   ::ng-deep .p-button {
+    &.p-button-rounded {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
     &.p-button-outlined:hover {
       background: var(--primary-color);
       color: white;
