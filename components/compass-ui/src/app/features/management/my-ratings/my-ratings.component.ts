@@ -1,24 +1,25 @@
+import { CommonModule, DatePipe } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
-import { MessageService } from "primeng/api";
-import {
-  RatingService,
-  Rating,
-  RatingResponse,
-} from "../../../core/services/rating.service";
+import { ConfirmationService, MessageService } from "primeng/api";
 import { finalize } from "rxjs";
+import {
+    Rating,
+    RatingResponse,
+    RatingService,
+} from "../../../core/services/rating.service";
 
 // PrimeNG Components
 import { ButtonModule } from "primeng/button";
-import { TableModule } from "primeng/table";
-import { ToastModule } from "primeng/toast";
+import { CheckboxModule } from "primeng/checkbox";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { DialogModule } from "primeng/dialog";
 import { InputTextareaModule } from "primeng/inputtextarea";
-import { ConfirmDialogModule } from "primeng/confirmdialog";
-import { ConfirmationService } from "primeng/api";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { RatingModule } from "primeng/rating";
+import { TableModule } from "primeng/table";
+import { ToastModule } from "primeng/toast";
 
 @Component({
   selector: "app-my-ratings",
@@ -29,26 +30,27 @@ import { RatingModule } from "primeng/rating";
     CommonModule,
     FormsModule,
     RouterModule,
+    DatePipe,
     ButtonModule,
-    TableModule,
-    ToastModule,
+    CheckboxModule,
+    ConfirmDialogModule,
     DialogModule,
     InputTextareaModule,
-    ConfirmDialogModule,
+    ProgressSpinnerModule,
     RatingModule,
+    TableModule,
+    ToastModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService, MessageService],
 })
 export class MyRatingsComponent implements OnInit {
   ratings: Rating[] = [];
-  loading = false;
   totalRecords = 0;
+  loading = false;
   pageSize = 10;
-  currentPage = 0;
-  rowsPerPageOptions: number[] = [5, 10, 20, 50];
-
+  rowsPerPageOptions = [10, 20, 50];
   editDialogVisible = false;
-  editingRating: Partial<Rating> = {};
+  editingRating: Rating = {} as Rating;
 
   constructor(
     private ratingService: RatingService,
@@ -60,17 +62,11 @@ export class MyRatingsComponent implements OnInit {
     this.loadRatings();
   }
 
-  loadRatings() {
+  loadRatings(skip: number = 0) {
     this.loading = true;
-    const skip = this.currentPage * this.pageSize;
-
     this.ratingService
       .getMyRatings(skip, this.pageSize)
-      .pipe(
-        finalize(() => {
-          this.loading = false;
-        })
-      )
+      .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (response: RatingResponse) => {
           if (response.success) {
@@ -89,9 +85,7 @@ export class MyRatingsComponent implements OnInit {
   }
 
   onPageChange(event: any) {
-    this.pageSize = event.rows;
-    this.currentPage = Math.floor(event.first / event.rows);
-    this.loadRatings();
+    this.loadRatings(event.first);
   }
 
   editRating(rating: Rating) {
@@ -100,19 +94,17 @@ export class MyRatingsComponent implements OnInit {
   }
 
   saveRating() {
-    if (!this.editingRating._id || !this.editingRating.score) {
-      return;
-    }
+    if (!this.editingRating.score) return;
 
-    this.loading = true;
     this.ratingService
       .updateRating(
         this.editingRating._id,
         this.editingRating.score,
-        this.editingRating.comment
+        this.editingRating.comment,
+        this.editingRating.is_adopted_user
       )
       .subscribe({
-        next: (response: { success: boolean }) => {
+        next: (response) => {
           if (response.success) {
             this.messageService.add({
               severity: "success",
@@ -122,15 +114,13 @@ export class MyRatingsComponent implements OnInit {
             this.editDialogVisible = false;
             this.loadRatings();
           }
-          this.loading = false;
         },
         error: (error) => {
           this.messageService.add({
             severity: "error",
             summary: "Error",
-            detail: error.error?.detail || "Failed to update rating",
+            detail: "Failed to update rating",
           });
-          this.loading = false;
         },
       });
   }
@@ -144,26 +134,24 @@ export class MyRatingsComponent implements OnInit {
     });
   }
 
-  private deleteRating(rating: Rating) {
-    this.loading = true;
-
+  deleteRating(rating: Rating) {
     this.ratingService.deleteRating(rating._id).subscribe({
       next: (response) => {
-        // 204 response will be null, which is expected for successful deletion
-        this.messageService.add({
-          severity: "success",
-          summary: "Success",
-          detail: "Rating deleted successfully",
-        });
-        this.loadRatings();
+        if (response.success) {
+          this.messageService.add({
+            severity: "success",
+            summary: "Success",
+            detail: "Rating deleted successfully",
+          });
+          this.loadRatings();
+        }
       },
       error: (error) => {
         this.messageService.add({
           severity: "error",
           summary: "Error",
-          detail: error.error?.detail || "Failed to delete rating",
+          detail: "Failed to delete rating",
         });
-        this.loading = false;
       },
     });
   }

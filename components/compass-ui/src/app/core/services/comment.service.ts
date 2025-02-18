@@ -88,10 +88,16 @@ export class CommentService {
   }
 
   // Update a comment
-  updateComment(commentId: string, content: string, type: "OFFICIAL" | "USER"): Observable<any> {
+  updateComment(
+    commentId: string, 
+    content: string, 
+    type: "OFFICIAL" | "USER",
+    is_adopted_user?: boolean
+  ): Observable<any> {
     return this.http.put<any>(`${environment.apiUrl}/comments/${commentId}`, {
       content,
       type,
+      is_adopted_user
     });
   }
 

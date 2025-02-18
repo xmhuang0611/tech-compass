@@ -116,6 +116,14 @@
         [cancel]="false">
       </p-rating>
     </div>
+    <div class="adopted-user-field">
+      <p-checkbox
+        [(ngModel)]="editingRating.is_adopted_user"
+        [binary]="true"
+        inputId="is_adopted_user">
+      </p-checkbox>
+      <label for="is_adopted_user" class="adopted-label">I am an adopted user for this tech solution</label>
+    </div>
     <div class="comment-field">
       <label>Comment</label>
       <textarea

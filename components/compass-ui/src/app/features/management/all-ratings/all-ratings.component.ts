@@ -1,23 +1,25 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
-import { CommonModule } from "@angular/common";
+import { CommonModule, DatePipe } from "@angular/common";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { MessageService } from "primeng/api";
-import { RatingService, Rating, RatingResponse } from "../../../core/services/rating.service";
-import { Subject, debounceTime, takeUntil, finalize } from "rxjs";
+import { Subject, debounceTime, finalize, takeUntil } from "rxjs";
+import { Rating, RatingResponse, RatingService } from "../../../core/services/rating.service";
 
 // PrimeNG Components
-import { ButtonModule } from "primeng/button";
-import { TableModule } from "primeng/table";
-import { ToastModule } from "primeng/toast";
-import { DialogModule } from "primeng/dialog";
-import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ConfirmationService } from "primeng/api";
-import { TagModule } from "primeng/tag";
-import { InputTextModule } from "primeng/inputtext";
+import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { DialogModule } from "primeng/dialog";
 import { DropdownModule } from "primeng/dropdown";
-import { RatingModule } from "primeng/rating";
+import { InputTextModule } from "primeng/inputtext";
 import { InputTextareaModule } from "primeng/inputtextarea";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
+import { RatingModule } from "primeng/rating";
+import { TableModule } from "primeng/table";
+import { TagModule } from "primeng/tag";
+import { ToastModule } from "primeng/toast";
 
 @Component({
   selector: "app-all-ratings",
@@ -28,16 +30,19 @@ import { InputTextareaModule } from "primeng/inputtextarea";
     CommonModule,
     FormsModule,
     RouterModule,
+    DatePipe,
     ButtonModule,
+    CheckboxModule,
+    ConfirmDialogModule,
+    DialogModule,
+    DropdownModule,
+    InputTextModule,
+    InputTextareaModule,
+    ProgressSpinnerModule,
+    RatingModule,
     TableModule,
     ToastModule,
-    DialogModule,
-    ConfirmDialogModule,
     TagModule,
-    InputTextModule,
-    DropdownModule,
-    RatingModule,
-    InputTextareaModule,
   ],
   providers: [MessageService, ConfirmationService],
 })
@@ -163,7 +168,8 @@ export class AllRatingsComponent implements OnInit, OnDestroy {
       .updateRating(
         this.editingRating._id,
         this.editingRating.score,
-        this.editingRating.comment
+        this.editingRating.comment,
+        this.editingRating.is_adopted_user
       )
       .subscribe({
         next: (response) => {

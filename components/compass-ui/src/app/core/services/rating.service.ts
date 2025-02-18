@@ -90,11 +90,13 @@ export class RatingService {
   updateRating(
     ratingId: string,
     score: number,
-    comment?: string
+    comment?: string,
+    is_adopted_user?: boolean
   ): Observable<any> {
     return this.http.put<any>(`${environment.apiUrl}/ratings/${ratingId}`, {
       score,
       comment,
+      is_adopted_user,
     });
   }
 

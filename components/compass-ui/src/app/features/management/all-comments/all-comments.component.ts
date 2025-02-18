@@ -1,26 +1,27 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { MessageService } from "primeng/api";
+import { Subject, debounceTime, finalize, takeUntil } from "rxjs";
 import {
-  CommentService,
-  Comment,
+    Comment,
+    CommentService,
 } from "../../../core/services/comment.service";
-import { BehaviorSubject, Subject, debounceTime, takeUntil, finalize } from "rxjs";
 
 // PrimeNG Components
-import { ButtonModule } from "primeng/button";
-import { TableModule } from "primeng/table";
-import { ToastModule } from "primeng/toast";
-import { DialogModule } from "primeng/dialog";
-import { InputTextareaModule } from "primeng/inputtextarea";
-import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { ConfirmationService } from "primeng/api";
-import { TagModule } from "primeng/tag";
-import { RadioButtonModule } from "primeng/radiobutton";
-import { InputTextModule } from "primeng/inputtext";
+import { ButtonModule } from "primeng/button";
+import { CheckboxModule } from "primeng/checkbox";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
+import { DialogModule } from "primeng/dialog";
 import { DropdownModule } from "primeng/dropdown";
+import { InputTextModule } from "primeng/inputtext";
+import { InputTextareaModule } from "primeng/inputtextarea";
+import { RadioButtonModule } from "primeng/radiobutton";
+import { TableModule } from "primeng/table";
+import { TagModule } from "primeng/tag";
+import { ToastModule } from "primeng/toast";
 
 @Component({
   selector: "app-all-comments",
@@ -32,15 +33,16 @@ import { DropdownModule } from "primeng/dropdown";
     FormsModule,
     RouterModule,
     ButtonModule,
-    TableModule,
-    ToastModule,
-    DialogModule,
-    InputTextareaModule,
+    CheckboxModule,
     ConfirmDialogModule,
-    TagModule,
-    RadioButtonModule,
-    InputTextModule,
+    DialogModule,
     DropdownModule,
+    InputTextModule,
+    InputTextareaModule,
+    RadioButtonModule,
+    TableModule,
+    TagModule,
+    ToastModule,
   ],
   providers: [MessageService, ConfirmationService],
 })
@@ -166,7 +168,12 @@ export class AllCommentsComponent implements OnInit, OnDestroy {
 
     this.loading = true;
     this.commentService
-      .updateComment(this.editingComment._id, this.editingComment.content, this.editingComment.type)
+      .updateComment(
+        this.editingComment._id, 
+        this.editingComment.content, 
+        this.editingComment.type,
+        this.editingComment.is_adopted_user
+      )
       .subscribe({
         next: (response) => {
           if (response.success) {

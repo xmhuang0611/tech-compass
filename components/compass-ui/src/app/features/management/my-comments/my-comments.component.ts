@@ -1,22 +1,24 @@
+import { CommonModule, DatePipe } from "@angular/common";
 import { Component, OnInit } from "@angular/core";
-import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { MessageService } from "primeng/api";
+import { finalize } from "rxjs";
 import {
-  CommentService,
-  Comment,
+    Comment,
+    CommentService,
 } from "../../../core/services/comment.service";
-import { BehaviorSubject, finalize } from "rxjs";
 
 // PrimeNG Components
+import { ConfirmationService } from "primeng/api";
 import { ButtonModule } from "primeng/button";
-import { TableModule } from "primeng/table";
-import { ToastModule } from "primeng/toast";
+import { CheckboxModule } from "primeng/checkbox";
+import { ConfirmDialogModule } from "primeng/confirmdialog";
 import { DialogModule } from "primeng/dialog";
 import { InputTextareaModule } from "primeng/inputtextarea";
-import { ConfirmDialogModule } from "primeng/confirmdialog";
-import { ConfirmationService } from "primeng/api";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
+import { TableModule } from "primeng/table";
+import { ToastModule } from "primeng/toast";
 
 @Component({
   selector: "app-my-comments",
@@ -27,12 +29,15 @@ import { ConfirmationService } from "primeng/api";
     CommonModule,
     FormsModule,
     RouterModule,
+    DatePipe,
     ButtonModule,
-    TableModule,
-    ToastModule,
+    CheckboxModule,
+    ConfirmDialogModule,
     DialogModule,
     InputTextareaModule,
-    ConfirmDialogModule,
+    ProgressSpinnerModule,
+    TableModule,
+    ToastModule,
   ],
   providers: [MessageService, ConfirmationService],
 })
@@ -112,7 +117,8 @@ export class MyCommentsComponent implements OnInit {
       .updateComment(
         this.editingComment._id,
         this.editingComment.content,
-        this.editingComment.type || "USER"
+        this.editingComment.type || "USER",
+        this.editingComment.is_adopted_user
       )
       .subscribe({
         next: (response) => {
