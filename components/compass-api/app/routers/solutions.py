@@ -8,7 +8,10 @@ from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.response import StandardResponse
 from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.models.user import User
+from app.services.comment_service import CommentService
+from app.services.rating_service import RatingService
 from app.services.solution_service import SolutionService
+from app.services.user_service import UserService
 
 logger = logging.getLogger(__name__)
 
@@ -332,3 +335,53 @@ async def update_solutions_by_name(
     except Exception as e:
         logger.error(f"Error updating solutions by name: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error updating solutions by name: {str(e)}")
+
+
+@router.get("/{slug}/adopted-users", response_model=StandardResponse[List[User]])
+async def get_solution_adopted_users(
+    slug: str,
+    solution_service: SolutionService = Depends(),
+    comment_service: CommentService = Depends(),
+    rating_service: RatingService = Depends(),
+    user_service: UserService = Depends(),
+) -> Any:
+    """Get all adopted users for a solution.
+
+    This endpoint returns a list of users who have marked themselves as adopted users
+    either through comments or ratings on the solution.
+
+    Args:
+        slug: The slug of the solution to get adopted users for
+
+    Returns:
+        List of User objects for all adopted users with total count
+    """
+    try:
+        # First check if solution exists
+        solution = await solution_service.get_solution_by_slug(slug)
+        if not solution:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Solution with slug '{slug}' not found",
+            )
+
+        # Get adopted usernames from both comments and ratings
+        comment_usernames = await comment_service.get_solution_adopted_usernames(slug)
+        rating_usernames = await rating_service.get_solution_adopted_usernames(slug)
+
+        # Combine unique usernames
+        all_usernames = comment_usernames.union(rating_usernames)
+
+        if not all_usernames:
+            return StandardResponse.paginated(data=[], total=0, skip=0, limit=0)
+
+        # Get full user information for all usernames
+        users = await user_service.get_users_by_usernames(list(all_usernames))
+        return StandardResponse.paginated(data=users, total=len(users), skip=0, limit=len(users))
+
+    except Exception as e:
+        logger.error(f"Error getting adopted users: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error getting adopted users: {str(e)}",
+        )

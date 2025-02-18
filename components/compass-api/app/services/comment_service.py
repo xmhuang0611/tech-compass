@@ -239,3 +239,23 @@ class CommentService:
 
         total = await self.collection.count_documents(query)
         return comments, total
+
+    async def get_solution_adopted_usernames(self, solution_slug: str) -> set[str]:
+        """Get unique usernames of adopted users who commented on a solution.
+
+        Args:
+            solution_slug: The slug of the solution
+
+        Returns:
+            Set of unique usernames who are marked as adopted users
+        """
+        pipeline = [
+            {"$match": {"solution_slug": solution_slug, "is_adopted_user": True}},
+            {"$group": {"_id": None, "usernames": {"$addToSet": "$username"}}},
+        ]
+
+        result = await self.collection.aggregate(pipeline).to_list(1)
+        if not result:
+            return set()
+
+        return set(result[0]["usernames"])

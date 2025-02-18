@@ -249,3 +249,23 @@ class RatingService:
 
         result = await self.db.ratings.delete_one({"_id": ObjectId(rating_id)})
         return result.deleted_count > 0
+
+    async def get_solution_adopted_usernames(self, solution_slug: str) -> set[str]:
+        """Get unique usernames of adopted users who rated a solution.
+
+        Args:
+            solution_slug: The slug of the solution
+
+        Returns:
+            Set of unique usernames who are marked as adopted users
+        """
+        pipeline = [
+            {"$match": {"solution_slug": solution_slug, "is_adopted_user": True}},
+            {"$group": {"_id": None, "usernames": {"$addToSet": "$username"}}},
+        ]
+
+        result = await self.db.ratings.aggregate(pipeline).to_list(1)
+        if not result:
+            return set()
+
+        return set(result[0]["usernames"])

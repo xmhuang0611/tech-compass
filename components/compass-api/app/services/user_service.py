@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 
@@ -314,3 +314,21 @@ class UserService:
         if user:
             return {"username": username, "full_name": user["full_name"]}
         return None
+
+    async def get_users_by_usernames(self, usernames: List[str]) -> List[User]:
+        """Get multiple users by their usernames.
+
+        Args:
+            usernames: List of usernames to fetch
+
+        Returns:
+            List of User objects for the given usernames
+        """
+        if not usernames:
+            return []
+
+        cursor = self.collection.find({"username": {"$in": usernames}})
+        users = []
+        async for user_dict in cursor:
+            users.append(User(**user_dict))
+        return users
