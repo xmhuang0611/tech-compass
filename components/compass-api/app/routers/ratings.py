@@ -191,6 +191,7 @@ async def update_rating(
     Request Body:
     - score: New rating score (1-5)
     - comment: Optional new comment
+    - is_adopted_user: Whether you are an adopted user for this solution (default: false)
     """
     try:
         updated_rating = await rating_service.update_rating(

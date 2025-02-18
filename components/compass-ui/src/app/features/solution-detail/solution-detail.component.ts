@@ -1,23 +1,24 @@
-import { Component, OnInit, OnDestroy } from "@angular/core";
 import { CommonModule, DatePipe } from "@angular/common";
-import { FormsModule } from "@angular/forms";
-import { RouterModule, ActivatedRoute, Router } from "@angular/router";
 import { HttpClient } from "@angular/common/http";
-import { BehaviorSubject, Subject, finalize, takeUntil } from "rxjs";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { MessageService } from "primeng/api";
-import { environment } from "../../../environments/environment";
-import { AuthService } from "../../core/services/auth.service";
 import { DialogService } from "primeng/dynamicdialog";
+import { BehaviorSubject, Subject, finalize, takeUntil } from "rxjs";
+import { environment } from "../../../environments/environment";
 import { LoginDialogComponent } from "../../core/components/login-dialog/login-dialog.component";
-import { Solution } from "../../shared/interfaces/solution.interface";
-import { CommentService, Comment } from "../../core/services/comment.service";
-import { RatingService } from "../../core/services/rating.service";
+import { AuthService } from "../../core/services/auth.service";
+import { Comment, CommentService } from "../../core/services/comment.service";
 import type { Rating } from "../../core/services/rating.service";
+import { RatingService } from "../../core/services/rating.service";
+import { Solution } from "../../shared/interfaces/solution.interface";
 
 // PrimeNG Components
 import { BreadcrumbModule } from "primeng/breadcrumb";
 import { ButtonModule } from "primeng/button";
 import { CardModule } from "primeng/card";
+import { CheckboxModule } from "primeng/checkbox";
 import { ChipModule } from "primeng/chip";
 import { InputTextareaModule } from "primeng/inputtextarea";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
@@ -51,6 +52,7 @@ type Severity =
     BreadcrumbModule,
     ButtonModule,
     CardModule,
+    CheckboxModule,
     ChipModule,
     InputTextareaModule,
     ProgressSpinnerModule,
@@ -84,9 +86,11 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   totalRatings = 0;
   activeTab = 0;
   newComment = "";
+  newCommentIsAdopted = false;
   newRating = {
     score: 0,
     comment: "",
+    is_adopted_user: false
   };
   isLoggedIn = false;
 
@@ -281,53 +285,46 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   submitComment(slug: string) {
     if (!this.newComment.trim()) return;
 
-    this.commentService.addComment(slug, this.newComment).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.messageService.add({
-            severity: "success",
-            summary: "Success",
-            detail: "Comment added successfully",
-          });
-          this.newComment = "";
-          this.loadComments(slug);
-        }
-      },
-      error: (error) => {
-        if (error.status === 401) {
-          this.showLoginDialog();
-        } else {
+    this.commentService
+      .addComment(slug, {
+        content: this.newComment,
+        is_adopted_user: this.newCommentIsAdopted
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.messageService.add({
+              severity: "success",
+              summary: "Success",
+              detail: "Comment added successfully",
+            });
+            this.newComment = "";
+            this.newCommentIsAdopted = false;
+            this.loadComments(slug);
+          }
+        },
+        error: (error) => {
           this.messageService.add({
             severity: "error",
             summary: "Error",
             detail: "Failed to add comment",
           });
-        }
-      },
-    });
+        },
+      });
   }
 
   submitRating(slug: string) {
-    if (!this.isLoggedIn) {
-      this.messageService.add({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Please login to submit a rating",
-      });
-      return;
-    }
-
-    if (this.newRating.score === 0) {
-      this.messageService.add({
-        severity: "warn",
-        summary: "Warning",
-        detail: "Please select a rating score",
-      });
-      return;
-    }
+    if (this.newRating.score === 0) return;
 
     this.ratingService
-      .addRating(slug, this.newRating.score, this.newRating.comment)
+      .addRating(
+        slug,
+        this.newRating.score,
+        this.newRating.comment,
+        this.newRating.is_adopted_user
+      )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           if (response.success) {
@@ -336,7 +333,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
               summary: "Success",
               detail: "Rating submitted successfully",
             });
-            this.newRating = { score: 0, comment: "" };
+            this.newRating = { score: 0, comment: "", is_adopted_user: false };
             this.loadRatings(slug);
             this.loadSolution(slug);
           }
@@ -345,7 +342,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: "error",
             summary: "Error",
-            detail: error.error?.detail || "Failed to submit rating",
+            detail: "Failed to submit rating",
           });
         },
       });

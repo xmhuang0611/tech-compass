@@ -1,5 +1,5 @@
-import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
 
@@ -11,6 +11,7 @@ export interface Comment {
   created_at: string;
   solution_slug: string;
   type: "OFFICIAL" | "USER";
+  is_adopted_user?: boolean;
   created_by?: string;
   updated_at?: string;
   updated_by?: string;
@@ -76,10 +77,13 @@ export class CommentService {
   }
 
   // Add a comment to a solution
-  addComment(slug: string, content: string): Observable<any> {
+  addComment(
+    slug: string, 
+    data: { content: string; is_adopted_user: boolean }
+  ): Observable<any> {
     return this.http.post<any>(
       `${environment.apiUrl}/comments/solution/${slug}`,
-      { content }
+      data
     );
   }
 

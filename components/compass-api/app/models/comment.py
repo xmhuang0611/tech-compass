@@ -17,6 +17,9 @@ class CommentBase(BaseModel):
     """Base model for comments"""
 
     content: str = Field(..., min_length=1, max_length=2000, description="Comment content")
+    is_adopted_user: bool = Field(
+        default=False, description="Whether the comment author is an adopted user for the solution"
+    )
 
     @field_validator("content")
     @classmethod

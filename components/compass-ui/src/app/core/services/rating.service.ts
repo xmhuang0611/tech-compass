@@ -1,5 +1,5 @@
-import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { environment } from "../../../environments/environment";
 
@@ -11,6 +11,7 @@ export interface Rating {
   full_name: string;
   created_at: string;
   solution_slug: string;
+  is_adopted_user?: boolean;
   created_by?: string;
   updated_at?: string;
   updated_by?: string;
@@ -73,10 +74,15 @@ export class RatingService {
   }
 
   // Add a rating to a solution
-  addRating(slug: string, score: number, comment?: string): Observable<any> {
+  addRating(
+    slug: string, 
+    score: number, 
+    comment?: string,
+    is_adopted_user?: boolean
+  ): Observable<any> {
     return this.http.post<any>(
       `${environment.apiUrl}/ratings/solution/${slug}`,
-      { score, comment }
+      { score, comment, is_adopted_user }
     );
   }
 

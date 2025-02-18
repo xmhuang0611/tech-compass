@@ -61,6 +61,9 @@
               <h3>Add a Comment</h3>
               <div *ngIf="isLoggedIn; else loginToComment">
                 <textarea pInputTextarea [(ngModel)]="newComment" rows="3" placeholder="Write your comment here..."></textarea>
+                <div class="adopted-user-checkbox">
+                  <p-checkbox [(ngModel)]="newCommentIsAdopted" [binary]="true" label="I am an adopted user for this tech solution."></p-checkbox>
+                </div>
                 <p-button label="Submit" (click)="submitComment(solution$.value?.slug || '')" [disabled]="!newComment.trim()" styleClass="p-button-primary p-button-rounded"></p-button>
               </div>
               <ng-template #loginToComment>
@@ -74,7 +77,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of officialComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }}</span>
+                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted)</span></span>
                     <p-tag value="OFFICIAL" severity="success" [rounded]="true"></p-tag>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
@@ -93,7 +96,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of userComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }}</span>
+                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted)</span></span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -123,6 +126,9 @@
                 <div class="rating-input">
                   <p-rating [(ngModel)]="newRating.score" [cancel]="false"></p-rating>
                   <textarea pInputTextarea [(ngModel)]="newRating.comment" rows="3" placeholder="Add a comment (optional)"></textarea>
+                  <div class="adopted-user-checkbox">
+                    <p-checkbox [(ngModel)]="newRating.is_adopted_user" [binary]="true" label="I am an adopted user for this tech solution."></p-checkbox>
+                  </div>
                 </div>
                 <p-button label="Submit" (click)="submitRating(solution$.value?.slug || '')" [disabled]="newRating.score === 0" styleClass="p-button-primary p-button-rounded"></p-button>
               </div>
@@ -136,7 +142,7 @@
               <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
-                    <span class="username">{{ rating.full_name }}</span>
+                    <span class="username">{{ rating.full_name }} <span *ngIf="rating.is_adopted_user" class="adopted-badge">(adopted)</span></span>
                     <span class="date">{{ rating.created_at | date }}</span>
                   </div>
                   <div class="rating-score">

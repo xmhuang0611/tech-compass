@@ -135,6 +135,7 @@ class RatingService:
                 "$set": {
                     "score": rating_data["score"],
                     "comment": rating_data.get("comment"),
+                    "is_adopted_user": rating_data.get("is_adopted_user", False),
                     "updated_at": now,
                 }
             },
@@ -147,6 +148,7 @@ class RatingService:
                 "username": username,
                 "score": rating_data["score"],
                 "comment": rating_data.get("comment"),
+                "is_adopted_user": rating_data.get("is_adopted_user", False),
                 "created_at": now,
                 "updated_at": now,
             }
