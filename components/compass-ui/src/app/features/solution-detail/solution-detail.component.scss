@@ -488,18 +488,21 @@
   }
 }
 
-.comments-list {
+.comments-list,
+.ratings-list {
   margin-top: 2rem;
 }
 
-.comment {
+.comment,
+.rating {
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 4px;
   box-shadow: var(--card-shadow);
   background-color: var(--surface-card);
 
-  .comment-header {
+  .comment-header,
+  .rating-header {
     display: flex;
     align-items: center;
     margin-bottom: 0.5rem;
@@ -523,10 +526,26 @@
     }
   }
 
-  .comment-content {
+  .comment-content,
+  .rating-comment {
     color: var(--text-color);
     line-height: 1.5;
     white-space: pre-wrap;
+  }
+
+  .rating-score {
+    margin: 0.5rem 0;
+
+    ::ng-deep .p-rating {
+      .p-rating-icon {
+        color: var(--rating-star-color);
+        font-size: 1rem;
+
+        &.p-rating-icon-active {
+          color: var(--rating-star-color);
+        }
+      }
+    }
   }
 }
 
