@@ -367,6 +367,25 @@
           font-size: 1.125rem;
         }
 
+        .maintainer-avatar {
+          display: flex;
+          justify-content: left;
+          margin-bottom: 1rem;
+
+          img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--surface-border);
+            background: var(--surface-ground);
+            transition: border-color 0.2s ease;
+
+            &:hover {
+              border-color: var(--primary-color);
+            }
+          }
+        }
+
         .info-item {
           margin-bottom: 0.75rem;
 

@@ -300,6 +300,9 @@
 
         <div class="info-section">
           <h3>Maintainer</h3>
+          <div class="maintainer-avatar">
+            <img [src]="environment.apiUrl + '/users/' + solution.maintainer_id + '/avatar'" [alt]="solution.maintainer_name">
+          </div>
           <div class="info-item">
             <label>Name</label>
             <span>{{ solution.maintainer_name }} <span class="text-color-secondary">({{ solution.maintainer_id }})</span></span>
