@@ -433,6 +433,10 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   }
 
   sendEmail(email: string) {
-    window.location.href = `mailto:${email}`;
+    const solution = this.solution$.value;
+    if (!solution) return;
+    
+    const subject = encodeURIComponent(`Reach out for tech solution: ${solution.name}`);
+    window.location.href = `mailto:${email}?subject=${subject}`;
   }
 }

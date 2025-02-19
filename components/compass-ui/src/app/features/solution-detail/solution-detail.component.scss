@@ -235,14 +235,47 @@
             align-items: center;
             margin-bottom: 0.5rem;
 
-            .username {
-              font-weight: 600;
-              color: var(--text-color-secondary);
+            .user-info {
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+
+              .user-avatar {
+                flex-shrink: 0;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                overflow: hidden;
+                background: var(--surface-ground);
+                border: 2px solid var(--surface-border);
+
+                img {
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                }
+              }
+
+              .user-details {
+                .username {
+                  font-weight: 600;
+                  color: var(--text-color);
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+                }
+              }
             }
 
             .date {
-              font-size: 0.875rem;
+              flex-shrink: 0;
               color: var(--text-color-secondary);
+            }
+
+            ::ng-deep .p-tag {
+              font-size: 0.75rem;
+              padding: 0.25rem 0.5rem;
+              height: 1.5rem;
             }
           }
 
@@ -250,32 +283,21 @@
           .rating-comment {
             color: var(--text-color);
             line-height: 1.5;
+            white-space: pre-wrap;
+            margin-left: calc(36px + 0.75rem);
           }
 
           .rating-score {
             margin: 0.5rem 0;
+            margin-left: calc(36px + 0.75rem);
 
             ::ng-deep .p-rating {
               .p-rating-icon {
                 color: var(--rating-star-color);
-                cursor: default;
+                font-size: 1rem;
 
                 &.p-rating-icon-active {
                   color: var(--rating-star-color);
-                }
-
-                &:hover {
-                  color: var(--rating-star-color) !important;
-                }
-              }
-
-              &:not(.p-disabled):not(.p-readonly) {
-                .p-rating-icon {
-                  cursor: default;
-
-                  &:hover {
-                    color: var(--rating-star-color) !important;
-                  }
                 }
               }
             }
@@ -504,19 +526,47 @@
   .comment-header,
   .rating-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
     color: var(--text-color-secondary);
     font-size: 0.875rem;
-    gap: 0.5rem;
 
-    .username {
-      font-weight: 600;
-      color: var(--text-color);
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .user-avatar {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: var(--surface-ground);
+        border: 2px solid var(--surface-border);
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .user-details {
+        .username {
+          font-weight: 600;
+          color: var(--text-color);
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
     }
 
     .date {
-      margin-left: auto;
+      flex-shrink: 0;
+      color: var(--text-color-secondary);
     }
 
     ::ng-deep .p-tag {
@@ -531,10 +581,12 @@
     color: var(--text-color);
     line-height: 1.5;
     white-space: pre-wrap;
+    margin-left: calc(36px + 0.75rem);
   }
 
   .rating-score {
     margin: 0.5rem 0;
+    margin-left: calc(36px + 0.75rem);
 
     ::ng-deep .p-rating {
       .p-rating-icon {

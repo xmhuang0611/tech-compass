@@ -77,8 +77,18 @@
               <div class="comments-container">
                 <div *ngFor="let comment of officialComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
-                    <p-tag value="OFFICIAL" severity="success" [rounded]="true"></p-tag>
+                    <div class="user-info">
+                      <div class="user-avatar">
+                        <img [src]="environment.apiUrl + '/users/' + comment.username + '/avatar'" [alt]="comment.full_name">
+                      </div>
+                      <div class="user-details">
+                        <span class="username">
+                          {{ comment.full_name }}
+                          <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span>
+                          <p-tag value="OFFICIAL" severity="success" [rounded]="true"></p-tag>
+                        </span>
+                      </div>
+                    </div>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -96,7 +106,17 @@
               <div class="comments-container">
                 <div *ngFor="let comment of userComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
+                    <div class="user-info">
+                      <div class="user-avatar">
+                        <img [src]="environment.apiUrl + '/users/' + comment.username + '/avatar'" [alt]="comment.full_name">
+                      </div>
+                      <div class="user-details">
+                        <span class="username">
+                          {{ comment.full_name }}
+                          <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span>
+                        </span>
+                      </div>
+                    </div>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -142,7 +162,17 @@
               <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
-                    <span class="username">{{ rating.full_name }} <span *ngIf="rating.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
+                    <div class="user-info">
+                      <div class="user-avatar">
+                        <img [src]="environment.apiUrl + '/users/' + rating.username + '/avatar'" [alt]="rating.full_name">
+                      </div>
+                      <div class="user-details">
+                        <span class="username">
+                          {{ rating.full_name }}
+                          <span *ngIf="rating.is_adopted_user" class="adopted-badge">(adopted user)</span>
+                        </span>
+                      </div>
+                    </div>
                     <span class="date">{{ rating.created_at | date }}</span>
                   </div>
                   <div class="rating-score">
@@ -181,7 +211,6 @@
                       <p-button 
                         icon="pi pi-envelope" 
                         (onClick)="sendEmail(user.email)"
-                        pTooltip="Contact User"
                         styleClass="p-button-rounded p-button-text">
                       </p-button>
                     </div>
