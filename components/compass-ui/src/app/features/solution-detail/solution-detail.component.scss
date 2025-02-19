@@ -606,50 +606,89 @@
 
     .user-info {
       display: flex;
-      justify-content: space-between;
+      gap: 1rem;
       align-items: center;
-      gap: 0.75rem;
 
-      .user-header {
-        h3 {
-          margin: 0;
-          color: var(--text-color);
-          font-size: 1rem;
-          font-weight: 600;
-          line-height: 1.2;
-        }
+      .user-avatar {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: var(--surface-ground);
+        border: 2px solid var(--surface-border);
+        transition: border-color 0.2s ease;
 
-        .username {
-          color: var(--text-color-secondary);
-          font-size: 0.8125rem;
-          display: block;
-          margin-top: 0.25rem;
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       }
 
-      .user-actions {
-        flex-shrink: 0;
+      .user-details {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 0.75rem;
 
-        ::ng-deep {
-          .p-button.p-button-text {
-            width: 2.5rem;
-            height: 2.5rem;
-            color: var(--primary-color);
-            padding: 0;
+        .user-header {
+          min-width: 0;
 
-            &:hover {
-              background: rgba(var(--primary-color-rgb), 0.04);
-            }
+          h3 {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
 
-            &:focus {
-              box-shadow: 0 0 0 1px var(--primary-color);
-            }
+          .username {
+            color: var(--text-color-secondary);
+            font-size: 0.8125rem;
+            display: block;
+            margin-top: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+        }
 
-            .p-button-icon {
-              font-size: 1rem;
+        .user-actions {
+          flex-shrink: 0;
+
+          ::ng-deep {
+            .p-button.p-button-text {
+              width: 2.5rem;
+              height: 2.5rem;
+              color: var(--primary-color);
+              padding: 0;
+
+              &:hover {
+                background: rgba(var(--primary-color-rgb), 0.04);
+              }
+
+              &:focus {
+                box-shadow: 0 0 0 1px var(--primary-color);
+              }
+
+              .p-button-icon {
+                font-size: 1rem;
+              }
             }
           }
         }
+      }
+    }
+
+    &:hover {
+      .user-avatar {
+        border-color: var(--primary-color);
       }
     }
   }

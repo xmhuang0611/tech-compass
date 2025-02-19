@@ -101,6 +101,8 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   adoptedUsersPage = 0;
   hasMoreAdoptedUsers = true;
 
+  environment = environment;
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,

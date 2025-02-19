@@ -169,16 +169,22 @@
             <div class="adopted-users-grid">
               <div *ngFor="let user of adoptedUsers$.value" class="adopted-user-card">
                 <div class="user-info">
-                  <div class="user-header">
-                    <h3>{{ user.full_name }}</h3>
-                    <span class="username">({{ user.username }})</span>
+                  <div class="user-avatar">
+                    <img [src]="environment.apiUrl + '/users/' + user.username + '/avatar'" [alt]="user.full_name">
                   </div>
-                  <div class="user-actions">
-                    <p-button 
-                      icon="pi pi-envelope" 
-                      (onClick)="sendEmail(user.email)"
-                      styleClass="p-button-rounded p-button-text">
-                    </p-button>
+                  <div class="user-details">
+                    <div class="user-header">
+                      <h3>{{ user.full_name }}</h3>
+                      <span class="username">({{ user.username }})</span>
+                    </div>
+                    <div class="user-actions">
+                      <p-button 
+                        icon="pi pi-envelope" 
+                        (onClick)="sendEmail(user.email)"
+                        pTooltip="Contact User"
+                        styleClass="p-button-rounded p-button-text">
+                      </p-button>
+                    </div>
                   </div>
                 </div>
               </div>

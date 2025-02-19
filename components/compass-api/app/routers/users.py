@@ -1,6 +1,7 @@
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.response import StandardResponse
@@ -182,3 +183,24 @@ async def admin_delete_user(
         raise e
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/{username}/avatar", response_class=Response)
+async def get_user_avatar(username: str) -> Any:
+    """Get a generic avatar for a user in SVG format."""
+    # Get the first letter of the username (uppercase)
+    first_letter = username[0].upper() if username else "?"
+
+    # Generate a consistent color based on the username
+    color = f"#{hash(username) % 0xFFFFFF:06x}"
+
+    # Create SVG template
+    svg = f'''<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="50" fill="{color}"/>
+    <text x="50" y="50" font-family="Arial" font-size="40" fill="white" text-anchor="middle" dominant-baseline="central">
+        {first_letter}
+    </text>
+</svg>'''
+
+    return Response(content=svg, media_type="image/svg+xml")
