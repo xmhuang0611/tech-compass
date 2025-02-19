@@ -77,7 +77,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of officialComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted)</span></span>
+                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
                     <p-tag value="OFFICIAL" severity="success" [rounded]="true"></p-tag>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
@@ -96,7 +96,7 @@
               <div class="comments-container">
                 <div *ngFor="let comment of userComments$.value" class="comment">
                   <div class="comment-header">
-                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted)</span></span>
+                    <span class="username">{{ comment.full_name }} <span *ngIf="comment.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
                     <span class="date">{{ comment.created_at | date }}</span>
                   </div>
                   <div class="comment-content">{{ comment.content }}</div>
@@ -142,7 +142,7 @@
               <div class="ratings-container">
                 <div *ngFor="let rating of ratings$.value" class="rating">
                   <div class="rating-header">
-                    <span class="username">{{ rating.full_name }} <span *ngIf="rating.is_adopted_user" class="adopted-badge">(adopted)</span></span>
+                    <span class="username">{{ rating.full_name }} <span *ngIf="rating.is_adopted_user" class="adopted-badge">(adopted user)</span></span>
                     <span class="date">{{ rating.created_at | date }}</span>
                   </div>
                   <div class="rating-score">
@@ -161,6 +161,44 @@
                 <p-progressSpinner *ngIf="loadingRatings"></p-progressSpinner>
               </div>
             </div>
+          </div>
+        </p-tabPanel>
+
+        <p-tabPanel header="Adopted Users ({{ totalAdoptedUsers }})">
+          <div class="adopted-users-section">
+            <div class="adopted-users-grid">
+              <div *ngFor="let user of adoptedUsers$.value" class="adopted-user-card">
+                <div class="user-info">
+                  <div class="user-header">
+                    <h3>{{ user.full_name }}</h3>
+                    <span class="username">({{ user.username }})</span>
+                  </div>
+                  <div class="user-actions">
+                    <p-button 
+                      icon="pi pi-envelope" 
+                      (onClick)="sendEmail(user.email)"
+                      styleClass="p-button-rounded p-button-text">
+                    </p-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="load-more-container" *ngIf="hasMoreAdoptedUsers">
+              <p-button 
+                label="Load More Users" 
+                [loading]="loadingAdoptedUsers"
+                styleClass="p-button-secondary"
+                (onClick)="loadAdoptedUsers(solution$.value?.slug || '', true)">
+              </p-button>
+            </div>
+
+            <div *ngIf="!loadingAdoptedUsers && adoptedUsers$.value.length === 0" class="no-users-message">
+              <i class="pi pi-users"></i>
+              <p>No adopted users participated in solution discussion.</p>
+            </div>
+
+            <p-progressSpinner *ngIf="loadingAdoptedUsers"></p-progressSpinner>
           </div>
         </p-tabPanel>
       </p-tabView>

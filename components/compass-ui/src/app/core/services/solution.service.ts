@@ -1,12 +1,33 @@
-import { Injectable } from "@angular/core";
 import { HttpClient, HttpParams } from "@angular/common/http";
+import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { StandardResponse } from "../interfaces/standard-response.interface";
-import {
-  Solution,
-  PaginatedSolutions,
-} from "../../shared/interfaces/solution.interface";
 import { environment } from "../../../environments/environment";
+import {
+    Solution
+} from "../../shared/interfaces/solution.interface";
+import { StandardResponse } from "../interfaces/standard-response.interface";
+
+export interface AdoptedUser {
+  _id: string;
+  created_at: string;
+  created_by: string | null;
+  updated_at: string;
+  updated_by: string | null;
+  email: string;
+  username: string;
+  full_name: string;
+  is_active: boolean;
+  is_superuser: boolean;
+}
+
+export interface AdoptedUsersResponse {
+  success: boolean;
+  data: AdoptedUser[];
+  detail: string | null;
+  total: number;
+  skip: number;
+  limit: number;
+}
 
 @Injectable({
   providedIn: "root",
@@ -155,5 +176,16 @@ export class SolutionService {
 
   getSolution(slug: string): Observable<StandardResponse<Solution>> {
     return this.http.get<StandardResponse<Solution>>(`${this.apiUrl}${slug}`);
+  }
+
+  // Get adopted users for a solution
+  getAdoptedUsers(
+    slug: string,
+    skip: number = 0,
+    limit: number = 10
+  ): Observable<AdoptedUsersResponse> {
+    return this.http.get<AdoptedUsersResponse>(
+      `${environment.apiUrl}/solutions/${slug}/adopted-users?skip=${skip}&limit=${limit}`
+    );
   }
 }

@@ -12,6 +12,7 @@ import { AuthService } from "../../core/services/auth.service";
 import { Comment, CommentService } from "../../core/services/comment.service";
 import type { Rating } from "../../core/services/rating.service";
 import { RatingService } from "../../core/services/rating.service";
+import { AdoptedUser, SolutionService } from "../../core/services/solution.service";
 import { Solution } from "../../shared/interfaces/solution.interface";
 
 // PrimeNG Components
@@ -94,6 +95,12 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
   };
   isLoggedIn = false;
 
+  adoptedUsers$ = new BehaviorSubject<AdoptedUser[]>([]);
+  loadingAdoptedUsers = false;
+  totalAdoptedUsers = 0;
+  adoptedUsersPage = 0;
+  hasMoreAdoptedUsers = true;
+
   constructor(
     private route: ActivatedRoute,
     private http: HttpClient,
@@ -102,6 +109,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
     private dialogService: DialogService,
     private commentService: CommentService,
     private ratingService: RatingService,
+    private solutionService: SolutionService,
     private router: Router
   ) {}
 
@@ -111,6 +119,7 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
       this.loadSolution(slug);
       this.loadComments(slug);
       this.loadRatings(slug);
+      this.loadAdoptedUsers(slug);
     });
 
     this.authService.currentUser$.subscribe((user) => {
@@ -381,5 +390,47 @@ export class SolutionDetailComponent implements OnInit, OnDestroy {
         this.router.navigate(['/manage/my-solutions/edit/', slug]);
       }
     });
+  }
+
+  loadAdoptedUsers(slug: string, loadMore = false) {
+    if (!loadMore) {
+      this.adoptedUsersPage = 0;
+      this.adoptedUsers$.next([]);
+      this.hasMoreAdoptedUsers = true;
+    }
+
+    if (!this.hasMoreAdoptedUsers || this.loadingAdoptedUsers) {
+      return;
+    }
+
+    this.loadingAdoptedUsers = true;
+    const skip = this.adoptedUsersPage * 10;
+
+    this.solutionService
+      .getAdoptedUsers(slug, skip, 10)
+      .pipe(finalize(() => (this.loadingAdoptedUsers = false)))
+      .subscribe({
+        next: (response) => {
+          if (response.success) {
+            const currentUsers = this.adoptedUsers$.value;
+            this.adoptedUsers$.next([...currentUsers, ...response.data]);
+            this.totalAdoptedUsers = response.total;
+            this.hasMoreAdoptedUsers =
+              currentUsers.length + response.data.length < response.total;
+            this.adoptedUsersPage++;
+          }
+        },
+        error: (error) => {
+          this.messageService.add({
+            severity: "error",
+            summary: "Error",
+            detail: "Failed to load adopted users",
+          });
+        },
+      });
+  }
+
+  sendEmail(email: string) {
+    window.location.href = `mailto:${email}`;
   }
 }
