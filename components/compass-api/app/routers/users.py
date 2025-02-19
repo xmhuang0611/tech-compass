@@ -1,9 +1,10 @@
 from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import Response
+from fastapi.responses import RedirectResponse, Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
+from app.core.config import settings
 from app.models.response import StandardResponse
 from app.models.user import (
     AdminUserUpdate,
@@ -187,7 +188,15 @@ async def admin_delete_user(
 
 @router.get("/{username}/avatar", response_class=Response)
 async def get_user_avatar(username: str) -> Any:
-    """Get a generic avatar for a user in SVG format."""
+    """Get an avatar for a user.
+    If AVATAR_SERVER_ENABLED is true and URL is configured, redirects to the configured avatar server.
+    Otherwise, returns a generated SVG avatar."""
+
+    if settings.AVATAR_SERVER_ENABLED and settings.AVATAR_SERVER_URL:
+        avatar_url = settings.AVATAR_SERVER_URL.format(username=username)
+        return RedirectResponse(url=avatar_url)
+
+    # Fallback to generated SVG avatar
     # Get the first letter of the username (uppercase)
     first_letter = username[0].upper() if username else "?"
 

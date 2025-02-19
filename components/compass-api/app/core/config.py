@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     AUTH_SERVER_FULLNAME_FIELD: str = "full_name"
     AUTH_SERVER_EMAIL_FIELD: str = "email"
 
+    # Avatar Server settings
+    AVATAR_SERVER_URL: str = ""
+    AVATAR_SERVER_ENABLED: bool = False
+
     # Default Admin settings
     DEFAULT_ADMIN_USERNAME: str = "admin"
     DEFAULT_ADMIN_PASSWORD: str
