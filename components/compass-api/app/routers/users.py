@@ -1,7 +1,8 @@
 from typing import Any, List, Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import RedirectResponse, Response
+from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
 from app.core.config import settings
@@ -194,11 +195,15 @@ async def get_user_avatar(username: str) -> Any:
 
     if settings.AVATAR_SERVER_ENABLED and settings.AVATAR_SERVER_URL:
         avatar_url = settings.AVATAR_SERVER_URL.format(username=username)
-        return RedirectResponse(url=avatar_url)
-
+        # Fetch the image from the avatar server and return it directly
+        async with httpx.AsyncClient() as client:
+            response = await client.get(avatar_url)
+            if response.status_code == 200:
+                return Response(content=response.content, media_type=response.headers.get("content-type", "image/png"))
+    
     # Fallback to generated SVG avatar
-    # Get the first letter of the username (uppercase)
-    first_letter = username[0].upper() if username else "?"
+    # Get the first two letters of the username (uppercase)
+    first_letters = username[:2].upper() if len(username) >= 2 else (username[0].upper() if username else "?")
 
     # Generate a consistent color based on the username
     color = f"#{hash(username) % 0xFFFFFF:06x}"
@@ -207,8 +212,8 @@ async def get_user_avatar(username: str) -> Any:
     svg = f'''<?xml version="1.0" encoding="UTF-8"?>
 <svg width="100" height="100" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <circle cx="50" cy="50" r="50" fill="{color}"/>
-    <text x="50" y="50" font-family="Arial" font-size="40" fill="white" text-anchor="middle" dominant-baseline="central">
-        {first_letter}
+    <text x="50" y="50" font-family="Arial" font-size="35" fill="white" text-anchor="middle" dominant-baseline="central">
+        {first_letters}
     </text>
 </svg>'''
 
