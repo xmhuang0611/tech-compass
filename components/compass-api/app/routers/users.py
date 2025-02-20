@@ -1,6 +1,7 @@
 from typing import Any, List, Optional
 
 import httpx
+from cachetools import TTLCache, keys
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
@@ -17,6 +18,9 @@ from app.models.user import (
 from app.services.user_service import UserService
 
 router = APIRouter()
+
+# Create a cache with 1-day TTL (86400 seconds)
+avatar_cache = TTLCache(maxsize=1000, ttl=86400)
 
 
 @router.post("/", response_model=StandardResponse[User], status_code=status.HTTP_201_CREATED)
@@ -190,17 +194,31 @@ async def admin_delete_user(
 @router.get("/{username}/avatar", response_class=Response)
 async def get_user_avatar(username: str) -> Any:
     """Get an avatar for a user.
-    If AVATAR_SERVER_ENABLED is true and URL is configured, redirects to the configured avatar server.
-    Otherwise, returns a generated SVG avatar."""
+    If AVATAR_SERVER_ENABLED is true and URL is configured, fetches from the configured avatar server.
+    Otherwise, returns a generated SVG avatar.
+    Response is cached for 1 day."""
 
+    # Generate cache key based on username and avatar server settings
+    cache_key = keys.hashkey(username, settings.AVATAR_SERVER_ENABLED, settings.AVATAR_SERVER_URL)
+
+    # Try to get from cache
+    if cache_key in avatar_cache:
+        return Response(content=avatar_cache[cache_key]["content"], media_type=avatar_cache[cache_key]["media_type"])
+
+    # Generate or fetch avatar
     if settings.AVATAR_SERVER_ENABLED and settings.AVATAR_SERVER_URL:
         avatar_url = settings.AVATAR_SERVER_URL.format(username=username)
-        # Fetch the image from the avatar server and return it directly
+        # Fetch the image from the avatar server
         async with httpx.AsyncClient() as client:
             response = await client.get(avatar_url)
             if response.status_code == 200:
+                # Cache the response
+                avatar_cache[cache_key] = {
+                    "content": response.content,
+                    "media_type": response.headers.get("content-type", "image/png"),
+                }
                 return Response(content=response.content, media_type=response.headers.get("content-type", "image/png"))
-    
+
     # Fallback to generated SVG avatar
     # Get the first two letters of the username (uppercase)
     first_letters = username[:2].upper() if len(username) >= 2 else (username[0].upper() if username else "?")
@@ -216,5 +234,8 @@ async def get_user_avatar(username: str) -> Any:
         {first_letters}
     </text>
 </svg>'''
+
+    # Cache the SVG response
+    avatar_cache[cache_key] = {"content": svg, "media_type": "image/svg+xml"}
 
     return Response(content=svg, media_type="image/svg+xml")
