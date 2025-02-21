@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
+import httpx
+from cachetools import TTLCache, keys
 from fastapi import HTTPException, status
 
 from app.core.config import settings
@@ -13,6 +15,8 @@ class UserService:
     def __init__(self):
         self.db = get_database()
         self.collection = self.db.users
+        # Create a cache with 1-day TTL (86400 seconds)
+        self.avatar_cache = TTLCache(maxsize=1000, ttl=86400)
 
     async def _get_user_or_404(self, username: str) -> UserInDB:
         """Get a user by username or raise 404 if not found."""
@@ -332,3 +336,86 @@ class UserService:
         async for user_dict in cursor:
             users.append(User(**user_dict))
         return users
+
+    async def get_user_avatar(self, username: str) -> tuple[bytes | str, str]:
+        """Get an avatar for a user.
+        If AVATAR_SERVER_ENABLED is true and URL is configured, fetches from the configured avatar server.
+        Otherwise, returns a generated SVG avatar.
+        Response is cached for 1 day.
+
+        Args:
+            username: The username to get avatar for
+
+        Returns:
+            Tuple of (content, media_type) where:
+                content: The avatar content (bytes for images, str for SVG)
+                media_type: The content type of the avatar
+        """
+        # Generate cache key based on username and avatar server settings
+        cache_key = keys.hashkey(username, settings.AVATAR_SERVER_ENABLED, settings.AVATAR_SERVER_URL)
+
+        # Try to get from cache
+        if cache_key in self.avatar_cache:
+            return (self.avatar_cache[cache_key]["content"], self.avatar_cache[cache_key]["media_type"])
+
+        # Generate or fetch avatar
+        if settings.AVATAR_SERVER_ENABLED and settings.AVATAR_SERVER_URL:
+            content, media_type = await self._fetch_external_avatar(username)
+        else:
+            content, media_type = self._generate_svg_avatar(username)
+
+        # Cache the response
+        self.avatar_cache[cache_key] = {"content": content, "media_type": media_type}
+
+        return content, media_type
+
+    async def _fetch_external_avatar(self, username: str) -> tuple[bytes, str]:
+        """Fetch avatar from external avatar server.
+        If the fetch fails for any reason (network error, non-200 status, etc.),
+        falls back to generated SVG avatar.
+
+        Args:
+            username: The username to fetch avatar for
+
+        Returns:
+            Tuple of (content, media_type)
+        """
+        try:
+            avatar_url = settings.AVATAR_SERVER_URL.format(username=username)
+            async with httpx.AsyncClient(verify=False) as client:
+                response = await client.get(avatar_url)
+                if response.status_code == 200:
+                    return response.content, response.headers.get("content-type", "image/png")
+        except Exception:
+            # Log error if needed
+            pass
+
+        # If we get here, either the request failed or returned non-200 status
+        # Fallback to generated avatar
+        return self._generate_svg_avatar(username)
+
+    def _generate_svg_avatar(self, username: str) -> tuple[str, str]:
+        """Generate an SVG avatar for a user.
+
+        Args:
+            username: The username to generate avatar for
+
+        Returns:
+            Tuple of (svg_content, media_type)
+        """
+        # Get the first two letters of the username (uppercase)
+        first_letters = username[:2].upper() if len(username) >= 2 else (username[0].upper() if username else "?")
+
+        # Generate a consistent color based on the username
+        color = f"#{hash(username) % 0xFFFFFF:06x}"
+
+        # Create SVG template
+        svg = f'''<?xml version="1.0" encoding="UTF-8"?>
+    <svg width="100" height="100" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="50" fill="{color}"/>
+        <text x="50" y="50" font-family="Arial" font-size="35" fill="white" text-anchor="middle" dominant-baseline="central">
+            {first_letters}
+        </text>
+    </svg>'''
+
+        return svg, "image/svg+xml"

@@ -1,12 +1,10 @@
 from typing import Any, List, Optional
 
-import httpx
-from cachetools import TTLCache, keys
+from cachetools import TTLCache
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
-from app.core.config import settings
 from app.models.response import StandardResponse
 from app.models.user import (
     AdminUserUpdate,
@@ -192,50 +190,14 @@ async def admin_delete_user(
 
 
 @router.get("/{username}/avatar", response_class=Response)
-async def get_user_avatar(username: str) -> Any:
+async def get_user_avatar(
+    username: str,
+    user_service: UserService = Depends(),
+) -> Any:
     """Get an avatar for a user.
     If AVATAR_SERVER_ENABLED is true and URL is configured, fetches from the configured avatar server.
     Otherwise, returns a generated SVG avatar.
     Response is cached for 1 day."""
 
-    # Generate cache key based on username and avatar server settings
-    cache_key = keys.hashkey(username, settings.AVATAR_SERVER_ENABLED, settings.AVATAR_SERVER_URL)
-
-    # Try to get from cache
-    if cache_key in avatar_cache:
-        return Response(content=avatar_cache[cache_key]["content"], media_type=avatar_cache[cache_key]["media_type"])
-
-    # Generate or fetch avatar
-    if settings.AVATAR_SERVER_ENABLED and settings.AVATAR_SERVER_URL:
-        avatar_url = settings.AVATAR_SERVER_URL.format(username=username)
-        # Fetch the image from the avatar server
-        async with httpx.AsyncClient() as client:
-            response = await client.get(avatar_url)
-            if response.status_code == 200:
-                # Cache the response
-                avatar_cache[cache_key] = {
-                    "content": response.content,
-                    "media_type": response.headers.get("content-type", "image/png"),
-                }
-                return Response(content=response.content, media_type=response.headers.get("content-type", "image/png"))
-
-    # Fallback to generated SVG avatar
-    # Get the first two letters of the username (uppercase)
-    first_letters = username[:2].upper() if len(username) >= 2 else (username[0].upper() if username else "?")
-
-    # Generate a consistent color based on the username
-    color = f"#{hash(username) % 0xFFFFFF:06x}"
-
-    # Create SVG template
-    svg = f'''<?xml version="1.0" encoding="UTF-8"?>
-<svg width="100" height="100" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="50" cy="50" r="50" fill="{color}"/>
-    <text x="50" y="50" font-family="Arial" font-size="35" fill="white" text-anchor="middle" dominant-baseline="central">
-        {first_letters}
-    </text>
-</svg>'''
-
-    # Cache the SVG response
-    avatar_cache[cache_key] = {"content": svg, "media_type": "image/svg+xml"}
-
-    return Response(content=svg, media_type="image/svg+xml")
+    content, media_type = await user_service.get_user_avatar(username)
+    return Response(content=content, media_type=media_type)
