@@ -196,6 +196,10 @@
 
         <p-tabPanel header="Adopted Users ({{ totalAdoptedUsers }})">
           <div class="adopted-users-section">
+            <div class="info-message">
+              <i class="pi pi-info-circle"></i>
+              <span>Note: This list only shows adopted users who have participated in discussions and ratings.</span>
+            </div>
             <div class="adopted-users-grid">
               <div *ngFor="let user of adoptedUsers$.value" class="adopted-user-card">
                 <div class="user-info">
