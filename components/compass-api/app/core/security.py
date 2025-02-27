@@ -22,6 +22,10 @@ async def verify_credentials(username: str, password: str) -> bool:
     # First check if user exists in our database
     user = await get_user_from_db(username)
 
+    # Check if user exists and is active
+    if user and not user.is_active:
+        return False
+
     # Always verify admin user with password
     if username == "admin":
         if not user:
@@ -80,6 +84,10 @@ async def verify_credentials(username: str, password: str) -> bool:
                     )
                     await user_service.create_user(user_create)
                 else:
+                    # If user exists but is not active, deny login
+                    if not user.is_active:
+                        return False
+
                     # Update existing user's info if changed
                     if user.full_name != full_name or user.email != email:
                         await user_service.update_external_user(username=username, full_name=full_name, email=email)

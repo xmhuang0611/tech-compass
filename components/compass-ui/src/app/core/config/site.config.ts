@@ -24,6 +24,7 @@ export const siteConfig = {
       errors: {
         emptyFields: "Please enter both username and password",
         defaultError: "Authentication failed. Please try again.",
+        inactiveUser: "Your account is inactive. Please contact an administrator.",
       },
     },
   },

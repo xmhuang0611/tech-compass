@@ -231,8 +231,13 @@ export class LoginDialogComponent {
       },
       error: (error) => {
         this.loading = false;
-        this.errorMessage =
-          error.error?.detail || this.config.auth.signIn.errors.defaultError;
+        // Check for specific inactive user error message
+        if (error.error?.detail && error.error.detail.includes("inactive")) {
+          this.errorMessage = this.config.auth.signIn.errors.inactiveUser;
+        } else {
+          this.errorMessage =
+            error.error?.detail || this.config.auth.signIn.errors.defaultError;
+        }
       },
     });
   }

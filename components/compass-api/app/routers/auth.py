@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core.config import settings
-from app.core.security import create_access_token, verify_credentials
+from app.core.security import create_access_token, verify_credentials, get_user_from_db
 from app.models.token import Token
 
 router = APIRouter()
@@ -16,6 +16,15 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     OAuth2 compatible token login, get an access token for future requests.
     Uses external auth server if enabled, otherwise allows any credentials for development.
     """
+    # First check if user exists and is inactive
+    user = await get_user_from_db(form_data.username)
+    if user and not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account is inactive. Please contact an administrator.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
     is_valid = await verify_credentials(form_data.username, form_data.password)
 
     if not is_valid:
