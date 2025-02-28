@@ -5,10 +5,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
+from app.models.history import HistoryQuery, HistoryRecord
 from app.models.response import StandardResponse
 from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.models.user import User
 from app.services.comment_service import CommentService
+from app.services.history_service import HistoryService
 from app.services.rating_service import RatingService
 from app.services.solution_service import SolutionService
 from app.services.user_service import UserService
@@ -267,7 +269,7 @@ async def delete_solution(
             detail="You don't have permission to delete this solution",
         )
 
-    success = await solution_service.delete_solution_by_slug(slug)
+    success = await solution_service.delete_solution_by_slug(slug, current_user.username)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Solution not found")
 
@@ -299,7 +301,7 @@ async def delete_solutions_by_name(
     This endpoint is restricted to superusers only.
     """
     try:
-        deleted_count = await solution_service.delete_solutions_by_name(name)
+        deleted_count = await solution_service.delete_solutions_by_name(name, current_user.username)
         return StandardResponse.of(deleted_count)
     except Exception as e:
         logger.error(f"Error deleting solutions by name: {str(e)}")
@@ -385,3 +387,33 @@ async def get_solution_adopted_users(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error getting adopted users: {str(e)}",
         )
+
+
+@router.get("/{slug}/history", response_model=StandardResponse[List[HistoryRecord]])
+async def get_solution_history(
+    slug: str,
+    skip: int = 0,
+    limit: int = 20,
+    solution_service: SolutionService = Depends(),
+    history_service: HistoryService = Depends(),
+) -> Any:
+    """
+    Get change history for a specific solution.
+    
+    Returns a list of history records for the solution, sorted by change date in descending order.
+    """
+    solution = await solution_service.get_solution_by_slug(slug)
+    if not solution:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Solution with slug '{slug}' not found",
+        )
+    
+    history_records, total = await history_service.get_object_history(
+        object_type="solution",
+        object_id=str(solution.id),
+        skip=skip,
+        limit=limit
+    )
+    
+    return StandardResponse.paginated(history_records, total, skip, limit)

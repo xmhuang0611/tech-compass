@@ -4,6 +4,7 @@ from app.routers import (
     auth,
     categories,
     comments,
+    history,
     ratings,
     site_config,
     solutions,
@@ -24,3 +25,4 @@ api_router.include_router(ratings.router, prefix="/ratings", tags=["ratings"])
 api_router.include_router(comments.router, prefix="/comments", tags=["comments"])
 api_router.include_router(site_config.router, prefix="/site-config", tags=["site-config"])
 api_router.include_router(tech_radar.router, prefix="/tech-radar", tags=["tech-radar"])
+api_router.include_router(history.router, prefix="/history", tags=["history"])
