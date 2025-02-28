@@ -364,15 +364,22 @@ class SolutionService:
             
             # Record history
             if updated_solution:
-                await self.history_service.record_object_change(
-                    object_type="solution",
-                    object_id=str(existing_solution.id),
-                    object_name=updated_solution.name,
-                    change_type=ChangeType.UPDATE,
-                    username=username or "system",
-                    changes=update_dict,
-                    old_values=old_values
-                )
+                # remove field: slug, updated_at, updated_by
+                update_dict.pop("slug", None)
+                update_dict.pop("updated_at", None)
+                update_dict.pop("updated_by", None)
+                
+                # record change if update_dict is not empty
+                if update_dict:
+                    await self.history_service.record_object_change(
+                        object_type="solution",
+                        object_id=str(existing_solution.id),
+                        object_name=updated_solution.name,
+                        change_type=ChangeType.UPDATE,
+                        username=username or "system",
+                        changes=update_dict,
+                        old_values=old_values
+                    )
             
             return updated_solution
         return None
