@@ -7,8 +7,8 @@ from fastapi import logger
 from pymongo import ASCENDING, DESCENDING
 
 from app.core.database import get_database
-from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.models.history import ChangeType
+from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.services.category_service import CategoryService
 from app.services.history_service import HistoryService
 from app.services.rating_service import RatingService
@@ -168,12 +168,12 @@ class SolutionService:
         # Get solutions before deleting for history records
         cursor = self.collection.find({"name": name})
         solutions = [SolutionInDB(**solution) async for solution in cursor]
-        
+
         if not solutions:
             return 0
-            
+
         result = await self.collection.delete_many({"name": name})
-        
+
         # Record history for each deleted solution
         for solution in solutions:
             await self.history_service.record_object_change(
@@ -182,9 +182,9 @@ class SolutionService:
                 object_name=solution.name,
                 change_type=ChangeType.DELETE,
                 username=username or "system",
-                change_summary=f"Deleted solution '{solution.name}' as part of bulk delete by name"
+                change_summary=f"Deleted solution '{solution.name}' as part of bulk delete by name",
             )
-            
+
         return result.deleted_count
 
     async def update_solutions_by_name(
@@ -233,7 +233,7 @@ class SolutionService:
 
         result = await self.collection.insert_one(solution_dict)
         created_solution = await self.get_solution_by_id(str(result.inserted_id))
-        
+
         # Record history for creation
         if created_solution:
             await self.history_service.record_object_change(
@@ -243,9 +243,9 @@ class SolutionService:
                 change_type=ChangeType.CREATE,
                 username=username or "system",
                 changes=solution_dict,
-                old_values=None
+                old_values=None,
             )
-        
+
         return created_solution
 
     async def get_solution_by_id(self, solution_id: str) -> Optional[SolutionInDB]:
@@ -346,7 +346,7 @@ class SolutionService:
             Updated solution if successful, None otherwise
         """
         update_dict = solution_update.model_dump(exclude_unset=True)
-        
+
         # Store original values for history tracking
         old_values = {field: getattr(existing_solution, field) for field in update_dict.keys()}
 
@@ -361,14 +361,14 @@ class SolutionService:
         result = await self.collection.update_one({"_id": existing_solution.id}, {"$set": update_dict})
         if result.modified_count:
             updated_solution = await self.get_solution_by_id(str(existing_solution.id))
-            
+
             # Record history
             if updated_solution:
                 # remove field: slug, updated_at, updated_by
                 update_dict.pop("slug", None)
                 update_dict.pop("updated_at", None)
                 update_dict.pop("updated_by", None)
-                
+
                 # record change if update_dict is not empty
                 if update_dict:
                     await self.history_service.record_object_change(
@@ -378,9 +378,9 @@ class SolutionService:
                         change_type=ChangeType.UPDATE,
                         username=username or "system",
                         changes=update_dict,
-                        old_values=old_values
+                        old_values=old_values,
                     )
-            
+
             return updated_solution
         return None
 
@@ -399,9 +399,9 @@ class SolutionService:
         solution = await self.get_solution_by_id(solution_id)
         if not solution:
             return False
-            
+
         result = await self.collection.delete_one({"_id": ObjectId(solution_id)})
-        
+
         if result.deleted_count > 0:
             # Record deletion in history
             await self.history_service.record_object_change(
@@ -410,7 +410,7 @@ class SolutionService:
                 object_name=solution.name,
                 change_type=ChangeType.DELETE,
                 username=username or "system",
-                change_summary=f"Deleted solution '{solution.name}'"
+                change_summary=f"Deleted solution '{solution.name}'",
             )
             return True
         return False
@@ -421,9 +421,9 @@ class SolutionService:
         solution = await self.get_solution_by_slug(slug)
         if not solution:
             return False
-            
+
         result = await self.collection.delete_one({"slug": slug})
-        
+
         if result.deleted_count > 0:
             # Record deletion in history
             await self.history_service.record_object_change(
@@ -432,7 +432,7 @@ class SolutionService:
                 object_name=solution.name,
                 change_type=ChangeType.DELETE,
                 username=username or "system",
-                change_summary=f"Deleted solution '{solution.name}'"
+                change_summary=f"Deleted solution '{solution.name}'",
             )
             return True
         return False

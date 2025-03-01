@@ -4,13 +4,12 @@ from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.core.auth import get_current_active_user, get_current_superuser
 from app.models.history import ChangeType, HistoryQuery, HistoryRecord
 from app.models.response import StandardResponse
-from app.models.user import User
 from app.services.history_service import HistoryService
 
 logger = logging.getLogger(__name__)
+
 
 router = APIRouter()
 
@@ -30,7 +29,7 @@ async def get_history(
 ) -> Any:
     """
     Get history records based on query parameters.
-    
+
     Returns a list of history records matching the specified filters,
     sorted by change date in descending order (newest first).
     """
@@ -45,7 +44,7 @@ async def get_history(
         skip=skip,
         limit=limit,
     )
-    
+
     try:
         history_records, total = await history_service.get_history_records(query)
         return StandardResponse.paginated(history_records, total, skip, limit)

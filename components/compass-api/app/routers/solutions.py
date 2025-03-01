@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import Response
 
 from app.core.auth import get_current_active_user, get_current_superuser
-from app.models.history import HistoryQuery, HistoryRecord
+from app.models.history import HistoryRecord
 from app.models.response import StandardResponse
 from app.models.solution import Solution, SolutionCreate, SolutionInDB, SolutionUpdate
 from app.models.user import User
@@ -399,7 +399,7 @@ async def get_solution_history(
 ) -> Any:
     """
     Get change history for a specific solution.
-    
+
     Returns a list of history records for the solution, sorted by change date in descending order.
     """
     solution = await solution_service.get_solution_by_slug(slug)
@@ -408,12 +408,9 @@ async def get_solution_history(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Solution with slug '{slug}' not found",
         )
-    
+
     history_records, total = await history_service.get_object_history(
-        object_type="solution",
-        object_id=str(solution.id),
-        skip=skip,
-        limit=limit
+        object_type="solution", object_id=str(solution.id), skip=skip, limit=limit
     )
-    
+
     return StandardResponse.paginated(history_records, total, skip, limit)
