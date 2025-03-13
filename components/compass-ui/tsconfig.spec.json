@@ -5,10 +5,16 @@
     "types": [
       "jasmine",
       "node"
-    ]
+    ],
+    "allowJs": true,
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*.spec.ts",
-    "src/**/*.d.ts"
+    "src/**/*.d.ts",
+    "src/test.ts"
+  ],
+  "files": [
+    "src/test.ts"
   ]
 } 

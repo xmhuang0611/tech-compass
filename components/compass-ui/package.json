@@ -42,12 +42,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.2.2",
     "vite": "^5.4.12"
-  },
-  "overrides": {
-    "glob": "^10.3.10",
-    "rimraf": "^5.0.5",
-    "inflight": "npm:lru-cache@^10.1.0",
-    "read-package-json": "npm:@npmcli/package-json@^5.0.0",
-    "acorn-import-assertions": "npm:acorn-import-attributes@^1.0.0"
   }
 }
