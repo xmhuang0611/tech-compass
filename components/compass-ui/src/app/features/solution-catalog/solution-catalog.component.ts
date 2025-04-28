@@ -34,7 +34,7 @@ interface SolutionFilters {
 interface SolutionParams extends SolutionFilters {
   skip: number;
   limit: number;
-  [key: string]: string | number | undefined;
+  keyword?: string;
 }
 
 interface CategoryOption {
