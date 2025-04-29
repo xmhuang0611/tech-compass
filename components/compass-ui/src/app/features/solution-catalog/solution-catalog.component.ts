@@ -302,7 +302,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     };
 
     // Remove any null, undefined, or empty string values
-    Object.keys(params).forEach(key => {
+    (Object.keys(params) as Array<keyof SolutionParams>).forEach(key => {
       if (params[key] === null || params[key] === undefined || params[key] === '') {
         delete params[key];
       }
@@ -340,7 +340,7 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
     };
 
     // Remove any null, undefined, or empty string values
-    Object.keys(params).forEach(key => {
+    (Object.keys(params) as Array<keyof SolutionParams>).forEach(key => {
       if (params[key] === null || params[key] === undefined || params[key] === '') {
         delete params[key];
       }
