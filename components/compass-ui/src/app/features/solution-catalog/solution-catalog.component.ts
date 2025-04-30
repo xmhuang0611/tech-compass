@@ -428,13 +428,16 @@ export class SolutionCatalogComponent implements OnInit, OnDestroy {
 
   private updateQueryParams(): void {
     // Update URL with current filters
-    const queryParams: { [key: string]: string } = {};
+    const queryParams: Record<string, string> = {};
+    const validKeys: Array<keyof SolutionFilters> = ['category', 'department', 'team', 'recommend_status', 'sort', 'tags'];
     
     // Only add non-default values to URL
     Object.entries(this.filters).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '' && 
           !(key === 'sort' && value === 'name')) {
-        queryParams[key] = value;
+        if (validKeys.includes(key as keyof SolutionFilters)) {
+          queryParams[key] = value;
+        }
       }
     });
 
